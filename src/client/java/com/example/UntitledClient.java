@@ -81,6 +81,7 @@ public class UntitledClient implements ClientModInitializer {
 //            DECREMENT_CHEATS = getAbstractPvpUtilsKeybind("Decrement cheats"),
 //            INCREMENT_CHEATS = getAbstractPvpUtilsKeybind("Increment cheats");
     //    public static final KeyMapping JUMP_CHEAT_HOLD = getAbstractPvpUtilsKeybind("Jump cheat (Hold)");
+    public static final KeyMapping SECOND_ATTACK = getAbstractPvpUtilsKeybind("Second attack");
     public static final KeyMapping KEYBIND_CONFIG = getAbstractPvpUtilsKeybind("Config");
 //    public static boolean
 //            isSprintEnabled,

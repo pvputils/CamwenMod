@@ -3,11 +3,13 @@
     >make autorun it's own mod
     >make xray it's own mod
 
->turn reach debug mode thing into a min range
+>try an additional left click button
 >ignore target margin revert when doing the debug message thing
+>turn reach debug mode thing into a min range
 
 >more reach if I'm jumping?
 >make head-run left able to swap to head-run right without re-pressing
+    >make it work better with toggleMovement also
 >could try more complex logic on the target's dynamic movement?
 >maybe the movement threshold should be at this speed im testing with?
     >maybe I should make a mode where only reach hits go through for testing
