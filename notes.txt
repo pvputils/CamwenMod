@@ -3,6 +3,7 @@
     >make autorun it's own mod
     >make xray it's own mod
 
+>combat cheats should disable if it's an ally and im suppressing
 >ignore target margin revert when doing the debug message thing
 >turn reach debug mode thing into a min range
 
