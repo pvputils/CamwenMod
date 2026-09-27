@@ -11,8 +11,8 @@ public class CheatConfig {
     //    public record MovementPair() {}
 //    public HashMap<> advanced?dynamic? reach
     public float staticTargetingMarginBypass = .0f;
-    public float movingTargetMarginBypass = 0.f;
-    public float doubleWalkingTargetMarginBypass = 0.f;
+//    public float movingTargetMarginBypass = 0.f;
+//    public float doubleWalkingTargetMarginBypass = 0.f;
 //    TODO;
 //    public float sprintVsWalkingTargetMarginBypass = 0.f;
 //    public float speedVsWalkingTargetMarginBypass = 0.f;
@@ -22,18 +22,17 @@ public class CheatConfig {
 //    public boolean isAutoCobweb = false; // TODO -> struct?
 //    public double cobwebRangeBypassDelta = .0f;
 
-    public float computeTargetingMarginBypass(
-            boolean isMoving, boolean isTargetMovingPlayer) {
+    public float computeTargetingMarginBypass() {
         float base = isTargetingMarginReverted
                 ? .1f
                 : 0.f;
         float one = staticTargetingMarginBypass;
-        float two = isMoving
-                ? movingTargetMarginBypass
-                : 0.f;
-        float three = isMoving && isTargetMovingPlayer
-                ? doubleWalkingTargetMarginBypass
-                : 0.f;
-        return base + Math.max(one, Math.max(two, three));
+//        float two = isMoving
+//                ? movingTargetMarginBypass
+//                : 0.f;
+//        float three = isMoving && isTargetMovingPlayer
+//                ? doubleWalkingTargetMarginBypass
+//                : 0.f;
+        return base + one;
     }
 }

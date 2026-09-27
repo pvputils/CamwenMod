@@ -49,12 +49,12 @@ public abstract class MinecraftClientMixin {
                 float marginBypass = firstHit.getEntity().getPickRadius();
                 boolean targetingMarginReverted = computeCheatConfig().isTargetingMarginReverted;
                 float staticMarginBypass = computeCheatConfig().staticTargetingMarginBypass;
-                float movingMarginBypass = computeCheatConfig().movingTargetMarginBypass;
-                float doubleMovingMarginBypass = computeCheatConfig().doubleWalkingTargetMarginBypass;
+//                float movingMarginBypass = computeCheatConfig().movingTargetMarginBypass;
+//                float doubleMovingMarginBypass = computeCheatConfig().doubleWalkingTargetMarginBypass;
                 computeCheatConfig().isTargetingMarginReverted = false;
                 computeCheatConfig().staticTargetingMarginBypass = 0.f;
-                computeCheatConfig().movingTargetMarginBypass = 0.f;
-                computeCheatConfig().doubleWalkingTargetMarginBypass = 0.f;
+//                computeCheatConfig().movingTargetMarginBypass = 0.f;
+//                computeCheatConfig().doubleWalkingTargetMarginBypass = 0.f;
                 boolean flag = false;
                 if (!(((ClientPlayerEntityInvoker) this.player).invokePick(
                         MINECRAFT_CLIENT_INSTANCE.getCameraEntity(),
@@ -73,8 +73,8 @@ public abstract class MinecraftClientMixin {
                 }
                 computeCheatConfig().isTargetingMarginReverted = targetingMarginReverted;
                 computeCheatConfig().staticTargetingMarginBypass = staticMarginBypass;
-                computeCheatConfig().movingTargetMarginBypass = movingMarginBypass;
-                computeCheatConfig().doubleWalkingTargetMarginBypass = doubleMovingMarginBypass;
+//                computeCheatConfig().movingTargetMarginBypass = movingMarginBypass;
+//                computeCheatConfig().doubleWalkingTargetMarginBypass = doubleMovingMarginBypass;
                 if (!flag && config.isReachDebugModeEnabled) {
                     cir.cancel();
                     return;

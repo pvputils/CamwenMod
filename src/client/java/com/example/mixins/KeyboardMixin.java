@@ -4,7 +4,6 @@ import com.example.Configs.Config;
 import com.example.overlayTodoAi.ExternalConfigWindow;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Input;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
