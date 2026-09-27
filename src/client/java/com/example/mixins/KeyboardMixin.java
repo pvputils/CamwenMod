@@ -54,13 +54,6 @@ public class KeyboardMixin {
     @Inject(at = @At(value = "RETURN"), method = "keyPress")
     private void onKeyPress(
             long handle, int action, KeyEvent event, CallbackInfo ci) {
-        while (SECOND_ATTACK.consumeClick()) {
-            if (ATTACK_VANILLA.isDown()) {
-                return;
-            }
-
-            MINECRAFT_CLIENT_INSTANCE.player.swing(InteractionHand.MAIN_HAND);
-        }
         // codex start
         if (MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(event)) {
 //            if (action == GLFW.GLFW_PRESS && MINECRAFT_CLIENT_INSTANCE.player instanceof LocalPlayer) {
