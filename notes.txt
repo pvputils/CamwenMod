@@ -12,7 +12,6 @@
         >uses conservative estimates of healing
         >uses your healing data for the values
         >fall damage
-
 >get vape's silent aura?
 >auto clutch from liquidBounce?
 >more reach if I'm jumping?
