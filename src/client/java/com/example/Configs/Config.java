@@ -63,6 +63,13 @@ public class Config {
     public boolean isParkourCheatEnabled = false;
 
     // codex start
+    /** The two vanilla FOV values selected by the FOV preset toggle keybind. */
+    public int fovPresetPrimary = 70;
+    public int fovPresetSecondary = 90;
+    public boolean isPrimaryFovPresetActive = true;
+    // codex end
+
+    // codex start
     /** Percentage chance (0-100) that an attack targeting a friendly teammate is suppressed. */
     public float teammateSwingSuppressionChance = 0.0F;
     // codex end
