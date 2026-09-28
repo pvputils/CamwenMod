@@ -188,6 +188,9 @@ public final class ExternalConfigWindow {
                 value -> config.isDebugModeEnabled = value, "");
         addCheckBox(grid, "reach debug mode", () -> config.isReachDebugModeEnabled,
                 value -> config.isReachDebugModeEnabled = value, "");
+        addFloatField(grid, "reach debug mode minimum range", config.reachDebugModeMinimumRange,
+                value -> config.reachDebugModeMinimumRange = Math.clamp(value, 0.0F, 100.0F),
+                "");
         addCheckBox(grid, "parkour cheat", () -> config.isParkourCheatEnabled,
                 value -> config.isParkourCheatEnabled = value, "");
         // codex start

@@ -1,6 +1,9 @@
 package com.example.mixins;
 
+import com.example.Configs.Config;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -9,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static com.example.Constants.MINECRAFT_CLIENT_INSTANCE;
 import static com.example.UntitledClient.config;
 import static com.example.Utils.computeCheatConfig;
 
@@ -26,6 +28,9 @@ public abstract class EntityMixin {
     @Shadow
     public abstract double getZ();
 
+    @Shadow
+    public abstract @Nullable Component belowNameDisplay();
+
     @Unique
     double lastX = 0;
     @Unique
@@ -34,6 +39,7 @@ public abstract class EntityMixin {
     double lastZ = 0;
     @Unique
     boolean isLocallyMoving = false;
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         double x = getX();
@@ -44,12 +50,17 @@ public abstract class EntityMixin {
         lastY = y;
         lastZ = z;
     }
+
     @Inject(method = "getPickRadius", at = @At("HEAD"), cancellable = true)
     private void onGetTargetingMargin(CallbackInfoReturnable<Float> cir) {
-        TODO; // if teammate don't
-        if ((Object) this instanceof Player && config.isCheatsEnabled) {
+        if (!((Object) this instanceof Player player)) {
+            return;
+        }
+        if (!config.isCheatsEnabled) {
+            return;
+        }
 //            boolean isMoving = MINECRAFT_CLIENT_INSTANCE.player.input.getMoveVector().lengthSquared() > 0.f;
-            // TODO ?
+        // TODO ?
 //            boolean isTargetMoving = player.getDeltaMovement().horizontalDistanceSqr() > 0.0001f;
 //            boolean foo = player == Constants.MINECRAFT_CLIENT_INSTANCE.player;
 //            if (foo)
@@ -63,8 +74,13 @@ public abstract class EntityMixin {
 //            if (isLocallyMoving) {
 //                MINECRAFT_CLIENT_INSTANCE.player.sendSystemMessage(Component.literal("gey"));
 //            }
-            cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass());
+        // TODO -> this relies on these teams all being allies
+        if (config.teammateSwingSuppressionChance > 0.f &&
+                config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam nameplateTeam) {
+            return;
         }
+        cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass());
+        cir.cancel();
     }
 
 //    @Inject(method = "onDamaged", at = @At("HEAD"))

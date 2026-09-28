@@ -47,11 +47,11 @@ public abstract class MinecraftClientMixin {
                     MINECRAFT_CLIENT_INSTANCE.getDeltaTracker().getGameTimeDeltaTicks()) instanceof EntityHitResult firstHit &&
                     firstHit.getType() != HitResult.Type.MISS) {
                 float marginBypass = firstHit.getEntity().getPickRadius();
-                boolean targetingMarginReverted = computeCheatConfig().isTargetingMarginReverted;
+//                boolean targetingMarginReverted = computeCheatConfig().isTargetingMarginReverted;
                 float staticMarginBypass = computeCheatConfig().staticTargetingMarginBypass;
 //                float movingMarginBypass = computeCheatConfig().movingTargetMarginBypass;
 //                float doubleMovingMarginBypass = computeCheatConfig().doubleWalkingTargetMarginBypass;
-                computeCheatConfig().isTargetingMarginReverted = false;
+//                computeCheatConfig().isTargetingMarginReverted = false;
                 computeCheatConfig().staticTargetingMarginBypass = 0.f;
 //                computeCheatConfig().movingTargetMarginBypass = 0.f;
 //                computeCheatConfig().doubleWalkingTargetMarginBypass = 0.f;
@@ -71,10 +71,11 @@ public abstract class MinecraftClientMixin {
                     PlayerWaypointOverlay.appendDebugMessage("targeting margin hit (" + marginBypass + ", " + foo + "?)"); // codex (old code) Objects.requireNonNull(MINECRAFT_CLIENT_INSTANCE.player).sendSystemMessage(Component.literal("debug mode: targeting margin hit (" + marginBypass + ")"));
                     flag = true;
                 }
-                computeCheatConfig().isTargetingMarginReverted = targetingMarginReverted;
+//                computeCheatConfig().isTargetingMarginReverted = targetingMarginReverted;
                 computeCheatConfig().staticTargetingMarginBypass = staticMarginBypass;
 //                computeCheatConfig().movingTargetMarginBypass = movingMarginBypass;
 //                computeCheatConfig().doubleWalkingTargetMarginBypass = doubleMovingMarginBypass;
+                TODO;
                 if (!flag && config.isReachDebugModeEnabled) {
                     cir.cancel();
                     return;
