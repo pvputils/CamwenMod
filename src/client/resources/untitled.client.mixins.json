@@ -3,6 +3,9 @@
   "package": "com.example.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "AuraGameModeAccessTodoAi",
+    "AuraPlayerAccessTodoAi",
+    "AuraLivingAccessTodoAi",
     "AbstractClientPlayerMixinTodoAi",
     "BipedEntityRendererMixin",
     "ClientPlayerEntityMixin",

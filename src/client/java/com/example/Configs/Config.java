@@ -65,7 +65,7 @@ public class Config {
     // codex start
     /** Exact player name used by the hold-to-hit action; an empty value disables it. */
     public String killAuraTargetName = "";
-    // codex end
+    //codex end
 
     // codex start
     /** Percentage chance (0-100) that an attack targeting a friendly teammate is suppressed. */

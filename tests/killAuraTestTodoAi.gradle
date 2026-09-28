@@ -1,0 +1,18 @@
+allprojects {
+    afterEvaluate {
+        def compileChecks = tasks.register('compileKillAuraChecksTodoAi', JavaCompile) {
+            dependsOn 'clientClasses'
+            classpath = sourceSets.client.runtimeClasspath
+            source = fileTree('tests') { include 'KillAuraPipelineTestTodoAi.java' }
+            destinationDirectory = layout.buildDirectory.dir('killaura-tests')
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(25) }
+            options.release = 25
+        }
+        tasks.register('killAuraTestTodoAi', JavaExec) {
+            dependsOn compileChecks
+            javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+            classpath = sourceSets.client.runtimeClasspath + files(compileChecks.map { it.destinationDirectory })
+            mainClass = 'com.example.combat.KillAuraPipelineTestTodoAi'
+        }
+    }
+}

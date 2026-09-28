@@ -11,7 +11,10 @@
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
-	"license": "CC0-1.0",
+	"license": "GPL-3.0-or-later",
+	"custom": {
+		"codexLicenseChange": "//codex (old code snippet) \"license\": \"CC0-1.0\"; original code remains CC0; combined distribution includes GPL LiquidBounce-derived code."
+	},
 	"icon": "assets/untitled/icon.png",
 	"environment": "*",
 	"entrypoints": {

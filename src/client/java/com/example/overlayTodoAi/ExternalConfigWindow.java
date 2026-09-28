@@ -265,8 +265,11 @@ public final class ExternalConfigWindow {
         configure(field, tooltip);
         field.getDocument().addDocumentListener(new DocumentListener() {
             private void changed() {
+                // codex start
+                String text = field.getText();
+                //codex end
                 onClientThread(() -> {
-                    setter.accept(field.getText());
+                    setter.accept(text); //codex (old code snippet) setter.accept(field.getText());
                     saveAll();
                 });
             }

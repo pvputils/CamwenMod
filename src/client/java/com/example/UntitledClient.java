@@ -163,7 +163,7 @@ public class UntitledClient implements ClientModInitializer {
     public void onInitializeClient() {
         // codex start
         KillAuraHitTodoAi.initialize();
-        // codex end
+        //codex end
         // codex start
         ExternalConfigWindow.prepareDesktopWindowing();
         // codex end
