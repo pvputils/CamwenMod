@@ -8,6 +8,11 @@
 >combat cheats should disable if it's an ally and im suppressing
 >ignore target margin revert when doing the debug message thing
 >turn reach debug mode thing into a min range
+>conservative estimate health indicators:
+        >uses hits on you to know how much damage things do to certain armor values
+        >uses conservative estimates of healing
+        >uses your healing data for the values
+        >fall damage
 
 >auto clutch from liquidBounce?
 >more reach if I'm jumping?
@@ -45,11 +50,6 @@
 	>shows their held item as well
 	>ability to see players' potion effects and timers?
 	>should also be able to place team permanent waypoints like hasa etc.
-	>conservative estimate health indicators:
-        >uses hits on you to know how much damage things do to certain armor values
-        >uses conservative estimates of healing
-        >uses your healing data for the values
-        >fall damage
     >shows plo when you aren't in the shotbow party (party waypoints)
     >league style pings
 >xray turns blocks into glass instead of cancelling their render (?) toggle
