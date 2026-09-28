@@ -7,7 +7,6 @@
 >ignore target margin revert when doing the debug message thing
 >turn reach debug mode thing into a min range
 
->silent aura instead of hitboxes
 >conservative estimate health indicators:
         >uses hits on you to know how much damage things do to certain armor values
         >uses conservative estimates of healing
