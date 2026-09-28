@@ -169,16 +169,10 @@ public class KeyboardMixin {
         }
 
         // codex start
-        while (FOV_PRESET_TOGGLE.consumeClick()) {
-            int currentFov = MINECRAFT_CLIENT_INSTANCE.options.fov().get();
-            if (config.isPrimaryFovPresetActive) {
-                config.fovPresetPrimary = currentFov;
-                MINECRAFT_CLIENT_INSTANCE.options.fov().set(config.fovPresetSecondary);
-            } else {
-                config.fovPresetSecondary = currentFov;
-                MINECRAFT_CLIENT_INSTANCE.options.fov().set(config.fovPresetPrimary);
-            }
-            config.isPrimaryFovPresetActive = !config.isPrimaryFovPresetActive;
+        while (FOV_TOGGLE.consumeClick()) {
+            int newFov = config.storedFov;
+            config.storedFov = MINECRAFT_CLIENT_INSTANCE.options.fov().get();
+            MINECRAFT_CLIENT_INSTANCE.options.fov().set(newFov);
             config.saveConfig();
             MINECRAFT_CLIENT_INSTANCE.options.save();
         }
