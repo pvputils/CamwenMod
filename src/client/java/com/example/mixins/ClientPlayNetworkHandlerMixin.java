@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static com.example.Constants.MINECRAFT_CLIENT_INSTANCE;
 import static com.example.UntitledClient.config;
 import static com.example.Utils.onPvpDamage;
+import com.example.DamageHealthEstimatorTodoAi;
 import static net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -37,6 +38,12 @@ public class ClientPlayNetworkHandlerMixin {
         if (config.isDamageTakenValueNotificationEnabled && previous > health) {
             player.sendSystemMessage(Component.literal(String.valueOf(previous - health)));
         }
+        // codex start
+        if (config.isDamageHealthEstimatorEnabled) {
+            DamageHealthEstimatorTodoAi.recordHealth(health)
+                    .ifPresent(message -> player.sendSystemMessage(Component.literal(message)));
+        }
+        //codex end
     }
 
     @Inject(method = "handleDamageEvent", at = @At("RETURN"))
@@ -51,6 +58,11 @@ public class ClientPlayNetworkHandlerMixin {
                     player == entity) {
                 // TODO -> player == attacker?
                 onPvpDamage();
+                // codex start
+                if (config.isDamageHealthEstimatorEnabled) {
+                    DamageHealthEstimatorTodoAi.capture(attacker, player.getHealth(), player.getArmorValue());
+                }
+                //codex end
             }
         }
     }

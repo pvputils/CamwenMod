@@ -29,6 +29,9 @@ public class Config {
 //    public boolean isCritParticleReverted = false;
 //    public boolean isWeakAttackSoundDisabled = false;
     public boolean isDamageTakenValueNotificationEnabled = false;
+    // codex start
+    public boolean isDamageHealthEstimatorEnabled = false;
+    //codex end
 //    public boolean isDepthStriderReverted = true; // TODO ?
 //    public boolean isNameplateIronLeatherSwapped = true;
 //    public boolean isMovementTogglePvpDisabling = false;

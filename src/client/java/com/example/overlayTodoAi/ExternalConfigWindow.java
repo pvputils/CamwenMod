@@ -165,6 +165,11 @@ public final class ExternalConfigWindow {
         // codex end
         addCheckBox(grid, "damage taken value notification", () -> config.isDamageTakenValueNotificationEnabled,
                 value -> config.isDamageTakenValueNotificationEnabled = value, "");
+        // codex start
+        addCheckBox(grid, "damage health estimator", () -> config.isDamageHealthEstimatorEnabled,
+                value -> config.isDamageHealthEstimatorEnabled = value,
+                "records player-hit damage with the weapon and armor points used, plus equal hits needed for 20 health");
+        //codex end
         addCheckBox(grid, "targeting margin revert", () -> activeCheatConfig.isTargetingMarginReverted,
                 value -> activeCheatConfig.isTargetingMarginReverted = value,
                 "will flag hard on versions that use smaller hitboxes");
