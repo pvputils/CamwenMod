@@ -46,8 +46,9 @@ public abstract class EntityMixin {
     }
     @Inject(method = "getPickRadius", at = @At("HEAD"), cancellable = true)
     private void onGetTargetingMargin(CallbackInfoReturnable<Float> cir) {
+        TODO; // if teammate don't
         if ((Object) this instanceof Player && config.isCheatsEnabled) {
-            boolean isMoving = MINECRAFT_CLIENT_INSTANCE.player.input.getMoveVector().lengthSquared() > 0.f;
+//            boolean isMoving = MINECRAFT_CLIENT_INSTANCE.player.input.getMoveVector().lengthSquared() > 0.f;
             // TODO ?
 //            boolean isTargetMoving = player.getDeltaMovement().horizontalDistanceSqr() > 0.0001f;
 //            boolean foo = player == Constants.MINECRAFT_CLIENT_INSTANCE.player;

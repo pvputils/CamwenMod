@@ -3,10 +3,11 @@
     >make autorun it's own mod
     >make xray it's own mod
 
->silent aura instead of hitboxes
 >combat cheats should disable if it's an ally and im suppressing
 >ignore target margin revert when doing the debug message thing
 >turn reach debug mode thing into a min range
+
+>silent aura instead of hitboxes
 >conservative estimate health indicators:
         >uses hits on you to know how much damage things do to certain armor values
         >uses conservative estimates of healing

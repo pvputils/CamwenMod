@@ -1,5 +1,7 @@
 package com.example.Configs;
 
+import static com.example.UntitledClient.config;
+
 public class CheatConfig {
     //    public boolean isEthylene = false;
     // codex start
@@ -23,6 +25,10 @@ public class CheatConfig {
 //    public double cobwebRangeBypassDelta = .0f;
 
     public float computeTargetingMarginBypass() {
+        if (!config.isCheatsEnabled) {
+            return 0.f;
+        }
+
         float base = isTargetingMarginReverted
                 ? .1f
                 : 0.f;
