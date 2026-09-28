@@ -7,6 +7,7 @@
  */
 package com.example.combat;
 
+import com.example.UntitledClient;
 import com.example.combat.clicking.AttackClockTodoAi;
 import com.example.mixins.AuraGameModeAccessTodoAi;
 import com.example.mixins.AuraLivingAccessTodoAi;
@@ -35,6 +36,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import static com.example.UntitledClient.config;
+import static com.example.UntitledClient.killAuraTargetName;
 import static com.example.Utils.getAbstractPvpUtilsKeybind;
 import static com.example.Utils.getIsKeyBindingPressed;
 import static com.example.combat.HitQueueTodoAi.Result.*;
@@ -373,7 +375,7 @@ public final class KillAuraHitTodoAi {
             return;
         }
         if (heldRequest != null && !heldRequest.isDone() || QUEUE.current(tick) != null) return;
-        String name = config.killAuraTargetName == null ? "" : config.killAuraTargetName.trim();
+        String name = killAuraTargetName == null ? "" : killAuraTargetName.trim();
         if (name.isEmpty()) return;
         client.level.players().stream()
                 .filter(target -> target != owner && target.isAlive() && !target.isSpectator())

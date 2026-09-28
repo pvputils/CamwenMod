@@ -157,6 +157,7 @@ public class UntitledClient implements ClientModInitializer {
 
     // codex start
     public static boolean isEthyleneSprintFovCancelled;
+    public static String killAuraTargetName = "";
     // codex end
 
     @Override

@@ -1,7 +1,9 @@
 package com.example.mixins;
 
 import com.example.Configs.Config;
+import com.example.combat.KillAuraHitTodoAi;
 import com.example.overlayTodoAi.PlayerWaypointOverlay;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -22,6 +24,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
+import org.w3c.dom.Entity;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftClientMixin {
@@ -35,6 +38,19 @@ public abstract class MinecraftClientMixin {
         MINECRAFT_CLIENT_INSTANCE.missTime = 0;
         if (player == null) {
             return;
+        }
+        if (!(MINECRAFT_CLIENT_INSTANCE.hitResult instanceof EntityHitResult entityHitResult) || entityHitResult.getType() == HitResult.Type.MISS) {
+            float value = computeCheatConfig().staticTargetingMarginBypass;
+            computeCheatConfig().staticTargetingMarginBypass = 1.f;
+            if (((ClientPlayerEntityInvoker) this.player).invokePick(
+                    MINECRAFT_CLIENT_INSTANCE.getCameraEntity(),
+                    player.blockInteractionRange(),
+                    player.entityInteractionRange(),
+                    MINECRAFT_CLIENT_INSTANCE.getDeltaTracker().getGameTimeDeltaTicks()) instanceof EntityHitResult hit &&
+                    hit.getEntity() instanceof Player target) {
+                KillAuraHitTodoAi.scheduleHit(target);
+            }
+            computeCheatConfig().staticTargetingMarginBypass = value;
         }
         if (config.isDebugModeEnabled) {
             if (previousAttackCooldown != 0) {

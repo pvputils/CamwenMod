@@ -191,11 +191,6 @@ public final class ExternalConfigWindow {
         addCheckBox(grid, "parkour cheat", () -> config.isParkourCheatEnabled,
                 value -> config.isParkourCheatEnabled = value, "");
         // codex start
-        addTextField(grid, "kill aura target", config.killAuraTargetName,
-                value -> config.killAuraTargetName = value.trim(),
-                "exact player name for Kill aura hit (Hold); leave blank to disable it");
-        // codex end
-        // codex start
         addFloatField(grid, "teammate swing suppression (%)", config.teammateSwingSuppressionChance,
                 value -> config.teammateSwingSuppressionChance = Math.clamp(value, 0.0F, 100.0F),
                 "percentage chance (0-100) that an attack targeting a friendly teammate is suppressed");
