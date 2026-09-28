@@ -10,12 +10,9 @@ import static com.example.Utils.serializeJsonBlocking;
 
 public class Config {
     public enum NameplateTeam {
-        // codex start
-        // codex (old code) FRIENDLY(TextColor.GREEN),
-        // codex (old code) ALLY(TextColor.AQUA);
+        // targeting margin relies on this being only allies
         FRIENDLY(TextColor.fromLegacyFormat(ChatFormatting.GREEN)),
         ALLY(TextColor.fromLegacyFormat(ChatFormatting.AQUA));
-        // codex end
         //        ENEMY,
 //        FOCUS,
         public final TextColor color;
@@ -65,8 +62,10 @@ public class Config {
     public boolean isCheatsEnabled = true;
 
     public boolean isDebugModeEnabled = false;
-    public boolean isReachDebugModeEnabled = false;
+    public boolean isReachDebugModeEnabled = false; // TODO -> combine this with min range, maybe with Float's nullability
+    public float reachDebugModeMinimumRange = 0.f;
     public boolean isParkourCheatEnabled = false;
+    public int storedFov = 70;
 
     // codex start
     /** Percentage chance (0-100) that an attack targeting a friendly teammate is suppressed. */

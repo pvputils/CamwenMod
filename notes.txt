@@ -3,9 +3,18 @@
     >make autorun it's own mod
     >make xray it's own mod
 
->more reach if I'm jumping
+>turn reach debug mode thing into a min range
 
+>conservative estimate health indicators:
+        >uses hits on you to know how much damage things do to certain armor values
+        >uses conservative estimates of healing
+        >uses your healing data for the values
+        >fall damage
+>get vape's silent aura?
+>auto clutch from liquidBounce?
+>more reach if I'm jumping?
 >make head-run left able to swap to head-run right without re-pressing
+    >make it work better with toggleMovement also
 >could try more complex logic on the target's dynamic movement?
 >maybe the movement threshold should be at this speed im testing with?
     >maybe I should make a mode where only reach hits go through for testing
@@ -38,11 +47,6 @@
 	>shows their held item as well
 	>ability to see players' potion effects and timers?
 	>should also be able to place team permanent waypoints like hasa etc.
-	>conservative estimate health indicators:
-        >uses hits on you to know how much damage things do to certain armor values
-        >uses conservative estimates of healing
-        >uses your healing data for the values
-        >fall damage
     >shows plo when you aren't in the shotbow party (party waypoints)
     >league style pings
 >xray turns blocks into glass instead of cancelling their render (?) toggle

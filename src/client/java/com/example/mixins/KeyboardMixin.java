@@ -174,6 +174,16 @@ public class KeyboardMixin {
             // codex end
         }
 
+        // codex start
+        while (FOV_TOGGLE.consumeClick()) {
+            int newFov = config.storedFov;
+            config.storedFov = MINECRAFT_CLIENT_INSTANCE.options.fov().get();
+            MINECRAFT_CLIENT_INSTANCE.options.fov().set(newFov);
+            config.saveConfig();
+            MINECRAFT_CLIENT_INSTANCE.options.save();
+        }
+        // codex end
+
 //        while (PLAYER_WAYPOINTS_TOGGLE.consumeClick()) {
 //            config.isPlayerWaypointsEnabled = !config.isPlayerWaypointsEnabled;
 //        }

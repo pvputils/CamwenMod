@@ -87,6 +87,9 @@ public class UntitledClient implements ClientModInitializer {
             PLAYER_WAYPOINTS_CYCLE = getAbstractPvpUtilsKeybind("Player waypoints (Cycle)"),
             PLAYER_WAYPOINTS_DISABLE = getAbstractPvpUtilsKeybind("Player waypoints (Disable)");
     public static final KeyMapping PLAYER_XRAY_TOGGLE = getAbstractPvpUtilsKeybind("Player xray (Toggle)");
+    // codex start
+    public static final KeyMapping FOV_TOGGLE = getAbstractPvpUtilsKeybind("FOV toggle");
+    // codex end
     //            BLOCK_XRAY_TOGGLE = getAbstractPvpUtilsKeybind("Block xray (Toggle)");
 //    public static final KeyMapping
 //            DECREMENT_CHEATS = getAbstractPvpUtilsKeybind("Decrement cheats"),
