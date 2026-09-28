@@ -8,6 +8,7 @@ import static com.example.Utils.serializeJsonBlocking;
 
 public class Config {
     public enum NameplateTeam {
+        // targeting margin relies on this being only allies
         FRIENDLY(TextColor.GREEN),
         ALLY(TextColor.AQUA);
         //        ENEMY,
@@ -59,7 +60,8 @@ public class Config {
     public boolean isCheatsEnabled = true;
 
     public boolean isDebugModeEnabled = false;
-    public boolean isReachDebugModeEnabled = false;
+    public boolean isReachDebugModeEnabled = false; // TODO -> combine this with min range, maybe with Float's nullability
+    public float reachDebugModeMinimumRange = 0.f;
     public boolean isParkourCheatEnabled = false;
     public int storedFov = 70;
 
