@@ -2,6 +2,7 @@ package com.example;
 
 import com.example.Configs.CheatConfig;
 import com.example.Configs.Config;
+import com.example.combat.KillAuraHitTodoAi;
 import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.api.ClientModInitializer;
@@ -160,6 +161,9 @@ public class UntitledClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // codex start
+        KillAuraHitTodoAi.initialize();
+        // codex end
         // codex start
         ExternalConfigWindow.prepareDesktopWindowing();
         // codex end
