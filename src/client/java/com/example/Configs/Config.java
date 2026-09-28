@@ -61,6 +61,7 @@ public class Config {
     public boolean isDebugModeEnabled = false;
     public boolean isReachDebugModeEnabled = false;
     public boolean isParkourCheatEnabled = false;
+    public int storedFov = 70;
 
     // codex start
     /** Percentage chance (0-100) that an attack targeting a friendly teammate is suppressed. */
