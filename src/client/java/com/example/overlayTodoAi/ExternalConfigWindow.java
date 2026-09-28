@@ -191,6 +191,11 @@ public final class ExternalConfigWindow {
         addCheckBox(grid, "parkour cheat", () -> config.isParkourCheatEnabled,
                 value -> config.isParkourCheatEnabled = value, "");
         // codex start
+        addTextField(grid, "kill aura target", config.killAuraTargetName,
+                value -> config.killAuraTargetName = value.trim(),
+                "exact player name for Kill aura hit (Hold); leave blank to disable it");
+        // codex end
+        // codex start
         addFloatField(grid, "teammate swing suppression (%)", config.teammateSwingSuppressionChance,
                 value -> config.teammateSwingSuppressionChance = Math.clamp(value, 0.0F, 100.0F),
                 "percentage chance (0-100) that an attack targeting a friendly teammate is suppressed");
@@ -247,6 +252,32 @@ public final class ExternalConfigWindow {
         });
         panel.add(field);
     }
+
+    // codex start
+    private static void addTextField(
+            JPanel panel,
+            String label,
+            String value,
+            Consumer<String> setter,
+            String tooltip) {
+        JTextField field = new JTextField(value);
+        field.setName(label);
+        configure(field, tooltip);
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            private void changed() {
+                onClientThread(() -> {
+                    setter.accept(field.getText());
+                    saveAll();
+                });
+            }
+
+            @Override public void insertUpdate(DocumentEvent event) { changed(); }
+            @Override public void removeUpdate(DocumentEvent event) { changed(); }
+            @Override public void changedUpdate(DocumentEvent event) { changed(); }
+        });
+        panel.add(field);
+    }
+    // codex end
 
     private static void addButton(JPanel panel, String label, Runnable action, String tooltip) {
         JButton button = new JButton(label);
