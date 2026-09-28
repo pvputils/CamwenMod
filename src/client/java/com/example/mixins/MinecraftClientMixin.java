@@ -75,7 +75,6 @@ public abstract class MinecraftClientMixin {
                 computeCheatConfig().staticTargetingMarginBypass = staticMarginBypass;
 //                computeCheatConfig().movingTargetMarginBypass = movingMarginBypass;
 //                computeCheatConfig().doubleWalkingTargetMarginBypass = doubleMovingMarginBypass;
-                TODO;
                 if (!flag && config.isReachDebugModeEnabled) {
                     cir.cancel();
                     return;
