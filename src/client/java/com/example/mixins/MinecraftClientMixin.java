@@ -41,7 +41,7 @@ public abstract class MinecraftClientMixin {
         }
         if (!(MINECRAFT_CLIENT_INSTANCE.hitResult instanceof EntityHitResult entityHitResult) || entityHitResult.getType() == HitResult.Type.MISS) {
             float value = computeCheatConfig().staticTargetingMarginBypass;
-            computeCheatConfig().staticTargetingMarginBypass = 1.f;
+            computeCheatConfig().staticTargetingMarginBypass = computeCheatConfig().staticSilentAuraMarginWidthBypass;
             if (((ClientPlayerEntityInvoker) this.player).invokePick(
                     MINECRAFT_CLIENT_INSTANCE.getCameraEntity(),
                     player.blockInteractionRange(),
@@ -51,6 +51,7 @@ public abstract class MinecraftClientMixin {
                 KillAuraHitTodoAi.scheduleHit(target);
             }
             computeCheatConfig().staticTargetingMarginBypass = value;
+            return;
         }
         if (config.isDebugModeEnabled) {
             if (previousAttackCooldown != 0) {

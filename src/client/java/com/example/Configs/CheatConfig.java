@@ -11,6 +11,7 @@ public class CheatConfig {
     //    public record MovementPair() {}
 //    public HashMap<> advanced?dynamic? reach
     public float staticTargetingMarginBypass = .0f;
+    public float staticSilentAuraMarginWidthBypass = 0.f;
 //    public float movingTargetMarginBypass = 0.f;
 //    public float doubleWalkingTargetMarginBypass = 0.f;
 //    TODO;

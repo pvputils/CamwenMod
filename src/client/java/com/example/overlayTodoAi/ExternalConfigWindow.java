@@ -171,6 +171,9 @@ public final class ExternalConfigWindow {
         addFloatField(grid, "targeting margin (static)", activeCheatConfig.staticTargetingMarginBypass,
                 value -> activeCheatConfig.staticTargetingMarginBypass = value,
                 "targeting margin bypass while standing still; invalid input is shown in red");
+        addFloatField(grid, "silent aura width targeting margin", activeCheatConfig.staticSilentAuraMarginWidthBypass,
+                value -> activeCheatConfig.staticSilentAuraMarginWidthBypass = value,
+                "silent aura width margin bypass; invalid input is shown in red");
 //        addFloatField(grid, "targeting margin (moving)", activeCheatConfig.movingTargetMarginBypass,
 //                value -> activeCheatConfig.movingTargetMarginBypass = value,
 //                "targeting margin bypass while moving; invalid input is shown in red");
