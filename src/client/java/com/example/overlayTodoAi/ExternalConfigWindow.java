@@ -198,6 +198,8 @@ public final class ExternalConfigWindow {
                 value -> config.teammateSwingSuppressionChance = Math.clamp(value, 0.0F, 100.0F),
                 "percentage chance (0-100) that an attack targeting a friendly teammate is suppressed");
         // codex end
+        addCheckBox(grid, "plate nameplate simplifier", () -> config.isPlayerNameplateSimplified,
+                value -> config.isPlayerNameplateSimplified = value, "");
         result.setContentPane(grid);
         return result;
     }

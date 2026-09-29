@@ -11,8 +11,7 @@
         >uses conservative estimates of healing
         >uses your healing data for the values
         >fall damage
->get vape's silent aura?
->auto clutch from liquidBounce?
+>auto clutch from liquidBounce?vape?
 >more reach if I'm jumping?
 >make head-run left able to swap to head-run right without re-pressing
     >make it work better with toggleMovement also

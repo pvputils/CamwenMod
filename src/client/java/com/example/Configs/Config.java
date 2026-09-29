@@ -70,6 +70,8 @@ public class Config {
     public float teammateSwingSuppressionChance = 0.0F;
     // codex end
 
+    public boolean isPlayerNameplateSimplified = false;
+
     public void saveConfig() {
         serializeJsonBlocking("config", this);
     }
