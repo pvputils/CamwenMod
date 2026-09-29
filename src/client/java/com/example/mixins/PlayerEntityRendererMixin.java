@@ -41,6 +41,9 @@ public class PlayerEntityRendererMixin {
             EntityRenderState renderState,
             float par3,
             CallbackInfo ci) {
+        if (config.isPlayerNameplateSimplified) {
+            renderState.nameTag = livingEntity.getName();
+        }
         if (renderState.nameTag instanceof Component text &&
                 config.nameplateUuids.get(livingEntity.getUUID()) instanceof Config.NameplateTeam team) {
             renderState.nameTag = text.copy().setStyle(text.getStyle().withColor(team.color.getValue()));
