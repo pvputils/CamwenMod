@@ -96,7 +96,7 @@ public class UntitledClient implements ClientModInitializer {
 //            INCREMENT_CHEATS = getAbstractPvpUtilsKeybind("Increment cheats");
     //    public static final KeyMapping JUMP_CHEAT_HOLD = getAbstractPvpUtilsKeybind("Jump cheat (Hold)");
     public static final KeyMapping KEYBIND_CONFIG = getAbstractPvpUtilsKeybind("Config");
-//    public static boolean
+    //    public static boolean
 //            isSprintEnabled,
 //            isSneakEnabled,
 //            isJumpEnabled,
@@ -105,11 +105,13 @@ public class UntitledClient implements ClientModInitializer {
 //            isRightEnabled,
 //            isBackwardEnabled;
     public static Input toggleMovementState = new Input(false, false, false, false, false, false, false); // TODO -> constant
+
     public enum SprintResetState {
         INVALID,
         HELD,
         VALID
     }
+
     public static SprintResetState sprintResetBackwardsKeyState = SprintResetState.INVALID;
 
     public static boolean isPlayerXrayEnabled = false;
@@ -299,26 +301,25 @@ public class UntitledClient implements ClientModInitializer {
                     IdentifiedLayer.CHAT,
             // codex end
                     EXAMPLE_LAYER,
-                    // codex start
-                    // codex (old code) (context, _) -> {
                     (context, unused1) -> {
-                    // codex end
-                        for (var each : tempWaypoints) {
-                            Vector2i screenCoords = calculateScreenCoords(each.coordinate);
-                            int x = screenCoords.x;
-                            int y = screenCoords.y;
-                            int size = 16;
+                        if (config.isChatCoordinateWaypointingEnabled) {
+                            for (var each : tempWaypoints) {
+                                Vector2i screenCoords = calculateScreenCoords(each.coordinate);
+                                int x = screenCoords.x;
+                                int y = screenCoords.y;
+                                int size = 16;
 
-                            // TODO -> diamond
-                            context.fill(
-                                    x - size / 2,
-                                    y - size / 2,
-                                    x + (size + 1) / 2,
-                                    y + (size + 1) / 2,
-                                    0xFFFF69B4
-                            );
-                            // TODO -> make it centered on the waypoint
-                            drawText(x, each.title, y, context);
+                                // TODO -> diamond
+                                context.fill(
+                                        x - size / 2,
+                                        y - size / 2,
+                                        x + (size + 1) / 2,
+                                        y + (size + 1) / 2,
+                                        0xFFFF69B4
+                                );
+                                // TODO -> make it centered on the waypoint
+                                drawText(x, each.title, y, context);
+                            }
                         }
                         playerOverlay.render(MINECRAFT_CLIENT_INSTANCE, this::calculateScreenCoords);
                     // codex start
@@ -433,7 +434,8 @@ public class UntitledClient implements ClientModInitializer {
 //                        ? 0xFF000000 | team.color.getValue()
 //                        : 0xAFFF0000
 //        );
-////            TODO; // config enum option for only doing teammates etc.
+
+    /// /            TODO; // config enum option for only doing teammates etc.
 //        PlayerFaceExtractor.extractRenderState(
 //                drawContext,
 //                player.getSkin(),
@@ -483,7 +485,6 @@ public class UntitledClient implements ClientModInitializer {
 //            }
 //        }
 //    }
-
     private void onIncomingMessage(String message) {
         // TODO -> async?
         // TODO -> handle two coordinates. which would require a beacon or something

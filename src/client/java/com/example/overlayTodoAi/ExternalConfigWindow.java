@@ -206,6 +206,8 @@ public final class ExternalConfigWindow {
         // codex end
         addCheckBox(grid, "player nameplate simplifier", () -> config.isPlayerNameplateSimplified,
                 value -> config.isPlayerNameplateSimplified = value, "");
+        addCheckBox(grid, "chat coordinate waypointer", () -> config.isChatCoordinateWaypointingEnabled,
+                value -> config.isChatCoordinateWaypointingEnabled = value, "");
         result.setContentPane(grid);
         return result;
     }

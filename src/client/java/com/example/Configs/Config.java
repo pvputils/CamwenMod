@@ -73,6 +73,7 @@ public class Config {
     // codex end
 
     public boolean isPlayerNameplateSimplified = false;
+    public boolean isChatCoordinateWaypointingEnabled = false;
 
     public void saveConfig() {
         serializeJsonBlocking("config", this);
