@@ -3,7 +3,6 @@
     >make autorun it's own mod
     >make xray it's own mod
 
->remove extra shit from nameplates
 >turn reach debug mode thing into a min range
 
 >conservative estimate health indicators:

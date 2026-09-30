@@ -1,11 +1,8 @@
 package com.example.mixins;
 
 import com.example.Configs.Config;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -41,6 +38,9 @@ public class PlayerEntityRendererMixin {
             EntityRenderState renderState,
             float par3,
             CallbackInfo ci) {
+        if (livingEntity == MINECRAFT_CLIENT_INSTANCE.player) {
+            return;
+        }
         if (config.isPlayerNameplateSimplified) {
             renderState.nameTag = livingEntity.getName();
         }
