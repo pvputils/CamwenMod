@@ -2,6 +2,7 @@ package com.example.mixins;
 
 import com.example.Configs.Config;
 import com.example.aimassist.AimAssistControllerTodoAi;
+import com.example.aimassist.TargetingMarginPickTodoAi;
 import com.example.overlayTodoAi.PlayerWaypointOverlay;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -44,27 +45,19 @@ public abstract class MinecraftClientMixin {
             if (previousAttackCooldown != 0) {
                 PlayerWaypointOverlay.appendDebugMessage("miss penalty: " + previousAttackCooldown + " -> " + MINECRAFT_CLIENT_INSTANCE.missTime); // codex (old code) player.sendSystemMessage(Component.literal("miss penalty: " + previousAttackCooldown + " -> " + MINECRAFT_CLIENT_INSTANCE.missTime));
             }
-            if (((ClientPlayerEntityInvoker) this.player).invokePick(
-                    MINECRAFT_CLIENT_INSTANCE.getCameraEntity(),
-                    player.blockInteractionRange(),
-                    player.entityInteractionRange(),
-                    MINECRAFT_CLIENT_INSTANCE.getDeltaTracker().getGameTimeDeltaTicks()) instanceof EntityHitResult firstHit &&
+            if (TargetingMarginPickTodoAi.pick(MINECRAFT_CLIENT_INSTANCE, null) instanceof EntityHitResult firstHit && //codex (old code snippet) if (((ClientPlayerEntityInvoker) this.player).invokePick(MINECRAFT_CLIENT_INSTANCE.getCameraEntity(), player.blockInteractionRange(), player.entityInteractionRange(), MINECRAFT_CLIENT_INSTANCE.getDeltaTracker().getGameTimeDeltaTicks()) instanceof EntityHitResult firstHit &&
                     firstHit.getType() != HitResult.Type.MISS) {
                 float marginBypass = firstHit.getEntity().getPickRadius();
 //                boolean targetingMarginReverted = computeCheatConfig().isTargetingMarginReverted;
-                float staticMarginBypass = computeCheatConfig().staticTargetingMarginBypass;
+                //codex (old code snippet) float staticMarginBypass = computeCheatConfig().staticTargetingMarginBypass;
 //                float movingMarginBypass = computeCheatConfig().movingTargetMarginBypass;
 //                float doubleMovingMarginBypass = computeCheatConfig().doubleWalkingTargetMarginBypass;
 //                computeCheatConfig().isTargetingMarginReverted = false;
-                computeCheatConfig().staticTargetingMarginBypass = 0.f;
+                //codex (old code snippet) computeCheatConfig().staticTargetingMarginBypass = 0.f;
 //                computeCheatConfig().movingTargetMarginBypass = 0.f;
 //                computeCheatConfig().doubleWalkingTargetMarginBypass = 0.f;
                 boolean flag = false;
-                if (!(((ClientPlayerEntityInvoker) this.player).invokePick(
-                        MINECRAFT_CLIENT_INSTANCE.getCameraEntity(),
-                        player.blockInteractionRange(),
-                        player.entityInteractionRange(),
-                        MINECRAFT_CLIENT_INSTANCE.getDeltaTracker().getGameTimeDeltaTicks()) instanceof EntityHitResult secondHit) ||
+                if (!(TargetingMarginPickTodoAi.pick(MINECRAFT_CLIENT_INSTANCE, 0.f) instanceof EntityHitResult secondHit) || //codex (old code snippet) if (!(((ClientPlayerEntityInvoker) this.player).invokePick(MINECRAFT_CLIENT_INSTANCE.getCameraEntity(), player.blockInteractionRange(), player.entityInteractionRange(), MINECRAFT_CLIENT_INSTANCE.getDeltaTracker().getGameTimeDeltaTicks()) instanceof EntityHitResult secondHit) ||
                         secondHit.getType() == HitResult.Type.MISS) {
                     Vec3 point = firstHit.getLocation();
                     AABB box = firstHit.getEntity().getBoundingBox();
@@ -76,7 +69,7 @@ public abstract class MinecraftClientMixin {
                     flag = true;
                 }
 //                computeCheatConfig().isTargetingMarginReverted = targetingMarginReverted;
-                computeCheatConfig().staticTargetingMarginBypass = staticMarginBypass;
+                //codex (old code snippet) computeCheatConfig().staticTargetingMarginBypass = staticMarginBypass;
 //                computeCheatConfig().movingTargetMarginBypass = movingMarginBypass;
 //                computeCheatConfig().doubleWalkingTargetMarginBypass = doubleMovingMarginBypass;
                 if (!flag && config.isReachDebugModeEnabled) {

@@ -1,7 +1,6 @@
 package com.example.mixins;
 
 import com.example.Configs.Config;
-import com.example.aimassist.AimAssistControllerTodoAi;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
@@ -54,13 +53,6 @@ public abstract class EntityMixin {
 
     @Inject(method = "getPickRadius", at = @At("HEAD"), cancellable = true)
     private void onGetTargetingMargin(CallbackInfoReturnable<Float> cir) {
-        // codex start
-        Float aimAssistMargin = AimAssistControllerTodoAi.pickRadiusOverride((Entity) (Object) this);
-        if (aimAssistMargin != null) {
-            cir.setReturnValue(aimAssistMargin);
-            return;
-        }
-        //codex end
         if (!((Object) this instanceof Player player)) {
             return;
         }

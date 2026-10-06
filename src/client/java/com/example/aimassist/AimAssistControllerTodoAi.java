@@ -2,8 +2,6 @@ package com.example.aimassist;
 
 import com.example.UntitledClient;
 import com.example.Utils;
-import com.example.mixins.ClientPlayerEntityInvoker;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +23,7 @@ public final class AimAssistControllerTodoAi {
     private static final Map<UUID, Long> locks = new HashMap<>();
     private static ClientLevel level;
     private static Rotation lastApplied;
-    private static Map<Integer, Float> temporaryPickRadii;
+
     private static final class State {
         LivingEntity target;
         Rotation start, end, goal;
@@ -33,29 +31,13 @@ public final class AimAssistControllerTodoAi {
         void clear() { target = null; start = end = goal = null; lastAttack = 0; }
     }
     private AimAssistControllerTodoAi() {}
-    /** Only populated while evaluating aura's hypothetical pick on the client thread. */
-    public static Float pickRadiusOverride(Entity entity) {
-        return temporaryPickRadii == null ? null : temporaryPickRadii.get(entity.getId());
-    }
     public static LivingEntity auraEligibleTarget(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
         if (mc.player == null || mc.level == null || mc.hitResult == null ||
             mc.hitResult.getType() != HitResult.Type.MISS || cfg.targetingMargin <= 0) return null;
-        Entity camera = mc.getCameraEntity();
-        if (camera != mc.player) return null;
-        double range = Math.min(cfg.range, mc.player.entityInteractionRange());
-        HitResult normal = ClientPlayerEntityInvoker.aimAssistPickTodoAi(camera, mc.player.blockInteractionRange(), range, 1f);
-        if (normal.getType() != HitResult.Type.MISS) return null;
-        Map<Integer, Float> radii = new HashMap<>();
-        for (Entity entity : mc.level.entitiesForRendering()) {
-            radii.put(entity.getId(), entity.getPickRadius() + (float) Math.clamp(cfg.targetingMargin, 0, 8));
-        }
-        try {
-            temporaryPickRadii = radii;
-            HitResult expanded = ClientPlayerEntityInvoker.aimAssistPickTodoAi(camera, mc.player.blockInteractionRange(), range, 1f);
-            return expanded instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living ? living : null;
-        } finally {
-            temporaryPickRadii = null;
-        }
+        if (TargetingMarginPickTodoAi.pick(mc, null).getType() != HitResult.Type.MISS) return null;
+        float increased = Utils.computeCheatConfig().staticTargetingMarginBypass + (float) cfg.targetingMargin;
+        HitResult expanded = TargetingMarginPickTodoAi.pick(mc, increased);
+        return expanded instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living ? living : null;
     }
     public static AimAssistConfigTodoAi config() {
         if (UntitledClient.config.aimAssist == null) UntitledClient.config.aimAssist = new AimAssistConfigTodoAi();
