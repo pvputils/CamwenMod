@@ -83,14 +83,14 @@ public final class PlayerWaypointOverlay {
                     hasOverlayContent |= ProjectileTrajectoryPreview.draw(graphics, client, project);
                 }
                 hasOverlayContent |= drawDebugMessages(graphics);
-//                if (config.isCameraAngleCrosshairIndicatorEnabled && client.player.getXRot() != 0.0f) {
-//                    hasOverlayContent = true;
-//                    drawCameraAngleIndicator(
-//                            graphics,
-//                            client.getWindow().getGuiScaledWidth() / 2,
-//                            client.getWindow().getGuiScaledHeight() / 2,
-//                            client.player.getXRot());
-//                }
+                if (config.isCameraAngleCrosshairIndicatorEnabled && client.player.getXRot() != 0.0f) {
+                    hasOverlayContent = true;
+                    drawCameraAngleIndicator(
+                            graphics,
+                            client.getWindow().getGuiScaledWidth() / 2,
+                            client.getWindow().getGuiScaledHeight() / 2,
+                            client.player.getXRot());
+                }
                 // codex end
                 if (config.playerWaypointCategory != Config.PlayerWaypointCategory.NONE) {
                     for (var player : Objects.requireNonNull(client.level).players()) {
@@ -195,19 +195,19 @@ public final class PlayerWaypointOverlay {
     }
     // codex end
 
-//    // codex start
-//    private static void drawCameraAngleIndicator(Graphics2D graphics, int x, int y, float pitch) {
-//        graphics.setColor(new Color(0x8000FF00, true));
-//        graphics.setStroke(new BasicStroke(2.0f));
-//        int size = 2;
-//        int offset = 9;
-//        int direction = pitch < 0.0f ? 1 : -1;
-//        int baseY = y + direction * offset;
-//        int tipY = y + direction * (offset + size);
-//        graphics.drawLine(x - size, baseY, x, tipY);
-//        graphics.drawLine(x, tipY, x + size, baseY);
-//    }
-//    // codex end
+    // codex start
+    private static void drawCameraAngleIndicator(Graphics2D graphics, int x, int y, float pitch) {
+        graphics.setColor(new Color(0x8000FF00, true));
+        graphics.setStroke(new BasicStroke(2.0f));
+        int size = 2;
+        int offset = 9;
+        int direction = pitch < 0.0f ? 1 : -1;
+        int baseY = y + direction * offset;
+        int tipY = y + direction * (offset + size);
+        graphics.drawLine(x - size, baseY, x, tipY);
+        graphics.drawLine(x, tipY, x + size, baseY);
+    }
+    //codex end
 
     private static BufferedImage face(NativeImage skin) {
         BufferedImage result = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);

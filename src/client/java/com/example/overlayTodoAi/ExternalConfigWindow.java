@@ -1,6 +1,7 @@
 package com.example.overlayTodoAi;
 
 import com.example.Configs.Config;
+import com.example.aimassist.AimAssistScreenTodoAi;
 import com.example.Configs.CheatConfig;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
@@ -123,6 +124,15 @@ public final class ExternalConfigWindow {
 
         JPanel grid = new JPanel(new GridLayout(0, 4, 8, 8));
         grid.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        // codex start
+        addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,
+                "opens aura and targetting settings");
+        //codex end
+        // codex start
+        addCheckBox(grid, "disable aim assist on teammates", () -> config.isAimAssistDisabledOnTeammates,
+                value -> config.isAimAssistDisabledOnTeammates = value,
+                "prevents aura and targetting from assisting toward players marked Ally or Friendly");
+        //codex end
         addCheckBox(grid, "togglesneak gui", () -> config.isToggleSneakGuiEnabled,
                 value -> config.isToggleSneakGuiEnabled = value,
                 "modified version of the classic hcf togglesneak's gui");
@@ -148,11 +158,11 @@ public final class ExternalConfigWindow {
         addCheckBox(grid, "mark targeted teammates on external overlay", () -> config.isTeammateTargetCrosshairMarkerEnabled,
                 value -> config.isTeammateTargetCrosshairMarkerEnabled = value,
                 "draws a red X over the crosshair on the external player waypoint overlay when targeting a teammate");
-//        // codex start
-//        addCheckBox(grid, "show camera angle on external overlay", () -> config.isCameraAngleCrosshairIndicatorEnabled,
-//                value -> config.isCameraAngleCrosshairIndicatorEnabled = value,
-//                "draws a green line from the crosshair toward the direction the camera is tilted");
-//        // codex end
+        // codex start
+        addCheckBox(grid, "neutral head angle indicator", () -> config.isCameraAngleCrosshairIndicatorEnabled,
+                value -> config.isCameraAngleCrosshairIndicatorEnabled = value,
+                "draws a green arrow near the crosshair toward level pitch; hidden when looking level");
+        //codex end
         // codex start
         addCheckBox(grid, "only show edge-clamped player waypoints", () -> config.isUnclampedPlayerWaypointsDisabled,
                 value -> config.isUnclampedPlayerWaypointsDisabled = value,

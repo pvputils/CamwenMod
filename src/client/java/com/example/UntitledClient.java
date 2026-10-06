@@ -2,6 +2,7 @@ package com.example;
 
 import com.example.Configs.CheatConfig;
 import com.example.Configs.Config;
+import com.example.aimassist.AimAssistControllerTodoAi;
 import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.api.ClientModInitializer;
@@ -165,6 +166,9 @@ public class UntitledClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // codex start
+        ClientTickEvents.END_CLIENT_TICK.register(AimAssistControllerTodoAi::tick);
+        //codex end
         // codex start
         ExternalConfigWindow.prepareDesktopWindowing();
         // codex end
