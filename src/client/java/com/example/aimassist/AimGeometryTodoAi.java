@@ -65,6 +65,18 @@ public final class AimGeometryTodoAi {
         }
         return best;
     }
+    // codex start
+    public static boolean approachingHitbox(Vec3 eyes, AABB box, Rotation before, Rotation after,
+                                            double range, double mouseStep) {
+        if (before == null || after == null || error(before, after) <= 1e-7 || hits(eyes, box, before, range)) return false;
+        if (hits(eyes, box, after, range)) return true;
+        Rotation nearestBefore = lookAt(eyes, nearestPoint(eyes, box, before, range, mouseStep));
+        Rotation nearestAfter = lookAt(eyes, nearestPoint(eyes, box, after, range, mouseStep));
+        double yaw = wrap(after.yaw - before.yaw), pitch = after.pitch - before.pitch;
+        double toward = yaw * wrap(nearestAfter.yaw - after.yaw) + pitch * (nearestAfter.pitch - after.pitch);
+        return toward > 1e-7 && error(after, nearestAfter) + 1e-7 < error(before, nearestBefore);
+    }
+    //codex end
     public static Rotation neutralPitch(Vec3 eyes, AABB box, Rotation current, double range, double mouseStep) { //codex (old code snippet) public static Rotation centered(Vec3 eyes, AABB box, Rotation current, double range, double mouseStep) {
         if (!hits(eyes, box, current, range) || box.contains(eyes)) return null;
         Rotation goal = constrain(new Rotation(current.yaw, 0), current, r -> hits(eyes, box, r, range)); //codex (old code snippet) Vec3 center = box.getCenter();

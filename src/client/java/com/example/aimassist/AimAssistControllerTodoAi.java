@@ -23,6 +23,10 @@ public final class AimAssistControllerTodoAi {
     private static final Map<UUID, Long> locks = new HashMap<>();
     private static ClientLevel level;
     private static Rotation lastApplied;
+    // codex start
+    private static final AimMouseMotionTodoAi MOUSE_MOTION = new AimMouseMotionTodoAi();
+    public static void recordMouseTurnTodoAi(Rotation before, Rotation after) { MOUSE_MOTION.record(before, after); }
+    //codex end
 
     private static final class State {
         LivingEntity target;
@@ -63,7 +67,7 @@ public final class AimAssistControllerTodoAi {
     }
     public static void tick(Minecraft mc) {
         if (level != mc.level) {
-            level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null;
+            level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null; MOUSE_MOTION.consume(); //codex (old code snippet) level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null;
         }
         if (mc.player == null || mc.level == null) return;
         locks.entrySet().removeIf(e -> e.getValue() <= System.nanoTime() ||
@@ -156,6 +160,9 @@ public final class AimAssistControllerTodoAi {
         return block.getType() == HitResult.Type.MISS || block.getLocation().distanceToSqr(eyes) + 1e-7 >= point.distanceToSqr(eyes);
     }
     public static void render(Minecraft mc, float partialTicks) {
+        // codex start
+        AimMouseMotionTodoAi.Motion motion = MOUSE_MOTION.consume();
+        //codex end
         if (mc.player == null || mc.level != level) return;
         Rotation actual = current(mc);
         if (lastApplied != null) {
@@ -165,12 +172,16 @@ public final class AimAssistControllerTodoAi {
                 if (state.end != null) state.end = new Rotation(state.end.yaw() + yaw, state.end.pitch() + pitch);
             }
         }
-        apply(mc, AURA, config().aura, false, partialTicks);
-        apply(mc, TARGETTING, config().targetting, true, partialTicks);
+        apply(mc, AURA, config().aura, false, partialTicks, motion); //codex (old code snippet) apply(mc, AURA, config().aura, false, partialTicks);
+        apply(mc, TARGETTING, config().targetting, true, partialTicks, motion); //codex (old code snippet) apply(mc, TARGETTING, config().targetting, true, partialTicks);
         lastApplied = current(mc);
     }
-    private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial) {
+    private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial, AimMouseMotionTodoAi.Motion motion) { //codex (old code snippet) private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial) {
         if (!active(mc, state, cfg) || state.target == null || state.end == null || !allowed(mc, state.target)) return;
+        // codex start
+        if (motion == null || !approachingHitbox(mc.player.getEyePosition(), state.target.getBoundingBox(),
+                motion.before(), motion.after(), targeting ? mc.player.entityInteractionRange() : cfg.range, mouseStep(mc))) return;
+        //codex end
         Rotation proposed = state.start.toward(state.end, Math.clamp(partial, 0, 1));
         if (targeting) {
             if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != state.target) return;

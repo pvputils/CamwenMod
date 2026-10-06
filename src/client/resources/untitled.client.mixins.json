@@ -2,6 +2,7 @@
   "required": true,
   "package": "com.example.mixins",
   "compatibilityLevel": "JAVA_21",
+  "codex": "// codex start client mixin: MouseHandlerMixinTodoAi //codex end",
   "client": [
     "AbstractClientPlayerMixinTodoAi",
     "BipedEntityRendererMixin",
@@ -12,6 +13,7 @@
     "HeldItemRendererMixin",
     "KeyboardMixin",
     "MinecraftClientMixin",
+    "MouseHandlerMixinTodoAi",
     "PlayerEntityRendererMixin",
     "SoundManagerMixin"
   ],

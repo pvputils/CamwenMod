@@ -79,6 +79,27 @@ public final class AimAssistTestTodoAi {
         scaling.horizontalMin = scaling.horizontalMax = Integer.MAX_VALUE;
         check(Double.isFinite(smooth(start, finish, scaling, null, true).yaw()), "maximum integer scaling does not overflow random bounds");
         //codex end
+        // codex start
+        AABB motionBox = new AABB(-0.5, -0.5, 3, 0.5, 0.5, 4);
+        check(approachingHitbox(eyes, motionBox, new Rotation(-20, 0), new Rotation(-15, 0), 8, 0.15), "outside mouse movement toward hitbox engages");
+        check(!approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(-20, 0), 8, 0.15), "moving away outside disables assistance");
+        check(approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(0, 0), 8, 0.15), "outside-to-inside entry engages");
+        check(!approachingHitbox(eyes, motionBox, new Rotation(0, 0), new Rotation(-15, 0), 8, 0.15), "leaving hitbox stays unassisted");
+        check(!approachingHitbox(eyes, motionBox, new Rotation(0, 0), new Rotation(2, 0), 8, 0.15), "already inside stays unassisted");
+        check(!approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(-15, 0), 8, 0.15), "stationary mouse stays unassisted");
+        check(!approachingHitbox(eyes, motionBox, new Rotation(-25, 0), new Rotation(15, 0), 8, 0.15), "crossing past hitbox and exiting does not pull back");
+        check(approachingHitbox(eyes, motionBox, new Rotation(0, -20), new Rotation(0, -15), 8, 0.15), "vertical approach engages");
+        check(!approachingHitbox(eyes, motionBox, new Rotation(0, -15), new Rotation(0, -20), 8, 0.15), "vertical retreat stays unassisted");
+        AABB behind = new AABB(0.5, -0.5, -4, 1.5, 0.5, -3);
+        check(approachingHitbox(eyes, behind, new Rotation(175, 0), new Rotation(-179, 0), 8, 0.15), "approach works across yaw wrapping");
+        check(!approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(-15, 1), 8, 0.15), "tangential movement does not engage");
+        var mouse = new AimMouseMotionTodoAi();
+        mouse.record(new Rotation(-20, 0), new Rotation(-15, 0));
+        check(mouse.consume() != null && mouse.consume() == null, "mouse motion is consumed once and cannot sustain assistance");
+        mouse.record(new Rotation(-20, 0), new Rotation(-15, 0));
+        mouse.record(new Rotation(-15, 0), new Rotation(-15, 0));
+        check(mouse.consume() == null, "stopping mouse clears pending motion");
+        //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }
 }
