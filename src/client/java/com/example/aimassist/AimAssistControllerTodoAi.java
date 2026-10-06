@@ -26,6 +26,7 @@ public final class AimAssistControllerTodoAi {
     private static Rotation lastApplied;
     // codex start
     private static final Map<UUID, AimCrosshairMotionTodoAi.Observation> CROSSHAIR_HISTORY = new HashMap<>();
+    private static final Map<UUID, AimCrosshairMotionTodoAi.Gate> CROSSHAIR_GATES = new HashMap<>();
     //codex end
 
     private static final class State {
@@ -67,7 +68,7 @@ public final class AimAssistControllerTodoAi {
     }
     public static void tick(Minecraft mc) {
         if (level != mc.level) {
-            level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null; CROSSHAIR_HISTORY.clear(); //codex (old code snippet) level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null;
+            level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null; CROSSHAIR_HISTORY.clear(); CROSSHAIR_GATES.clear(); //codex (old code snippet) level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null;
         }
         if (mc.player == null || mc.level == null) return;
         locks.entrySet().removeIf(e -> e.getValue() <= System.nanoTime() ||
@@ -163,6 +164,7 @@ public final class AimAssistControllerTodoAi {
         // codex start
         if (mc.player == null || mc.level != level || mc.screen != null) { //codex (old code snippet) if (mc.player == null || mc.level != level) return;
             CROSSHAIR_HISTORY.clear();
+            CROSSHAIR_GATES.clear();
             return;
         }
         //codex end
@@ -174,6 +176,22 @@ public final class AimAssistControllerTodoAi {
                 if (state.end != null) state.end = new Rotation(state.end.yaw() + yaw, state.end.pitch() + pitch);
             }
         }
+        // codex start
+        long now = System.nanoTime();
+        double trackingRange = Math.max(config().aura.range, mc.player.entityInteractionRange()) + 1;
+        Set<UUID> tracked = new HashSet<>();
+        for (var entity : mc.level.entitiesForRendering()) if (entity instanceof LivingEntity living && living != mc.player) {
+            AABB box = crosshairBox(living, partialTicks);
+            Vec3 eyes = mc.player.getEyePosition(partialTicks);
+            if (box.distanceToSqr(eyes) > trackingRange * trackingRange) continue;
+            UUID id = living.getUUID();
+            tracked.add(id);
+            var previous = CROSSHAIR_HISTORY.get(id);
+            CROSSHAIR_GATES.computeIfAbsent(id, ignored -> new AimCrosshairMotionTodoAi.Gate()).update(
+                    previous == null ? null : previous.proximity(), AimCrosshairMotionTodoAi.sample(eyes, box, actual), now);
+        }
+        CROSSHAIR_GATES.keySet().retainAll(tracked);
+        //codex end
         apply(mc, AURA, config().aura, false, partialTicks);
         apply(mc, TARGETTING, config().targetting, true, partialTicks);
         lastApplied = current(mc);
@@ -188,9 +206,8 @@ public final class AimAssistControllerTodoAi {
     private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial) {
         if (!active(mc, state, cfg) || state.target == null || state.end == null || !allowed(mc, state.target)) return;
         // codex start
-        var previous = CROSSHAIR_HISTORY.get(state.target.getUUID());
-        if (!AimCrosshairMotionTodoAi.allowsAssist(previous == null ? null : previous.proximity(),
-                AimCrosshairMotionTodoAi.sample(mc.player.getEyePosition(partial), crosshairBox(state.target, partial), current(mc)))) return;
+        var gate = CROSSHAIR_GATES.get(state.target.getUUID());
+        if (gate == null || !gate.allowed()) return;
         //codex end
         Rotation proposed = state.start.toward(state.end, Math.clamp(partial, 0, 1));
         if (targeting) {

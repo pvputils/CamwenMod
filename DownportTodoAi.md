@@ -21,3 +21,5 @@ Automated client-world compatibility check (creates an isolated flat test world)
 Aim assist follows crosshair proximity to the hitbox, including interpolated player and target movement. Steady or decreasing proximity allows assistance; increasing proximity, leaving the hitbox, or crossing past it blocks assistance. A still mouse does not override walking away. History records the result after assistance so the assist does not feed itself.
 
 Crosshair movement client-world regression check: `./gradlew.bat -I tests/approachMouseGameTestsTodoAi.gradle runClientGameTest`. Geometry regressions are included in `aimAssistTestsTodoAi` above.
+
+Held-attack exits remain unassisted across targeting-to-aura transitions and frames between mouse updates. Assistance resumes immediately on a turn toward the hitbox, or after 150 ms of steady crosshair position. Movement within the hitbox is tracked before the crosshair crosses its edge. The crosshair client test above covers the actual targeting, aura, and full render paths.
