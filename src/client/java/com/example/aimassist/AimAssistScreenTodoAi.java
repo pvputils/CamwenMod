@@ -37,7 +37,7 @@ public final class AimAssistScreenTodoAi extends Screen {
         } else {
             List<Field> fields = new ArrayList<>(Arrays.asList(settings.getClass().getFields()));
             boolean aura = settings == cfg.aura, targeting = settings == cfg.targetting;
-            if (targeting) fields.removeIf(f -> Set.of("range", "targetingMargin", "hurtTime", "horizontal", "vertical", "priorities").contains(f.getName()));
+            if (targeting) fields.removeIf(f -> Set.of("targetingMargin", "hurtTime", "horizontal", "vertical", "priorities").contains(f.getName())); //codex (old code snippet) if (targeting) fields.removeIf(f -> Set.of("range", "targetingMargin", "hurtTime", "horizontal", "vertical", "priorities").contains(f.getName()));
             int rows = Math.max(1, (height - 88) / 24);
             int total = fields.size() + (aura || targeting ? 2 : 0);
             int pages = Math.max(1, (total + rows - 1) / rows);
@@ -78,9 +78,6 @@ public final class AimAssistScreenTodoAi extends Screen {
         } catch (IllegalAccessException error) { throw new IllegalStateException(error); }
     }
     private static String label(String field) {
-        // codex start
-        if (field.equals("reach")) return "Reach addition";
-        //codex end
         if (field.equals("targetingMargin")) return "Targeting margin bypass addition";
         return Character.toUpperCase(field.charAt(0)) + field.substring(1);
     }

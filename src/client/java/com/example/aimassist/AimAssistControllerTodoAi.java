@@ -39,9 +39,9 @@ public final class AimAssistControllerTodoAi {
     public static LivingEntity auraEligibleTarget(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
         // codex start
         if (mc.player == null || mc.level == null || cfg.targetingMargin <= 0) return null;
-        if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.reach).getType() == HitResult.Type.ENTITY) return null;
+        if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range).getType() == HitResult.Type.ENTITY) return null;
         float increased = Utils.computeCheatConfig().staticTargetingMarginBypass + (float) cfg.targetingMargin;
-        HitResult expanded = TargetingMarginPickTodoAi.pick(mc, increased, cfg.reach);
+        HitResult expanded = TargetingMarginPickTodoAi.pick(mc, increased, cfg.range);
         //codex end
         return expanded instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living ? living : null;
     }
@@ -85,7 +85,7 @@ public final class AimAssistControllerTodoAi {
         if (!active(mc, state, cfg)) return;
         Rotation current = current(mc), goal = null;
         if (targetting) {
-            if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.reach) instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) { //codex (old code snippet) if (mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) {
+            if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range) instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) { //codex (old code snippet) if (mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) {
                 goal = targetingGoal(mc, entity, current, cfg); //codex (old code snippet) goal = targetingGoal(mc, entity, current);
                 if (goal != null) state.target = entity;
             }
@@ -212,7 +212,7 @@ public final class AimAssistControllerTodoAi {
         //codex end
         Rotation proposed = state.start.toward(state.end, Math.clamp(partial, 0, 1));
         if (targeting) {
-            if (!(TargetingMarginPickTodoAi.pick(mc, 0f, cfg.reach) instanceof EntityHitResult hit) || hit.getEntity() != state.target) return; //codex (old code snippet) if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != state.target) return;
+            if (!(TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range) instanceof EntityHitResult hit) || hit.getEntity() != state.target) return; //codex (old code snippet) if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != state.target) return;
             Rotation goal = targetingGoal(mc, state.target, current(mc), cfg); //codex (old code snippet) Rotation goal = targetingGoal(mc, state.target, current(mc));
             if (goal == null) return;
             // codex start
@@ -231,10 +231,10 @@ public final class AimAssistControllerTodoAi {
     }
     // codex start
     private static double entityRange(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
-        return AimAssistReachTodoAi.withReach(mc.player, cfg.reach, mc.player::entityInteractionRange);
+        return AimAssistReachTodoAi.range(cfg.range);
     }
     private static double assistRange(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
-        return cfg.range + AimAssistReachTodoAi.addition(cfg.reach);
+        return AimAssistReachTodoAi.range(cfg.range);
     }
     //codex end
     // codex start

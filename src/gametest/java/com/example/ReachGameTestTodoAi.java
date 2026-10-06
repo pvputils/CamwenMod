@@ -29,19 +29,19 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
                 var blockModifiers = Set.copyOf(block.getModifiers());
                 var entityModifiers = Set.copyOf(entity.getModifiers());
                 double blockRange = player.blockInteractionRange(), entityRange = player.entityInteractionRange();
-                AimAssistReachTodoAi.withReach(player, 2, () -> {
-                    check(Math.abs(player.blockInteractionRange() - blockRange - 2) < 1e-9, "temporary block reach addition");
-                    check(Math.abs(player.entityInteractionRange() - entityRange - 2) < 1e-9, "temporary player reach addition");
+                AimAssistReachTodoAi.withRange(player, Math.max(blockRange, entityRange) + 2, () -> {
+                    check(Math.abs(player.blockInteractionRange() - Math.max(blockRange, entityRange) - 2) < 1e-9, "temporary block reach addition");
+                    check(Math.abs(player.entityInteractionRange() - Math.max(blockRange, entityRange) - 2) < 1e-9, "temporary player reach addition");
                     try {
-                        AimAssistReachTodoAi.withReach(player, 1, () -> { throw new IllegalStateException("scope regression"); });
+                        AimAssistReachTodoAi.withRange(player, Math.max(blockRange, entityRange) + 1, () -> { throw new IllegalStateException("scope regression"); });
                         throw new AssertionError("expected nested failure");
                     } catch (IllegalStateException expected) {}
-                    check(Math.abs(player.entityInteractionRange() - entityRange - 2) < 1e-9, "nested failed probe restores outer scope");
+                    check(Math.abs(player.entityInteractionRange() - Math.max(blockRange, entityRange) - 2) < 1e-9, "nested failed probe restores outer scope");
                     return null;
                 });
                 check(block.getModifiers().equals(blockModifiers) && entity.getModifiers().equals(entityModifiers), "exact modifiers restored");
                 try {
-                    AimAssistReachTodoAi.withReach(player, 3, () -> { throw new IllegalStateException("failed probe"); });
+                    AimAssistReachTodoAi.withRange(player, Math.max(blockRange, entityRange) + 3, () -> { throw new IllegalStateException("failed probe"); });
                     throw new AssertionError("expected failed probe");
                 } catch (IllegalStateException expected) {}
                 check(block.getModifiers().equals(blockModifiers) && entity.getModifiers().equals(entityModifiers), "failed probe restores exact modifiers");
@@ -59,11 +59,11 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
                 player.setYRot(0);
                 player.setXRot(3);
                 check(!(TargetingMarginPickTodoAi.pick(mc, 0f) instanceof EntityHitResult), "vanilla reach misses distant target");
-                check(TargetingMarginPickTodoAi.pick(mc, 0f, 2) instanceof EntityHitResult hit && hit.getEntity() == target, "reach alone hits unexpanded target");
+                check(TargetingMarginPickTodoAi.pick(mc, 0f, 5) instanceof EntityHitResult hit && hit.getEntity() == target, "reach alone hits unexpanded target");
                 var cfg = AimAssistControllerTodoAi.config();
                 cfg.aura.enabled = false;
                 cfg.targetting.enabled = true;
-                cfg.targetting.reach = 2;
+                cfg.targetting.range = 5;
                 cfg.targetting.requires.attackWindow = 200;
                 cfg.targetting.requires.notBreaking = false;
                 AimAssistControllerTodoAi.tick(mc);
@@ -73,18 +73,18 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
                 check(player.getXRot() < 3 && player.getYRot() == 0, "extended reach actually renders neutral-pitch assistance");
                 cfg.targetting.enabled = false;
                 cfg.aura.enabled = true;
-                cfg.aura.reach = 2;
+                cfg.aura.range = 5;
                 cfg.aura.targetingMargin = 1;
                 cfg.aura.requires.attackWindow = 200;
                 cfg.aura.requires.notBreaking = false;
                 target.setBoundingBox(new AABB(eyes.x + 0.6, eyes.y - 0.5, eyes.z + 4.2,
                         eyes.x + 1.4, eyes.y + 0.5, eyes.z + 4.8));
                 player.setXRot(0);
-                check(!(TargetingMarginPickTodoAi.pick(mc, 0f, 2) instanceof EntityHitResult), "reach alone misses off-axis target");
+                check(!(TargetingMarginPickTodoAi.pick(mc, 0f, 5) instanceof EntityHitResult), "reach alone misses off-axis target");
                 check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == target, "reach plus margin selects aura target");
-                cfg.aura.reach = 0;
+                cfg.aura.range = 3;
                 check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == null, "margin alone cannot bypass insufficient reach");
-                cfg.aura.reach = 2;
+                cfg.aura.range = 5;
                 AimAssistControllerTodoAi.attackAttempt();
                 AimAssistControllerTodoAi.tick(mc);
                 // Initialize stationary history after repositioning the target.

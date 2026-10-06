@@ -136,16 +136,16 @@ public final class AimAssistTestTodoAi {
         //codex end
         // codex start
         var reachConfig = new AimAssistConfigTodoAi();
-        check(reachConfig.aura.reach == 0 && reachConfig.targetting.reach == 0, "reach addition defaults to zero");
-        AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("reach"), "2.5");
-        check(reachConfig.aura.reach == 2.5 && reachConfig.targetting.reach == 0, "independent per-module reach editor values");
+        check(reachConfig.aura.range == 4.2 && reachConfig.targetting.range == 4.2, "existing range defaults preserved");
+        AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("range"), "2.5");
+        check(reachConfig.aura.range == 2.5 && reachConfig.targetting.range == 4.2, "independent per-module reach editor values");
         for (String invalid : new String[]{"-1", "NaN", "Infinity"}) {
             try {
-                AimAssistScreenTodoAi.apply(reachConfig.targetting, reachConfig.targetting.getClass().getField("reach"), invalid);
+                AimAssistScreenTodoAi.apply(reachConfig.targetting, reachConfig.targetting.getClass().getField("range"), invalid);
                 throw new AssertionError("invalid reach accepted: " + invalid);
             } catch (IllegalArgumentException expected) {}
         }
-        check(AimAssistReachTodoAi.addition(Double.NaN) == 0 && AimAssistReachTodoAi.addition(-1) == 0, "invalid persisted reach cannot contaminate attributes");
+        check(AimAssistReachTodoAi.range(Double.NaN) == 0 && AimAssistReachTodoAi.range(-1) == 0, "invalid persisted reach cannot contaminate attributes");
         //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }
