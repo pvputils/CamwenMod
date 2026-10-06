@@ -82,6 +82,7 @@ public final class AimAssistScreenTodoAi extends Screen {
     }
     private static String label(String field) {
         // codex start
+        if (field.equals("maxCorrectionFov")) return "Maximum correction FOV (degrees)";
         if (field.equals("centerlineWidth")) return "Centerline width (%)";
         //codex end
         if (field.equals("targetingMargin")) return "Targeting margin bypass addition";
@@ -144,6 +145,9 @@ public final class AimAssistScreenTodoAi extends Screen {
             switch (name) {
                 case "range" -> { min = 1; max = 8; }
                 case "targetingMargin" -> max = 8;
+                // codex start
+                case "maxCorrectionFov" -> max = 180;
+                //codex end
                 case "hurtTime" -> max = 10;
                 case "attackWindow" -> max = 200;
                 case "maximumTime" -> max = 120;

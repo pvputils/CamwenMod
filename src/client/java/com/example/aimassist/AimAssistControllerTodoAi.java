@@ -109,6 +109,13 @@ public final class AimAssistControllerTodoAi {
                 if (valid(mc, entity, desired, assistRange(mc, cfg))) { state.target = entity; goal = desired; break; } //codex (old code snippet) if (valid(mc, entity, desired, cfg.range)) { state.target = entity; goal = desired; break; }
             }
         }
+        // codex start
+        if (goal != null && !AimCorrectionFovTodoAi.allows(current, goal, cfg.maxCorrectionFov)) {
+            state.target = null;
+            state.goal = null;
+            return;
+        }
+        //codex end
         if (goal != null) {
             state.start = current;
             state.end = smooth(current, goal, cfg.interpolation, state.goal, !targetting); //codex (old code snippet) state.end = smooth(current, goal, cfg.interpolation, state.goal);
@@ -231,7 +238,7 @@ public final class AimAssistControllerTodoAi {
             if (!direct && (pick instanceof EntityHitResult || auraFallback(mc) != state.target)) return;
             //codex end
             Rotation goal = targetingGoal(mc, state.target, current(mc), cfg); //codex (old code snippet) Rotation goal = targetingGoal(mc, state.target, current(mc));
-            if (goal == null) return;
+            if (goal == null || !AimCorrectionFovTodoAi.allows(current(mc), goal, cfg.maxCorrectionFov)) return; //codex (old code snippet) if (goal == null) return;
             // codex start
             proposed = AimCenterlineTodoAi.clamp(current(mc), proposed, goal);
             //codex end
@@ -244,7 +251,14 @@ public final class AimAssistControllerTodoAi {
             if (auraEligibleTarget(mc, cfg) != state.target) return;
             proposed = new Rotation(cfg.horizontal ? proposed.yaw() : mc.player.getYRot(), cfg.vertical ? proposed.pitch() : mc.player.getXRot());
         }
+        // codex start
+        if (state.goal != null && !AimCorrectionFovTodoAi.allows(current(mc), state.goal, cfg.maxCorrectionFov) ||
+                !AimCorrectionFovTodoAi.allows(current(mc), proposed, cfg.maxCorrectionFov)) return;
+        //codex end
         Rotation normalized = normalize(mc, proposed);
+        // codex start
+        if (!AimCorrectionFovTodoAi.allows(current(mc), normalized, cfg.maxCorrectionFov)) return;
+        //codex end
         mc.player.setYRot((float) normalized.yaw());
         mc.player.setXRot((float) normalized.pitch());
     }

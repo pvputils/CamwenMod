@@ -172,6 +172,19 @@ public final class AimAssistTestTodoAi {
             throw new AssertionError("centerline width must reject greater than 100");
         } catch (IllegalArgumentException expected) {}
         //codex end
+        // codex start
+        check(AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(5, 0), 5), "FOV boundary is allowed");
+        check(!AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(5.1, 0), 5), "corrections above FOV are rejected");
+        check(AimCorrectionFovTodoAi.allows(new Rotation(179, 0), new Rotation(-179, 0), 3), "FOV wraps yaw correctly");
+        check(!AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(0, 31), 30), "vertical twitch is rejected");
+        check(!AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(25, 25), 30), "combined angular correction is checked");
+        check(AimCorrectionFovTodoAi.allows(new Rotation(0, 89), new Rotation(90, 89), 3), "FOV uses actual view angle near vertical");
+        check(!AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(Double.NaN, 0), 30), "invalid rotations fail closed");
+        check(!AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(1, 0), Double.NaN), "invalid FOV fails closed");
+        check(AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(180, 0), 180), "180 degrees permits all finite turns");
+        AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("maxCorrectionFov"), "180");
+        check(reachConfig.aura.maxCorrectionFov == 180 && reachConfig.targetting.maxCorrectionFov == 30, "independent module FOV settings");
+        //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }
 }

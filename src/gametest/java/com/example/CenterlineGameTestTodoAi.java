@@ -97,6 +97,31 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 check(mc.player.getYRot() < 0 && mc.player.getXRot() <= -3,
                         "aura fallback can center while looking up without downward correction");
                 //codex end
+                // codex start
+                cfg.aura.maxCorrectionFov = 1;
+                settled(mc, target, 0, 3, 40);
+                check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == target,
+                        "FOV safeguard does not replace reach and margin eligibility");
+                check(mc.player.getYRot() == 0 && mc.player.getXRot() == 3,
+                        "large aura goal is rejected rather than clamped");
+                cfg.aura.maxCorrectionFov = 180;
+                cfg.targetting.maxCorrectionFov = 1;
+                settled(mc, target, 0, 3, 40);
+                check(mc.player.getYRot() == 0 && mc.player.getXRot() == 3,
+                        "targeting fallback cannot bypass its correction safeguard");
+                cfg.targetting.maxCorrectionFov = 180;
+                settled(mc, target, 0, 3, 40);
+                check(mc.player.getYRot() < 0 && mc.player.getXRot() < 3,
+                        "allowed FOV still permits aura-supported targeting");
+                cfg.targetting.maxCorrectionFov = 0;
+                cfg.aura.maxCorrectionFov = 30;
+                cfg.aura.horizontal = true;
+                cfg.aura.interpolation.horizontalMin = cfg.aura.interpolation.horizontalMax = 2000;
+                cfg.aura.interpolation.directionMin = cfg.aura.interpolation.directionMax = 0;
+                settled(mc, target, 0, 3, 40);
+                check(mc.player.getYRot() == 0 && mc.player.getXRot() == 3,
+                        "render safeguard rejects oversized aura interpolation even with eligible goal");
+                //codex end
             });
             System.out.println("PASS: upward-only head pitch, configurable center band, interpolation and hit preservation");
         }

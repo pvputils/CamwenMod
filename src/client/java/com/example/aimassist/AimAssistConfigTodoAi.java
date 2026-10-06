@@ -17,6 +17,7 @@ public final class AimAssistConfigTodoAi {
         public double range = 4.2;
         // codex start
         public double centerlineWidth = 40;
+        public double maxCorrectionFov = 30;
         //codex end
         public double targetingMargin = 0.1;
         public int hurtTime = 10;
