@@ -23,6 +23,27 @@ public final class AimCrosshairMotionTodoAi {
         Rotation edge = lookAt(eyes, nearestPoint(eyes, box, crosshair, rayLength, 0));
         return new Proximity(wrap(edge.yaw() - crosshair.yaw()), edge.pitch() - crosshair.pitch(), false); //codex (old code snippet) return new Proximity(wrap(edge.yaw() - crosshair.yaw()), edge.pitch() - crosshair.pitch());
     }
+    // codex start
+    /** Holds an outward gesture across render frames between input updates. */
+    public static final class Gate {
+        private static final long STILL_NANOS = 150_000_000L;
+        private boolean exiting, allowed = true;
+        private long lastOutward;
+        public boolean update(Proximity previous, Proximity current, long now) {
+            if (!allowsAssist(previous, current)) {
+                exiting = true;
+                lastOutward = now;
+                return allowed = false;
+            }
+            boolean steady = previous != null && previous.inside() == current.inside() &&
+                    Math.hypot(wrap(current.yaw() - previous.yaw()), current.pitch() - previous.pitch()) <= 1e-7;
+            if (exiting && steady && now - lastOutward < STILL_NANOS) return allowed = false;
+            exiting = false;
+            return allowed = true;
+        }
+        public boolean allowed() { return allowed; }
+    }
+    //codex end
     public static boolean allowsAssist(Proximity previous, Proximity current) {
         if (previous == null) return true;
         // codex start

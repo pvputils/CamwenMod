@@ -118,6 +118,22 @@ public final class AimAssistTestTodoAi {
         //codex end
         check(insideProximity.distance() == 0, "crosshair inside hitbox has zero distance");
         //codex end
+        // codex start
+        var gesture = new AimCrosshairMotionTodoAi.Gate();
+        long time = 1_000_000_000L;
+        check(gesture.update(insideProximity, insideProximity, time), "initial stationary held-click assist remains available");
+        var movingInside = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(1, 0));
+        check(!gesture.update(insideProximity, movingInside, time += 8_000_000), "outward gesture begins before aura is eligible");
+        for (int frame = 0; frame < 8; frame++)
+            check(!gesture.update(movingInside, movingInside, time += 8_000_000), "render frames between mouse updates do not re-enable assist");
+        check(!gesture.update(movingInside, outsideProximity, time += 8_000_000), "targeting-to-aura transition preserves outward block");
+        check(!gesture.update(outsideProximity, outsideProximity, time += 8_000_000), "first still outside frame does not pull back");
+        check(!gesture.update(outsideProximity, fartherProximity, time += 8_000_000), "continued outward input refreshes suppression");
+        check(!gesture.update(fartherProximity, fartherProximity, time + 149_000_000), "short mouse polling gap remains blocked");
+        check(gesture.update(fartherProximity, fartherProximity, time + 150_000_000), "settled stationary crosshair resumes assistance");
+        check(!gesture.update(outsideProximity, fartherProximity, time += 200_000_000), "next outward gesture blocks again");
+        check(gesture.update(fartherProximity, outsideProximity, time + 1_000_000), "deliberate reversal toward target assists immediately");
+        //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }
 }
