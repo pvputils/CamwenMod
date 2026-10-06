@@ -85,10 +85,15 @@ public final class AimAssistControllerTodoAi {
         if (!active(mc, state, cfg)) return;
         Rotation current = current(mc), goal = null;
         if (targetting) {
-            if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range) instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) { //codex (old code snippet) if (mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) {
-                goal = targetingGoal(mc, entity, current, cfg); //codex (old code snippet) goal = targetingGoal(mc, entity, current);
+            // codex start
+            HitResult pick = TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range);
+            LivingEntity entity = pick instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living
+                    ? living : auraFallback(mc);
+            if (entity != null && allowed(mc, entity)) {
+                goal = targetingGoal(mc, entity, current, cfg);
                 if (goal != null) state.target = entity;
             }
+            //codex end
         } else {
             LivingEntity eligible = auraEligibleTarget(mc, cfg);
             if (eligible == null) return;
@@ -104,6 +109,13 @@ public final class AimAssistControllerTodoAi {
                 if (valid(mc, entity, desired, assistRange(mc, cfg))) { state.target = entity; goal = desired; break; } //codex (old code snippet) if (valid(mc, entity, desired, cfg.range)) { state.target = entity; goal = desired; break; }
             }
         }
+        // codex start
+        if (goal != null && !AimCorrectionFovTodoAi.allows(current, goal, cfg.maxCorrectionFov)) {
+            state.target = null;
+            state.goal = null;
+            return;
+        }
+        //codex end
         if (goal != null) {
             state.start = current;
             state.end = smooth(current, goal, cfg.interpolation, state.goal, !targetting); //codex (old code snippet) state.end = smooth(current, goal, cfg.interpolation, state.goal);
@@ -150,8 +162,16 @@ public final class AimAssistControllerTodoAi {
     }
     private static Rotation targetingGoal(Minecraft mc, LivingEntity e, Rotation current, AimAssistConfigTodoAi.Assist cfg) { //codex (old code snippet) private static Rotation targetingGoal(Minecraft mc, LivingEntity e, Rotation current) {
         double range = entityRange(mc, cfg); //codex (old code snippet) double range = mc.player.entityInteractionRange();
-        if (!valid(mc, e, current, range)) return null;
-        Rotation goal = neutralPitch(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc)); //codex (old code snippet) Rotation goal = centered(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc));
+        // codex start
+        Rotation seed = current;
+        if (!valid(mc, e, current, range)) {
+            if (auraFallback(mc) != e) return null;
+            seed = lookAt(mc.player.getEyePosition(), nearestPoint(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc)));
+            seed = new Rotation(seed.yaw(), Math.min(seed.pitch(), current.pitch()));
+            if (!valid(mc, e, seed, range)) return null;
+        }
+        //codex end
+        Rotation goal = AimCenterlineTodoAi.goal(mc.player.getEyePosition(), e.getBoundingBox(), seed, range, mouseStep(mc), cfg.centerlineWidth); //codex (old code snippet) Rotation goal = neutralPitch(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc));
         return goal != null && valid(mc, e, normalize(mc, goal), range) ? goal : null;
     }
     private static boolean valid(Minecraft mc, LivingEntity e, Rotation rotation, double range) {
@@ -212,23 +232,42 @@ public final class AimAssistControllerTodoAi {
         //codex end
         Rotation proposed = state.start.toward(state.end, Math.clamp(partial, 0, 1));
         if (targeting) {
-            if (!(TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range) instanceof EntityHitResult hit) || hit.getEntity() != state.target) return; //codex (old code snippet) if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != state.target) return;
-            Rotation goal = targetingGoal(mc, state.target, current(mc), cfg); //codex (old code snippet) Rotation goal = targetingGoal(mc, state.target, current(mc));
-            if (goal == null) return;
             // codex start
-            double pitch = mc.player.getXRot();
-            proposed = new Rotation(goal.yaw(), Math.clamp(proposed.pitch(), Math.min(pitch, goal.pitch()), Math.max(pitch, goal.pitch())));
+            HitResult pick = TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range);
+            boolean direct = pick instanceof EntityHitResult hit && hit.getEntity() == state.target;
+            if (!direct && (pick instanceof EntityHitResult || auraFallback(mc) != state.target)) return;
             //codex end
-            proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), entityRange(mc, cfg))); //codex (old code snippet) proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), mc.player.entityInteractionRange()));
+            Rotation goal = targetingGoal(mc, state.target, current(mc), cfg); //codex (old code snippet) Rotation goal = targetingGoal(mc, state.target, current(mc));
+            if (goal == null || !AimCorrectionFovTodoAi.allows(current(mc), goal, cfg.maxCorrectionFov)) return; //codex (old code snippet) if (goal == null) return;
+            // codex start
+            proposed = AimCenterlineTodoAi.clamp(current(mc), proposed, goal);
+            //codex end
+            // codex start
+            if (direct) proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), entityRange(mc, cfg)));
+            // On aura-supported misses, intermediate rotations can remain outside until they approach the goal.
+            //codex end
             if (proposed == null) return;
         } else {
             if (auraEligibleTarget(mc, cfg) != state.target) return;
             proposed = new Rotation(cfg.horizontal ? proposed.yaw() : mc.player.getYRot(), cfg.vertical ? proposed.pitch() : mc.player.getXRot());
         }
+        // codex start
+        if (state.goal != null && !AimCorrectionFovTodoAi.allows(current(mc), state.goal, cfg.maxCorrectionFov) ||
+                !AimCorrectionFovTodoAi.allows(current(mc), proposed, cfg.maxCorrectionFov)) return;
+        //codex end
         Rotation normalized = normalize(mc, proposed);
+        // codex start
+        if (!AimCorrectionFovTodoAi.allows(current(mc), normalized, cfg.maxCorrectionFov)) return;
+        //codex end
         mc.player.setYRot((float) normalized.yaw());
         mc.player.setXRot((float) normalized.pitch());
     }
+    // codex start
+    private static LivingEntity auraFallback(Minecraft mc) {
+        return active(mc, AURA, config().aura) && AURA.target != null && AURA.end != null &&
+                auraEligibleTarget(mc, config().aura) == AURA.target ? AURA.target : null;
+    }
+    //codex end
     // codex start
     private static double entityRange(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
         return AimAssistReachTodoAi.range(cfg.range);
