@@ -3,8 +3,7 @@ package com.example;
 import com.example.Configs.CheatConfig;
 import com.example.Configs.Config;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.minecraft.resources.Identifier;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.FileNotFoundException;
@@ -34,7 +33,7 @@ import static com.example.UntitledClient.*;
 
 public class Utils {
     public static boolean getIsKeyPressed(int glfwKeybind) {
-        return glfwKeybind != -1 && GLFW.glfwGetKey(MINECRAFT_CLIENT_INSTANCE.getWindow().handle(), glfwKeybind) == GLFW.GLFW_PRESS;
+        return glfwKeybind != -1 && GLFW.glfwGetKey(MINECRAFT_CLIENT_INSTANCE.getWindow().getWindow(), glfwKeybind) == GLFW.GLFW_PRESS; //codex (old code snippet) return glfwKeybind != -1 && GLFW.glfwGetKey(MINECRAFT_CLIENT_INSTANCE.getWindow().handle(), glfwKeybind) == GLFW.GLFW_PRESS;
     }
 
     public static boolean getIsKeyBindingPressed(KeyMapping keyBinding) {
@@ -42,7 +41,7 @@ public class Utils {
         if (key.getType() == InputConstants.Type.KEYSYM) {
             return getIsKeyPressed(InputConstants.getKey(keyBinding.saveString()).getValue());
         } else if (key.getType() == InputConstants.Type.MOUSE) {
-            return GLFW.glfwGetMouseButton(MINECRAFT_CLIENT_INSTANCE.getWindow().handle(), key.getValue()) == GLFW.GLFW_PRESS;
+            return GLFW.glfwGetMouseButton(MINECRAFT_CLIENT_INSTANCE.getWindow().getWindow(), key.getValue()) == GLFW.GLFW_PRESS; //codex (old code snippet) return GLFW.glfwGetMouseButton(MINECRAFT_CLIENT_INSTANCE.getWindow().handle(), key.getValue()) == GLFW.GLFW_PRESS;
         } else {
             Objects.requireNonNull(null);
             return false;
@@ -52,11 +51,7 @@ public class Utils {
     // TODO -> enum
     public static void onXrayChange() {
         isPlayerXrayEnabled = !isPlayerXrayEnabled;
-        MINECRAFT_CLIENT_INSTANCE.levelRenderer.invalidateCompiledGeometry(
-                Objects.requireNonNull(MINECRAFT_CLIENT_INSTANCE.level),
-                MINECRAFT_CLIENT_INSTANCE.options,
-                MINECRAFT_CLIENT_INSTANCE.gameRenderer.mainCamera(),
-                MINECRAFT_CLIENT_INSTANCE.getBlockColors());
+        MINECRAFT_CLIENT_INSTANCE.levelRenderer.allChanged(); //codex (old code snippet) MINECRAFT_CLIENT_INSTANCE.levelRenderer.invalidateCompiledGeometry(Objects.requireNonNull(MINECRAFT_CLIENT_INSTANCE.level), MINECRAFT_CLIENT_INSTANCE.options, MINECRAFT_CLIENT_INSTANCE.gameRenderer.mainCamera(), MINECRAFT_CLIENT_INSTANCE.getBlockColors());
     }
 
     public static void onPvpDamage() {
@@ -76,7 +71,7 @@ public class Utils {
         } catch (IOException e) {
             Minecraft minecraftClient = Minecraft.getInstance();
             if (minecraftClient.player instanceof LocalPlayer player)
-                minecraftClient.execute(() -> player.sendSystemMessage(Component.literal("serialization failed")));
+                minecraftClient.execute(() -> player.displayClientMessage(Component.literal("serialization failed"), false)); //codex (old code snippet) minecraftClient.execute(() -> player.sendSystemMessage(Component.literal("serialization failed")));
         }
     }
 
@@ -87,7 +82,7 @@ public class Utils {
             if (!(e instanceof FileNotFoundException)) {
                 Minecraft minecraftClient = Minecraft.getInstance();
                 if (minecraftClient.player instanceof LocalPlayer player)
-                    minecraftClient.execute(() -> player.sendSystemMessage(Component.literal("deserialization failed: " + e.getMessage())));
+                    minecraftClient.execute(() -> player.displayClientMessage(Component.literal("deserialization failed: " + e.getMessage()), false)); //codex (old code snippet) minecraftClient.execute(() -> player.sendSystemMessage(Component.literal("deserialization failed: " + e.getMessage())));
                 // TODO -> console this
             }
             return null;
@@ -151,7 +146,7 @@ public class Utils {
     }
 
     public static CheatConfig computeCheatConfig() {
-        return cheatConfigs.computeIfAbsent(computeServerName(), _ -> new CheatConfig());
+        return cheatConfigs.computeIfAbsent(computeServerName(), unusedTodoAi1 -> new CheatConfig()); //codex (old code snippet) return cheatConfigs.computeIfAbsent(computeServerName(), _ -> new CheatConfig());
     }
 
     public static ItemStack buildReplacementTeamLeatherItemStack(
@@ -160,7 +155,7 @@ public class Utils {
 //        replacementStack.applyComponentsFrom(original.getComponents());
         replacementStack.set(
                 DataComponents.DYED_COLOR,
-                new DyedItemColor(color)
+                new DyedItemColor(color, true) //codex (old code snippet) new DyedItemColor(color)
         );
         replacementStack.set(
                 DataComponents.ENCHANTMENTS,
@@ -169,10 +164,10 @@ public class Utils {
         return replacementStack;
     }
 
-    private static final KeyMapping.Category PVP_UTILS = Objects.requireNonNull(KeyMapping.Category.register(Identifier.fromNamespaceAndPath("pvputils", "pvp_utils")));
+    private static final String PVP_UTILS = "key.categories.pvputils"; //codex (old code snippet) private static final KeyMapping.Category PVP_UTILS = Objects.requireNonNull(KeyMapping.Category.register(Identifier.fromNamespaceAndPath("pvputils", "pvp_utils")));
 
     public static KeyMapping getAbstractPvpUtilsKeybind(String name) {
-        return KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        return KeyBindingHelper.registerKeyBinding(new KeyMapping( //codex (old code snippet) return KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 name,
 //                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN,

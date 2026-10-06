@@ -1,0 +1,17 @@
+allprojects {
+    afterEvaluate {
+        fabricApi {
+            configureTests {
+                createSourceSet = true
+                modId = 'camwen-downport-tests'
+                enableGameTests = false
+            }
+        }
+        tasks.named('processGametestResources') {
+            rename('DownportGameTestTodoAi.json', 'fabric.mod.json')
+        }
+        tasks.named('runClientGameTest') {
+            timeout = java.time.Duration.ofMinutes(5)
+        }
+    }
+}

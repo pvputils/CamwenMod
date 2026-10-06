@@ -2,6 +2,8 @@
   "required": true,
   "package": "com.example.mixins",
   "compatibilityLevel": "JAVA_21",
+  "refmap": "client-untitled.refmap.json",
+  "codex": "// codex start refmap: client-untitled.refmap.json //codex end",
   "client": [
     "AbstractClientPlayerMixinTodoAi",
     "BipedEntityRendererMixin",

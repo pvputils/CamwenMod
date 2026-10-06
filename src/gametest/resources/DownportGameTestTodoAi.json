@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "camwen-downport-tests",
+  "version": "1.0",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "com.example.DownportClientGameTestTodoAi"
+    ]
+  }
+}

@@ -14,7 +14,7 @@ public final class TargetingMarginPickTodoAi {
         float previous = cheats.staticTargetingMarginBypass;
         try {
             if (bypass != null) cheats.staticTargetingMarginBypass = bypass;
-            return ClientPlayerEntityInvoker.aimAssistPickTodoAi(mc.getCameraEntity(),
+            return ((ClientPlayerEntityInvoker) mc.gameRenderer).invokePick(mc.getCameraEntity(), //codex (old code snippet) return ClientPlayerEntityInvoker.aimAssistPickTodoAi(mc.getCameraEntity(),
                 mc.player.blockInteractionRange(), mc.player.entityInteractionRange(),
                 mc.getDeltaTracker().getGameTimeDeltaTicks());
         } finally {

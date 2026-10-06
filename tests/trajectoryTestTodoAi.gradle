@@ -7,7 +7,7 @@ allprojects {
             doFirst {
                 def outputDir = file('build/trajectory-tests')
                 outputDir.mkdirs()
-                ant.javac(srcdir: 'tests', destdir: outputDir, includeantruntime: false, release: '25', classpath: classpath.asPath)
+                ant.javac(srcdir: 'tests', destdir: outputDir, includeantruntime: false, release: '21', classpath: classpath.asPath) //codex (old code snippet) ant.javac(srcdir: 'tests', destdir: outputDir, includeantruntime: false, release: '25', classpath: classpath.asPath)
                 classpath += files(outputDir)
             }
         }

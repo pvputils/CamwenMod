@@ -3,7 +3,7 @@ package com.example.aimassist;
 import com.example.UntitledClient;
 import com.example.overlayTodoAi.ExternalConfigWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,7 +23,7 @@ public final class AimAssistScreenTodoAi extends Screen {
     public static void open() {
         Minecraft mc = Minecraft.getInstance();
         ExternalConfigWindow.close();
-        mc.setScreenAndShow(new AimAssistScreenTodoAi(mc.gui.screen()));
+        mc.setScreen(new AimAssistScreenTodoAi(mc.screen)); //codex (old code snippet) mc.setScreenAndShow(new AimAssistScreenTodoAi(mc.gui.screen()));
     }
     private void button(String text, int y, Runnable action) {
         addRenderableWidget(Button.builder(Component.literal(text), b -> action.run())
@@ -66,7 +66,7 @@ public final class AimAssistScreenTodoAi extends Screen {
         button("Done", height - 28, this::onClose);
     }
     private void openGroup(String name, Object group) {
-        Minecraft.getInstance().setScreenAndShow(new AimAssistScreenTodoAi(this, name, group));
+        Minecraft.getInstance().setScreen(new AimAssistScreenTodoAi(this, name, group)); //codex (old code snippet) Minecraft.getInstance().setScreenAndShow(new AimAssistScreenTodoAi(this, name, group));
     }
     private void edit(Field field, boolean group) {
         try {
@@ -74,7 +74,7 @@ public final class AimAssistScreenTodoAi extends Screen {
             if (field.getType() == boolean.class) {
                 field.setBoolean(settings, !field.getBoolean(settings)); save(); rebuildWidgets(); return;
             }
-            Minecraft.getInstance().setScreenAndShow(new ValueScreenTodoAi(this, settings, field));
+            Minecraft.getInstance().setScreen(new ValueScreenTodoAi(this, settings, field)); //codex (old code snippet) Minecraft.getInstance().setScreenAndShow(new ValueScreenTodoAi(this, settings, field));
         } catch (IllegalAccessException error) { throw new IllegalStateException(error); }
     }
     private static String label(String field) {
@@ -83,12 +83,12 @@ public final class AimAssistScreenTodoAi extends Screen {
     }
     static void save() { UntitledClient.config.saveConfig(); }
     @Override public void onClose() {
-        save(); Minecraft.getInstance().setScreenAndShow(parent);
+        save(); Minecraft.getInstance().setScreen(parent); //codex (old code snippet) save(); Minecraft.getInstance().setScreenAndShow(parent);
         if (parent == null) ExternalConfigWindow.show();
     }
-    @Override public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(graphics, mouseX, mouseY, partial);
-        graphics.centeredText(font, title, width / 2, 10, -1);
+    @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partial) { //codex (old code snippet) @Override public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partial) {
+        super.render(graphics, mouseX, mouseY, partial); //codex (old code snippet) super.extractRenderState(graphics, mouseX, mouseY, partial);
+        graphics.drawCenteredString(font, title, width / 2, 10, -1); //codex (old code snippet) graphics.centeredText(font, title, width / 2, 10, -1);
     }
     private static final class ValueScreenTodoAi extends Screen {
         private final Screen parent;
@@ -115,11 +115,11 @@ public final class AimAssistScreenTodoAi extends Screen {
             addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> onClose())
                 .bounds((width - 300) / 2, height - 28, 300, 20).build());
         }
-        @Override public void onClose() { Minecraft.getInstance().setScreenAndShow(parent); }
-        @Override public void extractRenderState(GuiGraphicsExtractor graphics, int x, int y, float partial) {
-            super.extractRenderState(graphics, x, y, partial);
-            graphics.centeredText(font, title, width / 2, 10, -1);
-            graphics.centeredText(font, Component.literal(error), width / 2, height / 2 + 32, 0xFFFF5555);
+        @Override public void onClose() { Minecraft.getInstance().setScreen(parent); } //codex (old code snippet) @Override public void onClose() { Minecraft.getInstance().setScreenAndShow(parent); }
+        @Override public void render(GuiGraphics graphics, int x, int y, float partial) { //codex (old code snippet) @Override public void extractRenderState(GuiGraphicsExtractor graphics, int x, int y, float partial) {
+            super.render(graphics, x, y, partial); //codex (old code snippet) super.extractRenderState(graphics, x, y, partial);
+            graphics.drawCenteredString(font, title, width / 2, 10, -1); //codex (old code snippet) graphics.centeredText(font, title, width / 2, 10, -1);
+            graphics.drawCenteredString(font, Component.literal(error), width / 2, height / 2 + 32, 0xFFFF5555); //codex (old code snippet) graphics.centeredText(font, Component.literal(error), width / 2, height / 2 + 32, 0xFFFF5555);
         }
     }
     public static void apply(Object owner, Field field, String text) throws IllegalAccessException {

@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.animal.fish.WaterAnimal;
+import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.EntityHitResult;
@@ -57,7 +57,7 @@ public final class AimAssistControllerTodoAi {
         }
     }
     private static boolean active(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg) {
-        return cfg.enabled && mc.player != null && mc.level != null && mc.gui.screen() == null &&
+        return cfg.enabled && mc.player != null && mc.level != null && mc.screen == null && //codex (old code snippet) return cfg.enabled && mc.player != null && mc.level != null && mc.gui.screen() == null &&
             clickActive(Utils.getIsKeyBindingPressed(mc.options.keyAttack), state.lastAttack, System.nanoTime(), cfg.requires.attackWindow) &&
             (!cfg.requires.notBreaking || mc.gameMode != null && !mc.gameMode.isDestroying());
     }
@@ -135,7 +135,7 @@ public final class AimAssistControllerTodoAi {
         var lock = config().targetLock;
         if (lock.enabled && e instanceof Player p) {
             if (lock.mode.equals("Filter")) {
-                boolean listed = Arrays.stream(lock.usernames.split(",")).anyMatch(n -> n.trim().equalsIgnoreCase(p.getGameProfile().name()));
+                boolean listed = Arrays.stream(lock.usernames.split(",")).anyMatch(n -> n.trim().equalsIgnoreCase(p.getGameProfile().getName())); //codex (old code snippet) boolean listed = Arrays.stream(lock.usernames.split(",")).anyMatch(n -> n.trim().equalsIgnoreCase(p.getGameProfile().name()));
                 return listed == lock.whitelist;
             }
             return locks.isEmpty() ? lock.allowWhenUnlocked : locks.containsKey(p.getUUID());

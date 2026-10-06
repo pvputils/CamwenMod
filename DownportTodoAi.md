@@ -1,0 +1,19 @@
+# Minecraft 1.21.4 downport
+
+This branch targets Fabric Minecraft 1.21.4, Java 21, Fabric API 0.119.4 and Sodium 0.6.13. Install the Fabric Kotlin dependency declared in fabric.mod.json as well.
+
+The older, obfuscated Minecraft release uses official Mojang mappings, remapped mod dependencies and a generated mixin refmap. The port adapts HUD rendering, camera capture, inventory input, skins, player rendering and crosshair picking to the 1.21.4 APIs. Sodium 0.6.13 uses isFaceCulled instead of the additional shouldDrawSide hook.
+
+Build and regression checks:
+
+```powershell
+.\gradlew.bat build -I tests/aimAssistTestsTodoAi.gradle -I tests/trajectoryTestTodoAi.gradle aimAssistTestsTodoAi trajectoryTestTodoAi
+```
+
+Changed source lines retain their previous code in Codex comments. Added source blocks use the requested start/end markers; new source filenames end in TodoAi before the extension. Properties use a preceding native comment because trailing comments become part of the property value. JSON stores markers as string metadata because JSON does not permit comments.
+
+Automated client-world compatibility check (creates an isolated flat test world):
+
+```powershell
+.\gradlew.bat -I tests/downportGameTestsTodoAi.gradle runClientGameTest
+```

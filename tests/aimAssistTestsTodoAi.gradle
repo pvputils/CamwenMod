@@ -8,7 +8,7 @@ allprojects {
                 def outputDir = file('build/aimassist-tests')
                 outputDir.mkdirs()
                 ant.javac(srcdir: 'tests', includes: 'AimAssistTestTodoAi.java', destdir: outputDir,
-                    includeantruntime: false, release: '25', classpath: classpath.asPath)
+                    includeantruntime: false, release: '21', classpath: classpath.asPath) //codex (old code snippet) includeantruntime: false, release: '25', classpath: classpath.asPath)
                 classpath += files(outputDir)
             }
         }

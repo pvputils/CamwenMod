@@ -16,8 +16,8 @@ public class Config {
     //codex end
     public enum NameplateTeam {
         // targeting margin relies on this being only allies
-        FRIENDLY(TextColor.GREEN),
-        ALLY(TextColor.AQUA);
+        FRIENDLY(TextColor.fromRgb(0x55FF55)), //codex (old code snippet) FRIENDLY(TextColor.GREEN),
+        ALLY(TextColor.fromRgb(0x55FFFF)); //codex (old code snippet) ALLY(TextColor.AQUA);
         //        ENEMY,
 //        FOCUS,
         public final TextColor color;

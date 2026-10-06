@@ -55,7 +55,7 @@ public final class ExternalConfigWindow {
             return;
         }
 
-        long minecraftHandle = GLFWNativeWin32.glfwGetWin32Window(client.getWindow().handle());
+        long minecraftHandle = GLFWNativeWin32.glfwGetWin32Window(client.getWindow().getWindow()); //codex (old code snippet) long minecraftHandle = GLFWNativeWin32.glfwGetWin32Window(client.getWindow().handle());
         int minecraftX = client.getWindow().getX();
         int minecraftY = client.getWindow().getY();
         int minecraftWidth = client.getWindow().getWidth();
@@ -118,7 +118,7 @@ public final class ExternalConfigWindow {
             }
         });
         result.getRootPane().registerKeyboardAction(
-                _ -> result.dispose(),
+                unusedTodoAi1 -> result.dispose(), //codex (old code snippet) _ -> result.dispose(),
                 KeyStroke.getKeyStroke("ESCAPE"),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
@@ -224,7 +224,7 @@ public final class ExternalConfigWindow {
             String tooltip) {
         JCheckBox box = new JCheckBox(label, getter.getAsBoolean());
         configure(box, tooltip);
-        box.addActionListener(_ -> onClientThread(() -> {
+        box.addActionListener(unusedTodoAi2 -> onClientThread(() -> { //codex (old code snippet) box.addActionListener(_ -> onClientThread(() -> {
             setter.accept(box.isSelected());
             saveAll();
         }));
@@ -268,14 +268,14 @@ public final class ExternalConfigWindow {
     private static void addButton(JPanel panel, String label, Runnable action, String tooltip) {
         JButton button = new JButton(label);
         configure(button, tooltip);
-        button.addActionListener(_ -> onClientThread(action));
+        button.addActionListener(unusedTodoAi3 -> onClientThread(action)); //codex (old code snippet) button.addActionListener(_ -> onClientThread(action));
         panel.add(button);
     }
 
     private static void addWaypointCategoryButton(JPanel panel) {
         JButton button = new JButton(waypointCategoryLabel());
         configure(button, "current: " + config.playerWaypointCategory.name() + ". cycles which player waypoints appear");
-        button.addActionListener(_ -> onClientThread(() -> {
+        button.addActionListener(unusedTodoAi4 -> onClientThread(() -> { //codex (old code snippet) button.addActionListener(_ -> onClientThread(() -> {
             Config.PlayerWaypointCategory[] values = Config.PlayerWaypointCategory.values();
             config.playerWaypointCategory = values[
                     (config.playerWaypointCategory.ordinal() + 1) % values.length];
@@ -309,8 +309,8 @@ public final class ExternalConfigWindow {
                 "External config disabled: protected window unavailable", error);
         client.execute(() -> {
             if (client.player instanceof LocalPlayer player) {
-                player.sendSystemMessage(Component.literal(
-                        "External config unavailable; see the log for details"));
+                player.displayClientMessage(Component.literal( //codex (old code snippet) player.sendSystemMessage(Component.literal(
+                        "External config unavailable; see the log for details"), false); //codex (old code snippet) "External config unavailable; see the log for details"));
             }
         });
     }
