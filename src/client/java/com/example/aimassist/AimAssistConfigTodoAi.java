@@ -15,7 +15,7 @@ public final class AimAssistConfigTodoAi {
         public Requirements requires = new Requirements();
         public Interpolation interpolation = new Interpolation();
         public double range = 4.2;
-        public double fov = 180;
+        public double targetingMargin = 0.1;
         public int hurtTime = 10;
         public boolean horizontal = true;
         public boolean vertical = true;

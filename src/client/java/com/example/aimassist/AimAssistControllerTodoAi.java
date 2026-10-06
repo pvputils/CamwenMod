@@ -2,6 +2,8 @@ package com.example.aimassist;
 
 import com.example.UntitledClient;
 import com.example.Utils;
+import com.example.mixins.ClientPlayerEntityInvoker;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,6 +25,7 @@ public final class AimAssistControllerTodoAi {
     private static final Map<UUID, Long> locks = new HashMap<>();
     private static ClientLevel level;
     private static Rotation lastApplied;
+    private static Map<Integer, Float> temporaryPickRadii;
     private static final class State {
         LivingEntity target;
         Rotation start, end, goal;
@@ -30,6 +33,30 @@ public final class AimAssistControllerTodoAi {
         void clear() { target = null; start = end = goal = null; lastAttack = 0; }
     }
     private AimAssistControllerTodoAi() {}
+    /** Only populated while evaluating aura's hypothetical pick on the client thread. */
+    public static Float pickRadiusOverride(Entity entity) {
+        return temporaryPickRadii == null ? null : temporaryPickRadii.get(entity.getId());
+    }
+    public static LivingEntity auraEligibleTarget(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
+        if (mc.player == null || mc.level == null || mc.hitResult == null ||
+            mc.hitResult.getType() != HitResult.Type.MISS || cfg.targetingMargin <= 0) return null;
+        Entity camera = mc.getCameraEntity();
+        if (camera != mc.player) return null;
+        double range = Math.min(cfg.range, mc.player.entityInteractionRange());
+        HitResult normal = ClientPlayerEntityInvoker.aimAssistPickTodoAi(camera, mc.player.blockInteractionRange(), range, 1f);
+        if (normal.getType() != HitResult.Type.MISS) return null;
+        Map<Integer, Float> radii = new HashMap<>();
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            radii.put(entity.getId(), entity.getPickRadius() + (float) Math.clamp(cfg.targetingMargin, 0, 8));
+        }
+        try {
+            temporaryPickRadii = radii;
+            HitResult expanded = ClientPlayerEntityInvoker.aimAssistPickTodoAi(camera, mc.player.blockInteractionRange(), range, 1f);
+            return expanded instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living ? living : null;
+        } finally {
+            temporaryPickRadii = null;
+        }
+    }
     public static AimAssistConfigTodoAi config() {
         if (UntitledClient.config.aimAssist == null) UntitledClient.config.aimAssist = new AimAssistConfigTodoAi();
         return UntitledClient.config.aimAssist;
@@ -75,16 +102,18 @@ public final class AimAssistControllerTodoAi {
                 if (goal != null) state.target = entity;
             }
         } else {
+            LivingEntity eligible = auraEligibleTarget(mc, cfg);
+            if (eligible == null) return;
             List<LivingEntity> candidates = new ArrayList<>();
             for (var entity : mc.level.entitiesForRendering()) if (entity instanceof LivingEntity living &&
                 allowed(mc, living) && living.hurtTime <= cfg.hurtTime &&
                 living.getBoundingBox().distanceToSqr(mc.player.getEyePosition()) <= cfg.range * cfg.range) candidates.add(living);
             candidates.sort((a, b) -> compare(mc, a, b, cfg.priorities));
             for (LivingEntity entity : candidates) {
+                if (entity != eligible) continue;
                 Vec3 point = nearestPoint(mc.player.getEyePosition(), entity.getBoundingBox(), current, cfg.range, mouseStep(mc));
                 Rotation desired = lookAt(mc.player.getEyePosition(), point);
-                double fov = Math.toDegrees(Math.acos(Math.clamp(current.direction().dot(desired.direction()), -1, 1)));
-                if (fov <= cfg.fov && valid(mc, entity, desired, cfg.range)) { state.target = entity; goal = desired; break; }
+                if (valid(mc, entity, desired, cfg.range)) { state.target = entity; goal = desired; break; }
             }
         }
         if (goal != null) {
@@ -168,6 +197,7 @@ public final class AimAssistControllerTodoAi {
             proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), mc.player.entityInteractionRange()));
             if (proposed == null) return;
         } else {
+            if (auraEligibleTarget(mc, cfg) != state.target) return;
             proposed = new Rotation(cfg.horizontal ? proposed.yaw() : mc.player.getYRot(), cfg.vertical ? proposed.pitch() : mc.player.getXRot());
         }
         Rotation normalized = normalize(mc, proposed);

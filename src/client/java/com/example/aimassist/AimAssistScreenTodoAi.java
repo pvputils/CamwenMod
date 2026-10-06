@@ -37,7 +37,7 @@ public final class AimAssistScreenTodoAi extends Screen {
         } else {
             List<Field> fields = new ArrayList<>(Arrays.asList(settings.getClass().getFields()));
             boolean aura = settings == cfg.aura, targeting = settings == cfg.targetting;
-            if (targeting) fields.removeIf(f -> Set.of("range", "fov", "hurtTime", "horizontal", "vertical", "priorities").contains(f.getName()));
+            if (targeting) fields.removeIf(f -> Set.of("range", "targetingMargin", "hurtTime", "horizontal", "vertical", "priorities").contains(f.getName()));
             int rows = Math.max(1, (height - 88) / 24);
             int total = fields.size() + (aura || targeting ? 2 : 0);
             int pages = Math.max(1, (total + rows - 1) / rows);
@@ -78,6 +78,7 @@ public final class AimAssistScreenTodoAi extends Screen {
         } catch (IllegalAccessException error) { throw new IllegalStateException(error); }
     }
     private static String label(String field) {
+        if (field.equals("targetingMargin")) return "Targeting margin (blocks)";
         return Character.toUpperCase(field.charAt(0)) + field.substring(1);
     }
     static void save() { UntitledClient.config.saveConfig(); }
@@ -128,7 +129,7 @@ public final class AimAssistScreenTodoAi extends Screen {
             double min = 0, max = 100;
             switch (name) {
                 case "range" -> { min = 1; max = 8; }
-                case "fov" -> max = 180;
+                case "targetingMargin" -> max = 8;
                 case "hurtTime" -> max = 10;
                 case "attackWindow" -> max = 200;
                 case "maximumTime" -> max = 120;
