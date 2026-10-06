@@ -44,10 +44,6 @@ loom {
 
 }
 
-// codex start
-apply from: 'tests/aimAssistGameTestsTodoAi.gradle'
-//codex end
-
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
 //    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
