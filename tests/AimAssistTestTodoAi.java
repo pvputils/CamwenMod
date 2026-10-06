@@ -99,6 +99,23 @@ public final class AimAssistTestTodoAi {
         check(!AimCrosshairMotionTodoAi.allowsAssist(closer, approach), "crosshair turn away does not assist");
         check(!AimCrosshairMotionTodoAi.allowsAssist(approach, AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(15, 0))), "crossing past hitbox does not pull back");
         check(AimCrosshairMotionTodoAi.allowsAssist(null, outsideProximity), "new target initializes history");
+        // codex start
+        for (Rotation leaving : new Rotation[]{new Rotation(1, 0), new Rotation(-1, 0), new Rotation(0, 1), new Rotation(0, -1)}) {
+            var nearEdge = AimCrosshairMotionTodoAi.sample(eyes, motionBox, leaving);
+            check(nearEdge.inside(), "exit starts with crosshair still inside");
+            check(!AimCrosshairMotionTodoAi.allowsAssist(insideProximity, nearEdge), "moving inside toward edge never assists");
+            Rotation outsideTurn = new Rotation(leaving.yaw() * 15, leaving.pitch() * 15);
+            var afterExit = AimCrosshairMotionTodoAi.sample(eyes, motionBox, outsideTurn);
+            check(!afterExit.inside() && !AimCrosshairMotionTodoAi.allowsAssist(nearEdge, afterExit), "crossing the edge never assists");
+            check(!AimCrosshairMotionTodoAi.allowsAssist(afterExit,
+                    AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(leaving.yaw() * 20, leaving.pitch() * 20))), "continuing away never assists");
+            check(AimCrosshairMotionTodoAi.allowsAssist(afterExit, afterExit), "stopping after exit restores stationary assistance");
+        }
+        var shiftedInside = AimCrosshairMotionTodoAi.sample(new Vec3(0.1, 0, 0), motionBox, still);
+        check(shiftedInside.inside() && !AimCrosshairMotionTodoAi.allowsAssist(insideProximity, shiftedInside), "walking toward edge while still inside stays unassisted");
+        var offCenterInside = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(2, 2));
+        check(AimCrosshairMotionTodoAi.allowsAssist(offCenterInside, offCenterInside), "off-center stationary crosshair still assists");
+        //codex end
         check(insideProximity.distance() == 0, "crosshair inside hitbox has zero distance");
         //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
