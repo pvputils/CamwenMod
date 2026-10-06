@@ -81,29 +81,25 @@ public final class AimAssistTestTodoAi {
         //codex end
         // codex start
         AABB motionBox = new AABB(-0.5, -0.5, 3, 0.5, 0.5, 4);
-        check(approachingHitbox(eyes, motionBox, new Rotation(-20, 0), new Rotation(-15, 0), 8, 0.15), "outside mouse movement toward hitbox engages");
-        check(!approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(-20, 0), 8, 0.15), "moving away outside disables assistance");
-        check(approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(0, 0), 8, 0.15), "outside-to-inside entry engages");
-        check(!approachingHitbox(eyes, motionBox, new Rotation(0, 0), new Rotation(-15, 0), 8, 0.15), "leaving hitbox stays unassisted");
-        check(!approachingHitbox(eyes, motionBox, new Rotation(0, 0), new Rotation(2, 0), 8, 0.15), "already inside stays unassisted");
-        check(!approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(-15, 0), 8, 0.15), "stationary mouse stays unassisted");
-        check(!approachingHitbox(eyes, motionBox, new Rotation(-25, 0), new Rotation(15, 0), 8, 0.15), "crossing past hitbox and exiting does not pull back");
-        check(approachingHitbox(eyes, motionBox, new Rotation(0, -20), new Rotation(0, -15), 8, 0.15), "vertical approach engages");
-        check(!approachingHitbox(eyes, motionBox, new Rotation(0, -15), new Rotation(0, -20), 8, 0.15), "vertical retreat stays unassisted");
-        AABB behind = new AABB(0.5, -0.5, -4, 1.5, 0.5, -3);
-        check(approachingHitbox(eyes, behind, new Rotation(175, 0), new Rotation(-179, 0), 8, 0.15), "approach works across yaw wrapping");
-        check(!approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(-15, 1), 8, 0.15), "tangential movement does not engage");
-        check(mouseAllowsAssist(eyes, motionBox, null, 8, 0.15), "no mouse motion allows assistance");
-        check(mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(-15, 0), new Rotation(-15, 0)), 8, 0.15), "stationary outside allows assistance");
-        check(mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(0, 0), new Rotation(0, 0)), 8, 0.15), "stationary inside allows neutral pitch assistance");
-        check(!mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(0, 0), new Rotation(-15, 0)), 8, 0.15), "moving out still blocks assistance");
-        check(!mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(-15, 0), new Rotation(-20, 0)), 8, 0.15), "moving away still blocks assistance");
-        var mouse = new AimMouseMotionTodoAi();
-        mouse.record(new Rotation(-20, 0), new Rotation(-15, 0));
-        check(mouse.consume() != null && mouse.consume() == null, "mouse motion is consumed once and cannot sustain assistance");
-        mouse.record(new Rotation(-20, 0), new Rotation(-15, 0));
-        mouse.record(new Rotation(-15, 0), new Rotation(-15, 0));
-        check(mouse.consume() == null, "stopping mouse clears pending motion");
+        Rotation still = new Rotation(0, 0);
+        var insideProximity = AimCrosshairMotionTodoAi.sample(eyes, motionBox, still);
+        var outsideProximity = AimCrosshairMotionTodoAi.sample(new Vec3(1, 0, 0), motionBox, still);
+        var fartherProximity = AimCrosshairMotionTodoAi.sample(new Vec3(2, 0, 0), motionBox, still);
+        check(!AimCrosshairMotionTodoAi.allowsAssist(insideProximity, outsideProximity), "walking out with static yaw blocks assistance");
+        check(!AimCrosshairMotionTodoAi.allowsAssist(outsideProximity, fartherProximity), "walking farther away with static yaw blocks assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(fartherProximity, outsideProximity), "walking toward hitbox with static yaw allows assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(outsideProximity, insideProximity), "walking into hitbox allows assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(outsideProximity, outsideProximity), "stationary outside allows assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(insideProximity, insideProximity), "stationary inside allows neutral pitch assistance");
+        var movingBox = motionBox.move(1, 0, 0);
+        check(!AimCrosshairMotionTodoAi.allowsAssist(insideProximity, AimCrosshairMotionTodoAi.sample(eyes, movingBox, still)), "target walking away blocks assistance");
+        var approach = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(-20, 0));
+        var closer = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(-15, 0));
+        check(AimCrosshairMotionTodoAi.allowsAssist(approach, closer), "crosshair turn toward edge assists");
+        check(!AimCrosshairMotionTodoAi.allowsAssist(closer, approach), "crosshair turn away does not assist");
+        check(!AimCrosshairMotionTodoAi.allowsAssist(approach, AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(15, 0))), "crossing past hitbox does not pull back");
+        check(AimCrosshairMotionTodoAi.allowsAssist(null, outsideProximity), "new target initializes history");
+        check(insideProximity.distance() == 0, "crosshair inside hitbox has zero distance");
         //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }

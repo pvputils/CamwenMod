@@ -1,10 +1,12 @@
 package com.example;
 
-import java.util.Arrays;
+import com.example.aimassist.AimCrosshairMotionTodoAi;
+import com.example.aimassist.AimGeometryTodoAi.Rotation;
+import net.minecraft.world.phys.AABB;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 
-/** Ensures the mouse redirect attaches and ordinary mouse turning still works. */
+/** Checks actual client camera translation without mouse rotation. */
 public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
@@ -12,26 +14,30 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
             context.waitFor(mc -> mc.player != null && mc.level != null && mc.gui.screen() == null);
             context.waitTicks(3);
             context.runOnClient(mc -> {
-                var hook = Arrays.stream(mc.mouseHandler.getClass().getDeclaredMethods())
-                        .filter(method -> method.getName().contains("captureMouseTurnTodoAi"))
-                        .findFirst().orElseThrow(() -> new AssertionError("Directional mouse redirect did not attach"));
-                try {
-                    hook.setAccessible(true);
-                    float before = mc.player.getYRot();
-                    hook.invoke(mc.mouseHandler, mc.player, 20.0, 0.0);
-                    float after = mc.player.getYRot();
-                    if (before == after) throw new AssertionError("Mouse redirect blocked ordinary turning");
-                    var field = com.example.aimassist.AimAssistControllerTodoAi.class.getDeclaredField("MOUSE_MOTION");
-                    field.setAccessible(true);
-                    var tracker = (com.example.aimassist.AimMouseMotionTodoAi) field.get(null);
-                    var motion = tracker.consume();
-                    if (motion == null || motion.before().yaw() != before || motion.after().yaw() != after || tracker.consume() != null)
-                        throw new AssertionError("Mouse rotation was not captured for exactly one assist frame");
-                } catch (ReflectiveOperationException error) {
-                    throw new AssertionError("Mouse capture integration", error);
-                }
+                var player = mc.player;
+                player.setYRot(0);
+                player.setXRot(0);
+                var eyes = player.getEyePosition();
+                var position = player.position();
+                var box = new AABB(eyes.x - 0.5, eyes.y - 0.5, eyes.z + 3,
+                        eyes.x + 0.5, eyes.y + 0.5, eyes.z + 4);
+                var crosshair = new Rotation(player.getYRot(), player.getXRot());
+                var inside = AimCrosshairMotionTodoAi.sample(eyes, box, crosshair);
+                player.setPos(position.x + 1, position.y, position.z);
+                var outside = AimCrosshairMotionTodoAi.sample(player.getEyePosition(), box, crosshair);
+                if (AimCrosshairMotionTodoAi.allowsAssist(inside, outside))
+                    throw new AssertionError("Static view still assisted walking out of the hitbox");
+                player.setPos(position.x + 2, position.y, position.z);
+                var farther = AimCrosshairMotionTodoAi.sample(player.getEyePosition(), box, crosshair);
+                if (AimCrosshairMotionTodoAi.allowsAssist(outside, farther))
+                    throw new AssertionError("Static view still assisted walking away");
+                if (!AimCrosshairMotionTodoAi.allowsAssist(farther, outside) ||
+                        !AimCrosshairMotionTodoAi.allowsAssist(outside, outside))
+                    throw new AssertionError("Approaching or stationary crosshair incorrectly blocked");
+                if (player.getYRot() != 0 || player.getXRot() != 0)
+                    throw new AssertionError("Translation test unexpectedly changed view angle");
             });
-            System.out.println("PASS: 26.2 mouse redirect attaches and preserves mouse turning");
+            System.out.println("PASS: static client view respects walking toward and away from hitbox");
         }
     }
 }
