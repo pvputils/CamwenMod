@@ -5,7 +5,8 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
-      "com.example.ApproachMouseGameTestTodoAi"
+      "com.example.ApproachMouseGameTestTodoAi",
+      "com.example.ReachGameTestTodoAi"
     ]
   }
 }
