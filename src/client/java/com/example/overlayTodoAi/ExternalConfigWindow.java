@@ -1,6 +1,7 @@
 package com.example.overlayTodoAi;
 
 import com.example.Configs.Config;
+import com.example.aimassist.AimAssistScreenTodoAi;
 import com.example.Configs.CheatConfig;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
@@ -123,6 +124,10 @@ public final class ExternalConfigWindow {
 
         JPanel grid = new JPanel(new GridLayout(0, 4, 8, 8));
         grid.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        // codex start
+        addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,
+                "opens aura and targetting settings");
+        //codex end
         addCheckBox(grid, "togglesneak gui", () -> config.isToggleSneakGuiEnabled,
                 value -> config.isToggleSneakGuiEnabled = value,
                 "modified version of the classic hcf togglesneak's gui");

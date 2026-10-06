@@ -3,10 +3,14 @@ package com.example.Configs;
 import java.util.HashMap;
 import java.util.UUID;
 import net.minecraft.network.chat.TextColor;
+import com.example.aimassist.AimAssistConfigTodoAi;
 
 import static com.example.Utils.serializeJsonBlocking;
 
 public class Config {
+    // codex start
+    public AimAssistConfigTodoAi aimAssist = new AimAssistConfigTodoAi();
+    //codex end
     public enum NameplateTeam {
         // targeting margin relies on this being only allies
         FRIENDLY(TextColor.GREEN),

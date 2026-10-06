@@ -1,0 +1,16 @@
+allprojects {
+    afterEvaluate {
+        tasks.register('aimAssistTestsTodoAi', JavaExec) {
+            dependsOn 'clientClasses'
+            classpath = sourceSets.client.runtimeClasspath
+            mainClass = 'com.example.aimassist.AimAssistTestTodoAi'
+            doFirst {
+                def outputDir = file('build/aimassist-tests')
+                outputDir.mkdirs()
+                ant.javac(srcdir: 'tests', includes: 'AimAssistTestTodoAi.java', destdir: outputDir,
+                    includeantruntime: false, release: '25', classpath: classpath.asPath)
+                classpath += files(outputDir)
+            }
+        }
+    }
+}

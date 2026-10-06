@@ -1,6 +1,7 @@
 package com.example.mixins;
 
 import com.example.Configs.Config;
+import com.example.aimassist.AimAssistControllerTodoAi;
 import com.example.overlayTodoAi.PlayerWaypointOverlay;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -31,6 +32,9 @@ public abstract class MinecraftClientMixin {
 
     @Inject(at = @At(value = "HEAD"), method = "startAttack", cancellable = true)
     private void onDoAttackHead(CallbackInfoReturnable<Boolean> cir) {
+        // codex start
+        AimAssistControllerTodoAi.attackAttempt();
+        //codex end
         int previousAttackCooldown = MINECRAFT_CLIENT_INSTANCE.missTime; // TODO ?
         MINECRAFT_CLIENT_INSTANCE.missTime = 0;
         if (player == null) {

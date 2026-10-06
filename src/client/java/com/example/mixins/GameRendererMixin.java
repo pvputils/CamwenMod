@@ -1,6 +1,8 @@
 package com.example.mixins;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.example.aimassist.AimAssistControllerTodoAi;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +20,12 @@ import net.minecraft.client.renderer.GameRenderer;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
+    // codex start
+    @Inject(method = "renderLevel", at = @At("HEAD"))
+    private void aimAssistRenderTodoAi(DeltaTracker delta, CallbackInfo ci) {
+        AimAssistControllerTodoAi.render(MINECRAFT_CLIENT_INSTANCE, delta.getGameTimeDeltaPartialTick(false));
+    }
+    //codex end
     @Unique
     private boolean isRenderingHandBobbing;
 
