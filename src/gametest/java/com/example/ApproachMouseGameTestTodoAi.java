@@ -62,6 +62,8 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     target.setPos(eyes.x, eyes.y, eyes.z + 2);
                     target.setBoundingBox(new AABB(eyes.x - 0.5, eyes.y - 0.5, eyes.z + 2,
                             eyes.x + 0.5, eyes.y + 0.5, eyes.z + 3));
+                    target.setId(1_000_000);
+                    mc.level.addEntity(target);
                     var stateField = AimAssistControllerTodoAi.class.getDeclaredField("TARGETTING");
                     stateField.setAccessible(true);
                     var state = stateField.get(null);
@@ -106,8 +108,6 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     apply.invoke(null, mc, state, cfg, true, 1f);
                     if (!(player.getXRot() < 3))
                         throw new AssertionError("Stationary targeting must still approach neutral pitch");
-                    target.setId(1_000_000);
-                    mc.level.addEntity(target);
                     var aura = AimAssistControllerTodoAi.config().aura;
                     aura.enabled = true;
                     aura.requires.attackWindow = 200;

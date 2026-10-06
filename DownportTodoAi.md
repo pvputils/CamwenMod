@@ -23,3 +23,5 @@ Aim assist follows crosshair proximity to the hitbox, including interpolated pla
 Crosshair movement client-world regression check: `./gradlew.bat -I tests/approachMouseGameTestsTodoAi.gradle runClientGameTest`. Geometry regressions are included in `aimAssistTestsTodoAi` above.
 
 Held-attack exits remain unassisted across targeting-to-aura transitions and frames between mouse updates. Assistance resumes immediately on a turn toward the hitbox, or after 150 ms of steady crosshair position. Movement within the hitbox is tracked before the crosshair crosses its edge. The crosshair client test above covers the actual targeting, aura, and full render paths.
+
+Both assists use the existing Range setting as their total probe reach; targeting now exposes that setting as well. Scoped transient modifiers temporarily raise block and entity interaction attributes as needed, and restore them after every probe. Range alone selects neutral-pitch targeting; range plus margin selects aura. The client-world suite includes distant-player reach routing and success/failure attribute cleanup.

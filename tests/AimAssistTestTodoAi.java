@@ -134,6 +134,19 @@ public final class AimAssistTestTodoAi {
         check(!gesture.update(outsideProximity, fartherProximity, time += 200_000_000), "next outward gesture blocks again");
         check(gesture.update(fartherProximity, outsideProximity, time + 1_000_000), "deliberate reversal toward target assists immediately");
         //codex end
+        // codex start
+        var reachConfig = new AimAssistConfigTodoAi();
+        check(reachConfig.aura.range == 4.2 && reachConfig.targetting.range == 4.2, "existing range defaults preserved");
+        AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("range"), "2.5");
+        check(reachConfig.aura.range == 2.5 && reachConfig.targetting.range == 4.2, "independent per-module reach editor values");
+        for (String invalid : new String[]{"-1", "NaN", "Infinity"}) {
+            try {
+                AimAssistScreenTodoAi.apply(reachConfig.targetting, reachConfig.targetting.getClass().getField("range"), invalid);
+                throw new AssertionError("invalid reach accepted: " + invalid);
+            } catch (IllegalArgumentException expected) {}
+        }
+        check(AimAssistReachTodoAi.range(Double.NaN) == 0 && AimAssistReachTodoAi.range(-1) == 0, "invalid persisted reach cannot contaminate attributes");
+        //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }
 }
