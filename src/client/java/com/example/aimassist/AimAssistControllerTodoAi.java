@@ -33,8 +33,8 @@ public final class AimAssistControllerTodoAi {
     private AimAssistControllerTodoAi() {}
     public static LivingEntity auraEligibleTarget(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
         if (mc.player == null || mc.level == null || mc.hitResult == null ||
-            mc.hitResult.getType() != HitResult.Type.MISS || cfg.targetingMargin <= 0) return null;
-        if (TargetingMarginPickTodoAi.pick(mc, null).getType() != HitResult.Type.MISS) return null;
+            mc.hitResult.getType() == HitResult.Type.ENTITY || cfg.targetingMargin <= 0) return null;
+        if (TargetingMarginPickTodoAi.pick(mc, null).getType() == HitResult.Type.ENTITY) return null;
         float increased = Utils.computeCheatConfig().staticTargetingMarginBypass + (float) cfg.targetingMargin;
         HitResult expanded = TargetingMarginPickTodoAi.pick(mc, increased);
         return expanded instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living ? living : null;
