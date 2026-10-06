@@ -57,6 +57,28 @@ public final class AimAssistTestTodoAi {
             AimAssistScreenTodoAi.apply(cfg.aura.requires, cfg.aura.requires.getClass().getField("attackWindow"), "201");
             throw new AssertionError("window must reject >200ms");
         } catch (IllegalArgumentException expected) {}
+        // codex start
+        var scaling = new AimAssistConfigTodoAi.Interpolation();
+        scaling.horizontalMin = scaling.horizontalMax = scaling.verticalMin = scaling.verticalMax = 100;
+        scaling.directionMin = scaling.directionMax = 0;
+        Rotation start = new Rotation(0, 0), finish = new Rotation(10, 10);
+        Rotation baseScaling = smooth(start, finish, scaling, null, true);
+        for (String fieldName : new String[]{"horizontalMin", "horizontalMax", "verticalMin", "verticalMax", "directionMin", "directionMax"}) {
+            AimAssistScreenTodoAi.apply(scaling, scaling.getClass().getField(fieldName), "250", true);
+            check(scaling.getClass().getField(fieldName).getInt(scaling) == 250, "aura accepts scaling above 100: " + fieldName);
+        }
+        Rotation fasterScaling = smooth(start, finish, scaling, null, true);
+        check(Math.abs(fasterScaling.yaw() - baseScaling.yaw() * 2.5) < 1e-9 &&
+              Math.abs(fasterScaling.pitch() - baseScaling.pitch() * 2.5) < 1e-9, "250 percent aura scaling increases actual turn by 2.5 times");
+        Rotation cappedScaling = smooth(start, finish, scaling, null);
+        check(error(baseScaling, cappedScaling) < 1e-9, "targeting keeps its existing scaling limit");
+        try {
+            AimAssistScreenTodoAi.apply(scaling, scaling.getClass().getField("horizontalMin"), "250");
+            throw new AssertionError("targeting editor must retain its limit");
+        } catch (IllegalArgumentException expected) {}
+        scaling.horizontalMin = scaling.horizontalMax = Integer.MAX_VALUE;
+        check(Double.isFinite(smooth(start, finish, scaling, null, true).yaw()), "maximum integer scaling does not overflow random bounds");
+        //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }
 }
