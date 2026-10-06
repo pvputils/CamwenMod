@@ -83,7 +83,7 @@ public final class PlayerWaypointOverlay {
                     hasOverlayContent |= ProjectileTrajectoryPreview.draw(graphics, client, project);
                 }
                 hasOverlayContent |= drawDebugMessages(graphics);
-                if (config.isCameraAngleCrosshairIndicatorEnabled && client.player.getXRot() != 0.0f) {
+                if (config.isCameraAngleCrosshairIndicatorEnabled && client.player.getXRot() > 0.0f) { //codex (old code snippet) if (config.isCameraAngleCrosshairIndicatorEnabled && client.player.getXRot() != 0.0f) {
                     hasOverlayContent = true;
                     drawCameraAngleIndicator(
                             graphics,
@@ -201,7 +201,7 @@ public final class PlayerWaypointOverlay {
         graphics.setStroke(new BasicStroke(2.0f));
         int size = 2;
         int offset = 9;
-        int direction = pitch < 0.0f ? 1 : -1;
+        int direction = -1; //codex (old code snippet) int direction = pitch < 0.0f ? 1 : -1;
         int baseY = y + direction * offset;
         int tipY = y + direction * (offset + size);
         graphics.drawLine(x - size, baseY, x, tipY);

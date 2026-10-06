@@ -65,14 +65,12 @@ public final class AimGeometryTodoAi {
         }
         return best;
     }
-    public static Rotation centered(Vec3 eyes, AABB box, Rotation current, double range, double mouseStep) {
+    public static Rotation neutralPitch(Vec3 eyes, AABB box, Rotation current, double range, double mouseStep) { //codex (old code snippet) public static Rotation centered(Vec3 eyes, AABB box, Rotation current, double range, double mouseStep) {
         if (!hits(eyes, box, current, range) || box.contains(eyes)) return null;
-        Vec3 center = box.getCenter();
-        double distance = Math.hypot(center.x - eyes.x, center.z - eyes.z);
-        double margin = Math.min(Math.max(0.002, distance * Math.tan(Math.toRadians(mouseStep))), box.getYsize() / 4);
-        double height = Math.clamp(eyes.y, box.minY + margin, box.maxY - margin);
-        Rotation goal = lookAt(eyes, new Vec3(center.x, height, center.z));
-        return hits(eyes, box, goal, range) ? goal : current;
+        Rotation goal = constrain(new Rotation(current.yaw, 0), current, r -> hits(eyes, box, r, range)); //codex (old code snippet) Vec3 center = box.getCenter();
+        if (goal.pitch == 0) return goal; //codex (old code snippet) double distance = Math.hypot(center.x - eyes.x, center.z - eyes.z);
+        double inset = Math.min(Math.max(0, mouseStep), Math.abs(current.pitch - goal.pitch)); //codex (old code snippet) double margin = Math.min(Math.max(0.002, distance * Math.tan(Math.toRadians(mouseStep))), box.getYsize() / 4);
+        return new Rotation(current.yaw, goal.pitch + Math.copySign(inset, current.pitch - goal.pitch)); //codex (old code snippet) double height = Math.clamp(eyes.y, box.minY + margin, box.maxY - margin); Rotation goal = lookAt(eyes, new Vec3(center.x, height, center.z)); return hits(eyes, box, goal, range) ? goal : current;
     }
     public static Rotation constrain(Rotation proposed, Rotation goal, Predicate<Rotation> valid) {
         if (valid.test(proposed)) return proposed;
@@ -87,22 +85,31 @@ public final class AimGeometryTodoAi {
     }
     public static Rotation smooth(Rotation current, Rotation goal, AimAssistConfigTodoAi.Interpolation settings,
                                   Rotation previousGoal) {
+        // codex start
+        return smooth(current, goal, settings, previousGoal, false);
+    }
+    public static Rotation smooth(Rotation current, Rotation goal, AimAssistConfigTodoAi.Interpolation settings,
+                                  Rotation previousGoal, boolean uncapped) {
+        //codex end
         double change = previousGoal == null ? 0 : Math.clamp(error(previousGoal, goal) / 180, 0, 1) *
-            random(settings.directionMin, settings.directionMax) / 100;
+            random(settings.directionMin, settings.directionMax, uncapped) / 100; //codex (old code snippet) random(settings.directionMin, settings.directionMax) / 100;
         double yawDiff = wrap(goal.yaw - current.yaw), pitchDiff = goal.pitch - current.pitch;
-        return new Rotation(current.yaw + yawDiff * factor(Math.abs(yawDiff), random(settings.horizontalMin, settings.horizontalMax) / 100, change, settings.midpoint),
-            current.pitch + pitchDiff * factor(Math.abs(pitchDiff), random(settings.verticalMin, settings.verticalMax) / 100, change, settings.midpoint));
+        return new Rotation(current.yaw + yawDiff * factor(Math.abs(yawDiff), random(settings.horizontalMin, settings.horizontalMax, uncapped) / 100, change, settings.midpoint, uncapped), //codex (old code snippet) return new Rotation(current.yaw + yawDiff * factor(Math.abs(yawDiff), random(settings.horizontalMin, settings.horizontalMax) / 100, change, settings.midpoint),
+            current.pitch + pitchDiff * factor(Math.abs(pitchDiff), random(settings.verticalMin, settings.verticalMax, uncapped) / 100, change, settings.midpoint, uncapped)); //codex (old code snippet) current.pitch + pitchDiff * factor(Math.abs(pitchDiff), random(settings.verticalMin, settings.verticalMax) / 100, change, settings.midpoint));
     }
-    private static double random(int min, int max) {
-        int low = Math.clamp(Math.min(min, max), 0, 100), high = Math.clamp(Math.max(min, max), 0, 100);
-        return ThreadLocalRandom.current().nextInt(low, high + 1);
+    private static double random(int min, int max, boolean uncapped) { //codex (old code snippet) private static double random(int min, int max) {
+        int limit = uncapped ? Integer.MAX_VALUE : 100; //codex (old code snippet) int low = Math.clamp(Math.min(min, max), 0, 100), high = Math.clamp(Math.max(min, max), 0, 100);
+        int low = Math.clamp(Math.min(min, max), 0, limit), high = Math.clamp(Math.max(min, max), 0, limit); //codex (old code snippet) return ThreadLocalRandom.current().nextInt(low, high + 1);
+        // codex start
+        return ThreadLocalRandom.current().nextLong(low, (long) high + 1);
+        //codex end
     }
-    private static double factor(double difference, double speed, double change, double midpoint) {
+    private static double factor(double difference, double speed, double change, double midpoint, boolean uncapped) { //codex (old code snippet) private static double factor(double difference, double speed, double change, double midpoint) {
         double t = Math.clamp(difference / 180, 0, 1);
         if (t > midpoint) {
             double u = 1 - t;
             return ((1 - u) * (1 - u) * 0.05 + 2 * (1 - u) * u + u * u) * speed;
         }
-        return 1 / (1 + Math.exp(-0.5 * (t - 0.3))) * Math.clamp(speed + change, 0, 1);
+        return 1 / (1 + Math.exp(-0.5 * (t - 0.3))) * Math.clamp(speed + change, 0, uncapped ? Double.POSITIVE_INFINITY : 1); //codex (old code snippet) return 1 / (1 + Math.exp(-0.5 * (t - 0.3))) * Math.clamp(speed + change, 0, 1);
     }
 }
