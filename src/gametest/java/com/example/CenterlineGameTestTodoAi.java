@@ -71,6 +71,32 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 check(mc.player.getYRot() == 12 && mc.player.getXRot() == -3, "full width and upward pitch remain untouched");
                 settled(mc, target, 12, 3, 0);
                 check(mc.player.getYRot() < 12, "zero width restores centerline pull");
+                // codex start
+                target.setBoundingBox(new AABB(eyes.x + 0.6, eyes.y - 0.5, eyes.z + 2,
+                        eyes.x + 1.4, eyes.y + 0.5, eyes.z + 3));
+                cfg.aura.range = 4.2;
+                cfg.aura.targetingMargin = 1;
+                cfg.aura.requires.attackWindow = 200;
+                cfg.aura.requires.notBreaking = false;
+                cfg.aura.horizontal = cfg.aura.vertical = false;
+                cfg.aura.enabled = true;
+                settled(mc, target, 0, 3, 40);
+                check(mc.player.getYRot() < 0 && mc.player.getXRot() < 3,
+                        "active aura miss activates targeting centerline and upward assistance");
+                cfg.aura.enabled = false;
+                settled(mc, target, 0, 3, 40);
+                check(mc.player.getYRot() == 0 && mc.player.getXRot() == 3,
+                        "miss without active aura remains unassisted");
+                cfg.aura.enabled = true;
+                cfg.targetting.range = 1;
+                settled(mc, target, 0, 3, 40);
+                check(mc.player.getYRot() == 0 && mc.player.getXRot() == 3,
+                        "aura fallback respects targeting range");
+                cfg.targetting.range = 4.2;
+                settled(mc, target, 0, -3, 40);
+                check(mc.player.getYRot() < 0 && mc.player.getXRot() <= -3,
+                        "aura fallback can center while looking up without downward correction");
+                //codex end
             });
             System.out.println("PASS: upward-only head pitch, configurable center band, interpolation and hit preservation");
         }
