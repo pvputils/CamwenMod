@@ -100,7 +100,7 @@ public final class AimAssistControllerTodoAi {
         }
         if (goal != null) {
             state.start = current;
-            state.end = smooth(current, goal, cfg.interpolation, state.goal);
+            state.end = smooth(current, goal, cfg.interpolation, state.goal, !targetting); //codex (old code snippet) state.end = smooth(current, goal, cfg.interpolation, state.goal);
             state.goal = goal;
         }
     }

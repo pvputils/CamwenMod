@@ -74,7 +74,7 @@ public final class AimAssistScreenTodoAi extends Screen {
             if (field.getType() == boolean.class) {
                 field.setBoolean(settings, !field.getBoolean(settings)); save(); rebuildWidgets(); return;
             }
-            Minecraft.getInstance().setScreen(new ValueScreenTodoAi(this, settings, field)); //codex (old code snippet) Minecraft.getInstance().setScreenAndShow(new ValueScreenTodoAi(this, settings, field));
+            Minecraft.getInstance().setScreen(new ValueScreenTodoAi(this, settings, field, settings == AimAssistControllerTodoAi.config().aura.interpolation)); //codex (old code snippet) Minecraft.getInstance().setScreen(new ValueScreenTodoAi(this, settings, field));
         } catch (IllegalAccessException error) { throw new IllegalStateException(error); }
     }
     private static String label(String field) {
@@ -94,10 +94,13 @@ public final class AimAssistScreenTodoAi extends Screen {
         private final Screen parent;
         private final Object owner;
         private final Field field;
+        // codex start
+        private final boolean auraScaling;
+        //codex end
         private EditBox input;
         private String error = "";
-        ValueScreenTodoAi(Screen parent, Object owner, Field field) {
-            super(Component.literal(label(field.getName()))); this.parent = parent; this.owner = owner; this.field = field;
+        ValueScreenTodoAi(Screen parent, Object owner, Field field, boolean auraScaling) { //codex (old code snippet) ValueScreenTodoAi(Screen parent, Object owner, Field field) {
+            super(Component.literal(label(field.getName()))); this.parent = parent; this.owner = owner; this.field = field; this.auraScaling = auraScaling; //codex (old code snippet) super(Component.literal(label(field.getName()))); this.parent = parent; this.owner = owner; this.field = field;
         }
         @Override protected void init() {
             input = new EditBox(font, (width - 300) / 2, height / 2 - 24, 300, 20, title);
@@ -109,7 +112,7 @@ public final class AimAssistScreenTodoAi extends Screen {
             addRenderableWidget(input);
             setInitialFocus(input);
             addRenderableWidget(Button.builder(Component.literal("Save"), b -> {
-                try { apply(owner, field, input.getValue()); save(); onClose(); }
+                try { apply(owner, field, input.getValue(), auraScaling); save(); onClose(); } //codex (old code snippet) try { apply(owner, field, input.getValue()); save(); onClose(); }
                 catch (IllegalArgumentException | IllegalAccessException e) { error = e.getMessage(); }
             }).bounds((width - 300) / 2, height / 2 + 4, 300, 20).build());
             addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> onClose())
@@ -123,6 +126,11 @@ public final class AimAssistScreenTodoAi extends Screen {
         }
     }
     public static void apply(Object owner, Field field, String text) throws IllegalAccessException {
+        // codex start
+        apply(owner, field, text, false);
+    }
+    public static void apply(Object owner, Field field, String text, boolean auraScaling) throws IllegalAccessException {
+        //codex end
         String name = field.getName();
         if (field.getType() == int.class || field.getType() == double.class) {
             double value = Double.parseDouble(text);
@@ -137,6 +145,10 @@ public final class AimAssistScreenTodoAi extends Screen {
                 case "midpoint" -> max = 1;
                 case "horizontalMin", "horizontalMax", "verticalMin", "verticalMax" -> min = 1;
             }
+        // codex start
+            if (auraScaling && owner instanceof AimAssistConfigTodoAi.Interpolation &&
+                    Set.of("horizontalMin", "horizontalMax", "verticalMin", "verticalMax", "directionMin", "directionMax").contains(name)) max = Integer.MAX_VALUE;
+        //codex end
             if (!Double.isFinite(value) || value < min || value > max || field.getType() == int.class && value != Math.rint(value))
                 throw new IllegalArgumentException("Enter " + min + " through " + max);
             if (field.getType() == int.class) field.setInt(owner, (int) value); else field.setDouble(owner, value);
