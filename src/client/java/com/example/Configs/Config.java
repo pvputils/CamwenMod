@@ -50,6 +50,9 @@ public class Config {
     public boolean isTeammateTargetCrosshairMarkerEnabled = false;
     // codex end
     // codex start
+    public boolean isCameraAngleCrosshairIndicatorEnabled = false;
+    //codex end
+    // codex start
     public boolean isUnclampedPlayerWaypointsDisabled = false;
     // codex end
     // codex start
