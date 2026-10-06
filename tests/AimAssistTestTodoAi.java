@@ -21,21 +21,29 @@ public final class AimAssistTestTodoAi {
         check(error(outside, lookAt(eyes, nearestPoint(eyes, close, outside, 4.2, 0.15))) < 1e-6, "close hitbox stays inside FOV");
         for (int sign : new int[]{-1, 1}) {
             AABB box = sign < 0 ? new AABB(0.5, -1.5, 1, 1.5, -0.5, 2) : new AABB(0.5, 0.2, 1, 1.5, 1, 2);
-            Rotation current = lookAt(eyes, box.getCenter());
-            Rotation goal = centered(eyes, box, current, 4, 0.15);
-            check(goal != null && hits(eyes, box, goal, 4), "centered goal preserves hit above/below");
-            Vec3 atDepth = eyes.add(goal.direction().scale(box.getCenter().z / goal.direction().z));
-            check(Math.abs(atDepth.x - box.getCenter().x) < 1e-6, "horizontal center");
-            double boundary = sign < 0 ? box.maxY : box.minY;
-            check(Math.abs(atDepth.y - boundary) < 0.02, "neutral height evaluated at center depth");
+            Rotation current = lookAt(eyes, new Vec3(1.49, sign < 0 ? -1.49 : 0.99, 1.99)); //codex (old code snippet) Rotation current = lookAt(eyes, box.getCenter());
+            Rotation goal = neutralPitch(eyes, box, current, 4, 0.15); //codex (old code snippet) Rotation goal = centered(eyes, box, current, 4, 0.15);
+            check(goal != null && hits(eyes, box, goal, 4), "neutral pitch preserves an above/below hit"); //codex (old code snippet) check(goal != null && hits(eyes, box, goal, 4), "centered goal preserves hit above/below");
+            check(goal.yaw() == current.yaw(), "off-center target never changes yaw"); //codex (old code snippet) Vec3 atDepth = eyes.add(goal.direction().scale(box.getCenter().z / goal.direction().z));
+            check(Math.abs(goal.pitch()) < Math.abs(current.pitch()), "pitch moves toward zero"); //codex (old code snippet) check(Math.abs(atDepth.x - box.getCenter().x) < 1e-6, "horizontal center");
+            check(Math.signum(goal.pitch()) == Math.signum(current.pitch()), "pitch never crosses neutral"); //codex (old code snippet) double boundary = sign < 0 ? box.maxY : box.minY; check(Math.abs(atDepth.y - boundary) < 0.02, "neutral height evaluated at center depth");
         }
         AABB conflict = new AABB(0.5, 0.2, 1, 1.5, 1, 2);
         Rotation corner = lookAt(eyes, new Vec3(1.49, 0.201, 1.99));
-        Rotation goal = centered(eyes, conflict, corner, 4, 0.15);
-        check(Math.abs(goal.pitch()) > Math.abs(corner.pitch()), "centering wins over neutral angle");
-        Rotation constrained = constrain(new Rotation(goal.yaw(), corner.pitch()), goal, r -> hits(eyes, conflict, r, 4));
-        check(constrained != null && constrained.yaw() == goal.yaw() && hits(eyes, conflict, constrained, 4), "simultaneous turn clamps pitch instead of losing yaw progress");
-        check(centered(eyes, conflict, new Rotation(90, 0), 4, 0.15) == null, "targetting never acquires an invalid hit");
+        Rotation goal = neutralPitch(eyes, conflict, corner, 4, 0.15); //codex (old code snippet) Rotation goal = centered(eyes, conflict, corner, 4, 0.15);
+        check(goal.yaw() == corner.yaw() && Math.abs(goal.pitch()) <= Math.abs(corner.pitch()), "neutral pitch wins over hitbox centering"); //codex (old code snippet) check(Math.abs(goal.pitch()) > Math.abs(corner.pitch()), "centering wins over neutral angle");
+        check(neutralPitch(eyes, conflict, new Rotation(90, 0), 4, 0.15) == null, "targetting never acquires an invalid hit"); //codex (old code snippet) Rotation constrained = constrain(new Rotation(goal.yaw(), corner.pitch()), goal, r -> hits(eyes, conflict, r, 4));
+        AABB levelBox = new AABB(0.5, -1, 1, 1.5, 1, 2); //codex (old code snippet) check(constrained != null && constrained.yaw() == goal.yaw() && hits(eyes, conflict, constrained, 4), "simultaneous turn clamps pitch instead of losing yaw progress");
+        Rotation offCenter = lookAt(eyes, new Vec3(1.49, 0.8, 1.99)); //codex (old code snippet) check(centered(eyes, conflict, new Rotation(90, 0), 4, 0.15) == null, "targetting never acquires an invalid hit");
+        // codex start
+        Rotation levelGoal = neutralPitch(eyes, levelBox, offCenter, 4, 0.15);
+        check(levelGoal.yaw() == offCenter.yaw() && levelGoal.pitch() == 0, "neutral pitch reaches zero without centering yaw");
+        check(neutralPitch(eyes, levelBox, levelGoal, 4, 0.15).equals(levelGoal), "already neutral stays unchanged");
+        check(neutralPitch(eyes, levelBox, offCenter, 0.1, 0.15) == null, "out-of-range target stays inactive");
+        var neutralSettings = new AimAssistConfigTodoAi.Interpolation();
+        Rotation neutralSmoothed = smooth(offCenter, levelGoal, neutralSettings, null);
+        check(neutralSmoothed.yaw() == offCenter.yaw(), "neutral-only smoothing leaves yaw untouched");
+        //codex end
         check(!AimAssistControllerTodoAi.clickActive(false, 100, 100 + 200_000_000, 200), "window ends at 200ms");
         check(AimAssistControllerTodoAi.clickActive(false, 100, 100 + 199_000_000, 200), "every attempt activates 199ms later");
         check(!AimAssistControllerTodoAi.clickActive(false, 100, 100, 0), "zero disables post-attempt window");
