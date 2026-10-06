@@ -151,7 +151,7 @@ public final class AimAssistControllerTodoAi {
     private static Rotation targetingGoal(Minecraft mc, LivingEntity e, Rotation current, AimAssistConfigTodoAi.Assist cfg) { //codex (old code snippet) private static Rotation targetingGoal(Minecraft mc, LivingEntity e, Rotation current) {
         double range = entityRange(mc, cfg); //codex (old code snippet) double range = mc.player.entityInteractionRange();
         if (!valid(mc, e, current, range)) return null;
-        Rotation goal = neutralPitch(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc)); //codex (old code snippet) Rotation goal = centered(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc));
+        Rotation goal = AimCenterlineTodoAi.goal(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc), cfg.centerlineWidth); //codex (old code snippet) Rotation goal = neutralPitch(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc));
         return goal != null && valid(mc, e, normalize(mc, goal), range) ? goal : null;
     }
     private static boolean valid(Minecraft mc, LivingEntity e, Rotation rotation, double range) {
@@ -216,8 +216,7 @@ public final class AimAssistControllerTodoAi {
             Rotation goal = targetingGoal(mc, state.target, current(mc), cfg); //codex (old code snippet) Rotation goal = targetingGoal(mc, state.target, current(mc));
             if (goal == null) return;
             // codex start
-            double pitch = mc.player.getXRot();
-            proposed = new Rotation(goal.yaw(), Math.clamp(proposed.pitch(), Math.min(pitch, goal.pitch()), Math.max(pitch, goal.pitch())));
+            proposed = AimCenterlineTodoAi.clamp(current(mc), proposed, goal);
             //codex end
             proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), entityRange(mc, cfg))); //codex (old code snippet) proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), mc.player.entityInteractionRange()));
             if (proposed == null) return;

@@ -6,7 +6,8 @@
   "entrypoints": {
     "fabric-client-gametest": [
       "com.example.ApproachMouseGameTestTodoAi",
-      "com.example.ReachGameTestTodoAi"
+      "com.example.ReachGameTestTodoAi",
+      "com.example.CenterlineGameTestTodoAi"
     ]
   }
 }

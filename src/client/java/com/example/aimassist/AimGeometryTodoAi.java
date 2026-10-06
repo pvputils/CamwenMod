@@ -67,6 +67,9 @@ public final class AimGeometryTodoAi {
     }
     public static Rotation neutralPitch(Vec3 eyes, AABB box, Rotation current, double range, double mouseStep) { //codex (old code snippet) public static Rotation centered(Vec3 eyes, AABB box, Rotation current, double range, double mouseStep) {
         if (!hits(eyes, box, current, range) || box.contains(eyes)) return null;
+        // codex start
+        if (current.pitch <= 0) return current;
+        //codex end
         Rotation goal = constrain(new Rotation(current.yaw, 0), current, r -> hits(eyes, box, r, range)); //codex (old code snippet) Vec3 center = box.getCenter();
         if (goal.pitch == 0) return goal; //codex (old code snippet) double distance = Math.hypot(center.x - eyes.x, center.z - eyes.z);
         double inset = Math.min(Math.max(0, mouseStep), Math.abs(current.pitch - goal.pitch)); //codex (old code snippet) double margin = Math.min(Math.max(0.002, distance * Math.tan(Math.toRadians(mouseStep))), box.getYsize() / 4);
