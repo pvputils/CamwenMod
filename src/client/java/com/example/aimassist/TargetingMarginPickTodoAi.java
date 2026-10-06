@@ -10,6 +10,14 @@ public final class TargetingMarginPickTodoAi {
     private TargetingMarginPickTodoAi() {}
 
     public static HitResult pick(Minecraft mc, Float bypass) {
+        // codex start
+        return pick(mc, bypass, 0);
+    }
+    public static HitResult pick(Minecraft mc, Float bypass, double reach) {
+        return AimAssistReachTodoAi.withReach(mc.player, reach, () -> pickWithCurrentReach(mc, bypass));
+    }
+    private static HitResult pickWithCurrentReach(Minecraft mc, Float bypass) {
+        //codex end
         var cheats = Utils.computeCheatConfig();
         float previous = cheats.staticTargetingMarginBypass;
         try {

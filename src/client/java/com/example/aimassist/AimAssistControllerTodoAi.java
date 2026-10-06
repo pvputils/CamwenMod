@@ -18,7 +18,7 @@ import net.minecraft.world.phys.AABB;
 import java.util.*;
 import static com.example.aimassist.AimGeometryTodoAi.*;
 
-/** Client-side look assistance only. Never attacks, sends rotations, or changes reach. */
+/** Client-side look assistance with scoped reach probes. Never attacks or sends rotations. */ //codex (old code snippet) /** Client-side look assistance only. Never attacks, sends rotations, or changes reach. */
 public final class AimAssistControllerTodoAi {
     private static final State AURA = new State(), TARGETTING = new State();
     private static final Map<UUID, Long> locks = new HashMap<>();
@@ -37,11 +37,12 @@ public final class AimAssistControllerTodoAi {
     }
     private AimAssistControllerTodoAi() {}
     public static LivingEntity auraEligibleTarget(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
-        if (mc.player == null || mc.level == null || mc.hitResult == null ||
-            mc.hitResult.getType() == HitResult.Type.ENTITY || cfg.targetingMargin <= 0) return null;
-        if (TargetingMarginPickTodoAi.pick(mc, null).getType() == HitResult.Type.ENTITY) return null;
+        // codex start
+        if (mc.player == null || mc.level == null || cfg.targetingMargin <= 0) return null;
+        if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.reach).getType() == HitResult.Type.ENTITY) return null;
         float increased = Utils.computeCheatConfig().staticTargetingMarginBypass + (float) cfg.targetingMargin;
-        HitResult expanded = TargetingMarginPickTodoAi.pick(mc, increased);
+        HitResult expanded = TargetingMarginPickTodoAi.pick(mc, increased, cfg.reach);
+        //codex end
         return expanded instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living ? living : null;
     }
     public static AimAssistConfigTodoAi config() {
@@ -84,8 +85,8 @@ public final class AimAssistControllerTodoAi {
         if (!active(mc, state, cfg)) return;
         Rotation current = current(mc), goal = null;
         if (targetting) {
-            if (mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) {
-                goal = targetingGoal(mc, entity, current);
+            if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.reach) instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) { //codex (old code snippet) if (mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity entity && allowed(mc, entity)) {
+                goal = targetingGoal(mc, entity, current, cfg); //codex (old code snippet) goal = targetingGoal(mc, entity, current);
                 if (goal != null) state.target = entity;
             }
         } else {
@@ -94,13 +95,13 @@ public final class AimAssistControllerTodoAi {
             List<LivingEntity> candidates = new ArrayList<>();
             for (var entity : mc.level.entitiesForRendering()) if (entity instanceof LivingEntity living &&
                 allowed(mc, living) && living.hurtTime <= cfg.hurtTime &&
-                living.getBoundingBox().distanceToSqr(mc.player.getEyePosition()) <= cfg.range * cfg.range) candidates.add(living);
+                living.getBoundingBox().distanceToSqr(mc.player.getEyePosition()) <= assistRange(mc, cfg) * assistRange(mc, cfg)) candidates.add(living); //codex (old code snippet) living.getBoundingBox().distanceToSqr(mc.player.getEyePosition()) <= cfg.range * cfg.range) candidates.add(living);
             candidates.sort((a, b) -> compare(mc, a, b, cfg.priorities));
             for (LivingEntity entity : candidates) {
                 if (entity != eligible) continue;
-                Vec3 point = nearestPoint(mc.player.getEyePosition(), entity.getBoundingBox(), current, cfg.range, mouseStep(mc));
+                Vec3 point = nearestPoint(mc.player.getEyePosition(), entity.getBoundingBox(), current, assistRange(mc, cfg), mouseStep(mc)); //codex (old code snippet) Vec3 point = nearestPoint(mc.player.getEyePosition(), entity.getBoundingBox(), current, cfg.range, mouseStep(mc));
                 Rotation desired = lookAt(mc.player.getEyePosition(), point);
-                if (valid(mc, entity, desired, cfg.range)) { state.target = entity; goal = desired; break; }
+                if (valid(mc, entity, desired, assistRange(mc, cfg))) { state.target = entity; goal = desired; break; } //codex (old code snippet) if (valid(mc, entity, desired, cfg.range)) { state.target = entity; goal = desired; break; }
             }
         }
         if (goal != null) {
@@ -147,8 +148,8 @@ public final class AimAssistControllerTodoAi {
         }
         return true;
     }
-    private static Rotation targetingGoal(Minecraft mc, LivingEntity e, Rotation current) {
-        double range = mc.player.entityInteractionRange();
+    private static Rotation targetingGoal(Minecraft mc, LivingEntity e, Rotation current, AimAssistConfigTodoAi.Assist cfg) { //codex (old code snippet) private static Rotation targetingGoal(Minecraft mc, LivingEntity e, Rotation current) {
+        double range = entityRange(mc, cfg); //codex (old code snippet) double range = mc.player.entityInteractionRange();
         if (!valid(mc, e, current, range)) return null;
         Rotation goal = neutralPitch(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc)); //codex (old code snippet) Rotation goal = centered(mc.player.getEyePosition(), e.getBoundingBox(), current, range, mouseStep(mc));
         return goal != null && valid(mc, e, normalize(mc, goal), range) ? goal : null;
@@ -178,7 +179,7 @@ public final class AimAssistControllerTodoAi {
         }
         // codex start
         long now = System.nanoTime();
-        double trackingRange = Math.max(config().aura.range, mc.player.entityInteractionRange()) + 1;
+        double trackingRange = Math.max(assistRange(mc, config().aura), entityRange(mc, config().targetting)) + 1;
         Set<UUID> tracked = new HashSet<>();
         for (var entity : mc.level.entitiesForRendering()) if (entity instanceof LivingEntity living && living != mc.player) {
             AABB box = crosshairBox(living, partialTicks);
@@ -211,14 +212,14 @@ public final class AimAssistControllerTodoAi {
         //codex end
         Rotation proposed = state.start.toward(state.end, Math.clamp(partial, 0, 1));
         if (targeting) {
-            if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != state.target) return;
-            Rotation goal = targetingGoal(mc, state.target, current(mc));
+            if (!(TargetingMarginPickTodoAi.pick(mc, 0f, cfg.reach) instanceof EntityHitResult hit) || hit.getEntity() != state.target) return; //codex (old code snippet) if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != state.target) return;
+            Rotation goal = targetingGoal(mc, state.target, current(mc), cfg); //codex (old code snippet) Rotation goal = targetingGoal(mc, state.target, current(mc));
             if (goal == null) return;
             // codex start
             double pitch = mc.player.getXRot();
             proposed = new Rotation(goal.yaw(), Math.clamp(proposed.pitch(), Math.min(pitch, goal.pitch()), Math.max(pitch, goal.pitch())));
             //codex end
-            proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), mc.player.entityInteractionRange()));
+            proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), entityRange(mc, cfg))); //codex (old code snippet) proposed = constrain(proposed, goal, r -> valid(mc, state.target, normalize(mc, r), mc.player.entityInteractionRange()));
             if (proposed == null) return;
         } else {
             if (auraEligibleTarget(mc, cfg) != state.target) return;
@@ -228,6 +229,14 @@ public final class AimAssistControllerTodoAi {
         mc.player.setYRot((float) normalized.yaw());
         mc.player.setXRot((float) normalized.pitch());
     }
+    // codex start
+    private static double entityRange(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
+        return AimAssistReachTodoAi.withReach(mc.player, cfg.reach, mc.player::entityInteractionRange);
+    }
+    private static double assistRange(Minecraft mc, AimAssistConfigTodoAi.Assist cfg) {
+        return cfg.range + AimAssistReachTodoAi.addition(cfg.reach);
+    }
+    //codex end
     // codex start
     private static AABB crosshairBox(LivingEntity entity, float partial) {
         return entity.getBoundingBox().move(entity.getPosition(partial).subtract(entity.position()));

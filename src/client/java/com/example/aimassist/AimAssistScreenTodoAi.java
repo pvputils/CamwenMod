@@ -78,6 +78,9 @@ public final class AimAssistScreenTodoAi extends Screen {
         } catch (IllegalAccessException error) { throw new IllegalStateException(error); }
     }
     private static String label(String field) {
+        // codex start
+        if (field.equals("reach")) return "Reach addition";
+        //codex end
         if (field.equals("targetingMargin")) return "Targeting margin bypass addition";
         return Character.toUpperCase(field.charAt(0)) + field.substring(1);
     }
