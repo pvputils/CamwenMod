@@ -112,6 +112,11 @@ public final class AimAssistControllerTodoAi {
     }
     private static boolean allowed(Minecraft mc, LivingEntity e) {
         var t = config().targets;
+        if (UntitledClient.config.isAimAssistDisabledOnTeammates && e instanceof Player) {
+            var team = UntitledClient.config.nameplateUuids.get(e.getUUID());
+            if (team == com.example.Configs.Config.NameplateTeam.ALLY ||
+                team == com.example.Configs.Config.NameplateTeam.FRIENDLY) return false;
+        }
         if (e == mc.player || e.isRemoved() || !e.isAlive() && !t.dead || e.isInvisible() && !t.invisible || e.isSpectator()) return false;
         boolean type = e instanceof Player ? t.players : e instanceof ArmorStand ? t.armorStand :
             e instanceof Enemy ? t.hostile : e instanceof NeutralMob ? t.angerable : e instanceof WaterAnimal ? t.waterCreature : t.passive;

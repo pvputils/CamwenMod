@@ -11,6 +11,9 @@ public class Config {
     // codex start
     public AimAssistConfigTodoAi aimAssist = new AimAssistConfigTodoAi();
     //codex end
+    // codex start
+    public boolean isAimAssistDisabledOnTeammates = false;
+    //codex end
     public enum NameplateTeam {
         // targeting margin relies on this being only allies
         FRIENDLY(TextColor.GREEN),

@@ -128,6 +128,11 @@ public final class ExternalConfigWindow {
         addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,
                 "opens aura and targetting settings");
         //codex end
+        // codex start
+        addCheckBox(grid, "disable aim assist on teammates", () -> config.isAimAssistDisabledOnTeammates,
+                value -> config.isAimAssistDisabledOnTeammates = value,
+                "prevents aura and targetting from assisting toward players marked Ally or Friendly");
+        //codex end
         addCheckBox(grid, "togglesneak gui", () -> config.isToggleSneakGuiEnabled,
                 value -> config.isToggleSneakGuiEnabled = value,
                 "modified version of the classic hcf togglesneak's gui");
