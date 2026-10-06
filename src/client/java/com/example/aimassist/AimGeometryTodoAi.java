@@ -66,6 +66,11 @@ public final class AimGeometryTodoAi {
         return best;
     }
     // codex start
+    public static boolean mouseAllowsAssist(Vec3 eyes, AABB box, AimMouseMotionTodoAi.Motion motion,
+                                            double range, double mouseStep) {
+        return motion == null || error(motion.before(), motion.after()) <= 1e-7 ||
+                approachingHitbox(eyes, box, motion.before(), motion.after(), range, mouseStep);
+    }
     public static boolean approachingHitbox(Vec3 eyes, AABB box, Rotation before, Rotation after,
                                             double range, double mouseStep) {
         if (before == null || after == null || error(before, after) <= 1e-7 || hits(eyes, box, before, range)) return false;

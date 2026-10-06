@@ -179,8 +179,8 @@ public final class AimAssistControllerTodoAi {
     private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial, AimMouseMotionTodoAi.Motion motion) { //codex (old code snippet) private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial) {
         if (!active(mc, state, cfg) || state.target == null || state.end == null || !allowed(mc, state.target)) return;
         // codex start
-        if (motion == null || !approachingHitbox(mc.player.getEyePosition(), state.target.getBoundingBox(),
-                motion.before(), motion.after(), targeting ? mc.player.entityInteractionRange() : cfg.range, mouseStep(mc))) return;
+        if (!mouseAllowsAssist(mc.player.getEyePosition(), state.target.getBoundingBox(), motion, //codex (old code snippet) if (motion == null || !approachingHitbox(mc.player.getEyePosition(), state.target.getBoundingBox(),
+                targeting ? mc.player.entityInteractionRange() : cfg.range, mouseStep(mc))) return; //codex (old code snippet) motion.before(), motion.after(), targeting ? mc.player.entityInteractionRange() : cfg.range, mouseStep(mc))) return;
         //codex end
         Rotation proposed = state.start.toward(state.end, Math.clamp(partial, 0, 1));
         if (targeting) {

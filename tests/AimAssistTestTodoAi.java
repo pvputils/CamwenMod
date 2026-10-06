@@ -93,6 +93,11 @@ public final class AimAssistTestTodoAi {
         AABB behind = new AABB(0.5, -0.5, -4, 1.5, 0.5, -3);
         check(approachingHitbox(eyes, behind, new Rotation(175, 0), new Rotation(-179, 0), 8, 0.15), "approach works across yaw wrapping");
         check(!approachingHitbox(eyes, motionBox, new Rotation(-15, 0), new Rotation(-15, 1), 8, 0.15), "tangential movement does not engage");
+        check(mouseAllowsAssist(eyes, motionBox, null, 8, 0.15), "no mouse motion allows assistance");
+        check(mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(-15, 0), new Rotation(-15, 0)), 8, 0.15), "stationary outside allows assistance");
+        check(mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(0, 0), new Rotation(0, 0)), 8, 0.15), "stationary inside allows neutral pitch assistance");
+        check(!mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(0, 0), new Rotation(-15, 0)), 8, 0.15), "moving out still blocks assistance");
+        check(!mouseAllowsAssist(eyes, motionBox, new AimMouseMotionTodoAi.Motion(new Rotation(-15, 0), new Rotation(-20, 0)), 8, 0.15), "moving away still blocks assistance");
         var mouse = new AimMouseMotionTodoAi();
         mouse.record(new Rotation(-20, 0), new Rotation(-15, 0));
         check(mouse.consume() != null && mouse.consume() == null, "mouse motion is consumed once and cannot sustain assistance");
