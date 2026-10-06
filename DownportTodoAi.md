@@ -17,3 +17,7 @@ Automated client-world compatibility check (creates an isolated flat test world)
 ```powershell
 .\gradlew.bat -I tests/downportGameTestsTodoAi.gradle runClientGameTest
 ```
+
+Aim assist follows crosshair proximity to the hitbox, including interpolated player and target movement. Steady or decreasing proximity allows assistance; increasing proximity, leaving the hitbox, or crossing past it blocks assistance. A still mouse does not override walking away. History records the result after assistance so the assist does not feed itself.
+
+Crosshair movement client-world regression check: `./gradlew.bat -I tests/approachMouseGameTestsTodoAi.gradle runClientGameTest`. Geometry regressions are included in `aimAssistTestsTodoAi` above.

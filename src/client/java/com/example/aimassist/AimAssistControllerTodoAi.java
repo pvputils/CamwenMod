@@ -14,6 +14,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 import java.util.*;
 import static com.example.aimassist.AimGeometryTodoAi.*;
 
@@ -23,6 +24,9 @@ public final class AimAssistControllerTodoAi {
     private static final Map<UUID, Long> locks = new HashMap<>();
     private static ClientLevel level;
     private static Rotation lastApplied;
+    // codex start
+    private static final Map<UUID, AimCrosshairMotionTodoAi.Observation> CROSSHAIR_HISTORY = new HashMap<>();
+    //codex end
 
     private static final class State {
         LivingEntity target;
@@ -63,7 +67,7 @@ public final class AimAssistControllerTodoAi {
     }
     public static void tick(Minecraft mc) {
         if (level != mc.level) {
-            level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null;
+            level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null; CROSSHAIR_HISTORY.clear(); //codex (old code snippet) level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null;
         }
         if (mc.player == null || mc.level == null) return;
         locks.entrySet().removeIf(e -> e.getValue() <= System.nanoTime() ||
@@ -156,7 +160,12 @@ public final class AimAssistControllerTodoAi {
         return block.getType() == HitResult.Type.MISS || block.getLocation().distanceToSqr(eyes) + 1e-7 >= point.distanceToSqr(eyes);
     }
     public static void render(Minecraft mc, float partialTicks) {
-        if (mc.player == null || mc.level != level) return;
+        // codex start
+        if (mc.player == null || mc.level != level || mc.screen != null) { //codex (old code snippet) if (mc.player == null || mc.level != level) return;
+            CROSSHAIR_HISTORY.clear();
+            return;
+        }
+        //codex end
         Rotation actual = current(mc);
         if (lastApplied != null) {
             double yaw = wrap(actual.yaw() - lastApplied.yaw()), pitch = actual.pitch() - lastApplied.pitch();
@@ -168,9 +177,21 @@ public final class AimAssistControllerTodoAi {
         apply(mc, AURA, config().aura, false, partialTicks);
         apply(mc, TARGETTING, config().targetting, true, partialTicks);
         lastApplied = current(mc);
+        // codex start
+        CROSSHAIR_HISTORY.clear();
+        for (var entity : mc.level.entitiesForRendering()) if (entity instanceof LivingEntity living) {
+            CROSSHAIR_HISTORY.put(living.getUUID(), new AimCrosshairMotionTodoAi.Observation(
+                    mc.player.getEyePosition(partialTicks), crosshairBox(living, partialTicks), lastApplied));
+        }
+        //codex end
     }
     private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial) {
         if (!active(mc, state, cfg) || state.target == null || state.end == null || !allowed(mc, state.target)) return;
+        // codex start
+        var previous = CROSSHAIR_HISTORY.get(state.target.getUUID());
+        if (!AimCrosshairMotionTodoAi.allowsAssist(previous == null ? null : previous.proximity(),
+                AimCrosshairMotionTodoAi.sample(mc.player.getEyePosition(partial), crosshairBox(state.target, partial), current(mc)))) return;
+        //codex end
         Rotation proposed = state.start.toward(state.end, Math.clamp(partial, 0, 1));
         if (targeting) {
             if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != state.target) return;
@@ -190,6 +211,11 @@ public final class AimAssistControllerTodoAi {
         mc.player.setYRot((float) normalized.yaw());
         mc.player.setXRot((float) normalized.pitch());
     }
+    // codex start
+    private static AABB crosshairBox(LivingEntity entity, float partial) {
+        return entity.getBoundingBox().move(entity.getPosition(partial).subtract(entity.position()));
+    }
+    //codex end
     private static Rotation current(Minecraft mc) { return new Rotation(mc.player.getYRot(), mc.player.getXRot()); }
     private static double mouseStep(Minecraft mc) {
         double f = mc.options.sensitivity().get() * 0.6 + 0.2;

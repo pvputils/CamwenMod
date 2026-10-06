@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "camwen-approach-tests",
+  "version": "1.0",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "com.example.ApproachMouseGameTestTodoAi"
+    ]
+  }
+}

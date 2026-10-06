@@ -79,6 +79,28 @@ public final class AimAssistTestTodoAi {
         scaling.horizontalMin = scaling.horizontalMax = Integer.MAX_VALUE;
         check(Double.isFinite(smooth(start, finish, scaling, null, true).yaw()), "maximum integer scaling does not overflow random bounds");
         //codex end
+        // codex start
+        AABB motionBox = new AABB(-0.5, -0.5, 3, 0.5, 0.5, 4);
+        Rotation still = new Rotation(0, 0);
+        var insideProximity = AimCrosshairMotionTodoAi.sample(eyes, motionBox, still);
+        var outsideProximity = AimCrosshairMotionTodoAi.sample(new Vec3(1, 0, 0), motionBox, still);
+        var fartherProximity = AimCrosshairMotionTodoAi.sample(new Vec3(2, 0, 0), motionBox, still);
+        check(!AimCrosshairMotionTodoAi.allowsAssist(insideProximity, outsideProximity), "walking out with static yaw blocks assistance");
+        check(!AimCrosshairMotionTodoAi.allowsAssist(outsideProximity, fartherProximity), "walking farther away with static yaw blocks assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(fartherProximity, outsideProximity), "walking toward hitbox with static yaw allows assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(outsideProximity, insideProximity), "walking into hitbox allows assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(outsideProximity, outsideProximity), "stationary outside allows assistance");
+        check(AimCrosshairMotionTodoAi.allowsAssist(insideProximity, insideProximity), "stationary inside allows neutral pitch assistance");
+        var movingBox = motionBox.move(1, 0, 0);
+        check(!AimCrosshairMotionTodoAi.allowsAssist(insideProximity, AimCrosshairMotionTodoAi.sample(eyes, movingBox, still)), "target walking away blocks assistance");
+        var approach = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(-20, 0));
+        var closer = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(-15, 0));
+        check(AimCrosshairMotionTodoAi.allowsAssist(approach, closer), "crosshair turn toward edge assists");
+        check(!AimCrosshairMotionTodoAi.allowsAssist(closer, approach), "crosshair turn away does not assist");
+        check(!AimCrosshairMotionTodoAi.allowsAssist(approach, AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(15, 0))), "crossing past hitbox does not pull back");
+        check(AimCrosshairMotionTodoAi.allowsAssist(null, outsideProximity), "new target initializes history");
+        check(insideProximity.distance() == 0, "crosshair inside hitbox has zero distance");
+        //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }
 }
