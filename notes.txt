@@ -3,8 +3,13 @@
     >make autorun it's own mod
     >make xray it's own mod
 
->turn reach debug mode thing into a min range
 
+>aimassist lags on initial proc?
+
+test if ethylene even does anything? + test if ethylene gets flagged by grim
+>make w tap helper work with togglesprint?
+>armor dura notification external screen thing?
+>turn reach debug mode thing into a min range
 >conservative estimate health indicators:
         >uses hits on you to know how much damage things do to certain armor values
         >uses conservative estimates of healing
