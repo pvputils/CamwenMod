@@ -1,0 +1,28 @@
+repositories {
+    maven { url = 'https://maven.ccbluex.net/releases' }
+    maven { url = 'https://repo.viaversion.com/' }
+}
+loom { accessWidenerPath = file('src/client/resources/KillAuraAccessTodoAi.accesswidener') }
+dependencies {
+    implementation 'ai.djl:api:0.38.0'
+    include 'ai.djl:api:0.38.0'
+    implementation 'ai.djl.pytorch:pytorch-engine:0.38.0'
+    include 'ai.djl.pytorch:pytorch-engine:0.38.0'
+    implementation 'com.squareup.okio:okio-jvm:3.18.1'
+    include 'com.squareup.okio:okio-jvm:3.18.1'
+    compileOnly 'net.ccbluex:fastutil4k-extensions-only:0.2.10'
+    implementation 'net.ccbluex:fastutil4k-more-collections:0.2.10'
+    include 'net.ccbluex:fastutil4k-more-collections:0.2.10'
+    compileOnly 'com.viaversion:viafabricplus-api:5.1.1'
+    compileOnly 'com.viaversion:viafabricplus:5.1.1'
+    compileOnly 'maven.modrinth:modmenu:21.0.0'
+}
+tasks.named('processClientResources') { from(zipTree('KillAuraResourcesTodoAi.zip')) }
+tasks.named('jar') { from('KillAuraLicenseTodoAi.txt') }
+kotlin { compilerOptions { freeCompilerArgs.addAll('-Xjvm-default=all', '-Xcontext-parameters', '-XXLanguage:+CompanionBlocksAndExtensions', '-XXLanguage:+CollectionLiterals') } }
+
+afterEvaluate {
+    if (tasks.findByName('runClientGameTest') != null) {
+        loom.runs.named('clientGameTest') { environmentVariable('ALSOFT_DRIVERS', 'null') }
+    }
+}

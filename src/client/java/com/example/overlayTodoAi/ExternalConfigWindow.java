@@ -2,6 +2,7 @@ package com.example.overlayTodoAi;
 
 import com.example.Configs.Config;
 import com.example.aimassist.AimAssistScreenTodoAi;
+import net.ccbluex.liquidbounce.integration.screen.KillAuraConfigScreenTodoAi;
 import com.example.Configs.CheatConfig;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
@@ -124,6 +125,12 @@ public final class ExternalConfigWindow {
 
         JPanel grid = new JPanel(new GridLayout(0, 4, 8, 8));
         grid.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        // codex start
+        addButton(grid, "KillAura", () -> net.minecraft.client.Minecraft.getInstance().execute(() -> {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            mc.setScreenAndShow(new KillAuraConfigScreenTodoAi(mc.gui.screen(), net.ccbluex.liquidbounce.features.module.modules.combat.killaura.ModuleKillAura.INSTANCE, 0));
+        }), "Configure KillAura rotations and targets");
+        //codex end
         // codex start
         addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,
                 "opens aura and targetting settings");

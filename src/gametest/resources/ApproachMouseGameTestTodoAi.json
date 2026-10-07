@@ -3,11 +3,13 @@
   "id": "camwen-approach-tests",
   "version": "1.0",
   "environment": "client",
+  "mixins": ["TestThreadRegistrationMixinsTodoAi.json"],
   "entrypoints": {
     "fabric-client-gametest": [
       "com.example.ApproachMouseGameTestTodoAi",
       "com.example.ReachGameTestTodoAi",
-      "com.example.CenterlineGameTestTodoAi"
+      "com.example.CenterlineGameTestTodoAi",
+      "net.ccbluex.liquidbounce.gametest.KillAuraGameTestTodoAi"
     ]
   }
 }
