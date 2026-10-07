@@ -63,7 +63,15 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     target.setBoundingBox(new AABB(eyes.x - 0.5, eyes.y - 0.5, eyes.z + 2,
                             eyes.x + 0.5, eyes.y + 0.5, eyes.z + 3));
                     target.setId(1_000_000);
-                    mc.level.addEntity(target);
+                    // codex start
+                    AimAssistControllerTodoAi.tick(mc);
+                    mc.level.addEntity(target); //codex (old code snippet) mc.level.addEntity(target);
+                    player.setXRot(3);
+                    AimAssistControllerTodoAi.attackAttempt();
+                    AimAssistControllerTodoAi.render(mc, 1f);
+                    if (!(player.getXRot() < 3))
+                        throw new AssertionError("First proc must acquire and turn before another client tick");
+                    //codex end
                     var stateField = AimAssistControllerTodoAi.class.getDeclaredField("TARGETTING");
                     stateField.setAccessible(true);
                     var state = stateField.get(null);

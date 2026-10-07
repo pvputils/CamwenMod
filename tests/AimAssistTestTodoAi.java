@@ -135,6 +135,18 @@ public final class AimAssistTestTodoAi {
         check(gesture.update(fartherProximity, outsideProximity, time + 1_000_000), "deliberate reversal toward target assists immediately");
         //codex end
         // codex start
+        // codex start
+        var acquisitionGate = new AimCrosshairMotionTodoAi.Gate();
+        var entry = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(7, 0));
+        var inward = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(6, 0));
+        check(entry.inside() && inward.inside(), "entry regression stays inside hitbox");
+        check(acquisitionGate.update(AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(15, 0)), entry, 1_000_000_000L), "first entry assists immediately");
+        check(acquisitionGate.update(entry, inward, 1_001_000_000L), "continuing inward after first entry stays instant");
+        check(!acquisitionGate.update(inward, entry, 1_002_000_000L), "outward movement inside still blocks");
+        check(acquisitionGate.update(entry, inward, 1_003_000_000L), "inward reversal bypasses still timeout");
+        check(!AimCrosshairMotionTodoAi.allowsAssist(entry,
+                AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(-6, 0))), "crossing center does not pull back");
+        //codex end
         var reachConfig = new AimAssistConfigTodoAi();
         check(reachConfig.aura.range == 4.2 && reachConfig.targetting.range == 4.2, "existing range defaults preserved");
         AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("range"), "2.5");

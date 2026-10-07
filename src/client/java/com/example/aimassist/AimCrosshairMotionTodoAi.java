@@ -48,8 +48,12 @@ public final class AimCrosshairMotionTodoAi {
         if (previous == null) return true;
         // codex start
         if (previous.inside()) {
-            return current.inside() && Math.hypot(wrap(current.yaw() - previous.yaw()),
-                    current.pitch() - previous.pitch()) <= 1e-7;
+            // codex start
+            double previousOffset = Math.hypot(previous.yaw(), previous.pitch());
+            double currentOffset = Math.hypot(current.yaw(), current.pitch());
+            return current.inside() && currentOffset <= previousOffset + 1e-7 && //codex (old code snippet) return current.inside() && Math.hypot(wrap(current.yaw() - previous.yaw()),
+                    previous.yaw() * current.yaw() + previous.pitch() * current.pitch() >= -1e-7; //codex (old code snippet) current.pitch() - previous.pitch()) <= 1e-7;
+            //codex end
         }
         if (current.inside()) return true;
         //codex end

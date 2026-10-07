@@ -213,6 +213,11 @@ public final class AimAssistControllerTodoAi {
         }
         CROSSHAIR_GATES.keySet().retainAll(tracked);
         //codex end
+        // codex start
+        // Acquire on the first eligible render instead of waiting up to a client tick.
+        if (AURA.target == null || AURA.end == null) plan(mc, AURA, config().aura, false);
+        if (TARGETTING.target == null || TARGETTING.end == null) plan(mc, TARGETTING, config().targetting, true);
+        //codex end
         apply(mc, AURA, config().aura, false, partialTicks);
         apply(mc, TARGETTING, config().targetting, true, partialTicks);
         lastApplied = current(mc);
