@@ -19,15 +19,15 @@ public final class TargetingMarginPickTodoAi {
     private static HitResult pickWithCurrentReach(Minecraft mc, Float bypass, double range) {
         //codex end
         var cheats = Utils.computeCheatConfig();
-        float previous = cheats.staticTargetingMarginBypass;
+        float previous = cheats.targetingMarginBypass; //codex (old code snippet) float previous = cheats.staticTargetingMarginBypass;
         try {
-            if (bypass != null) cheats.staticTargetingMarginBypass = bypass;
+            if (bypass != null) cheats.targetingMarginBypass = bypass; //codex (old code snippet) if (bypass != null) cheats.staticTargetingMarginBypass = bypass;
             return ClientPlayerEntityInvoker.aimAssistPickTodoAi(mc.getCameraEntity(),
                 range > 0 ? Math.min(range, mc.player.blockInteractionRange()) : mc.player.blockInteractionRange(),
                 range > 0 ? Math.min(range, mc.player.entityInteractionRange()) : mc.player.entityInteractionRange(),
                 mc.getDeltaTracker().getGameTimeDeltaTicks());
         } finally {
-            cheats.staticTargetingMarginBypass = previous;
+            cheats.targetingMarginBypass = previous; //codex (old code snippet) cheats.staticTargetingMarginBypass = previous;
         }
     }
 }

@@ -48,7 +48,7 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
                 UntitledClient.config.isCheatsEnabled = true;
                 var cheats = Utils.computeCheatConfig();
                 cheats.isTargetingMarginReverted = false;
-                cheats.staticTargetingMarginBypass = 0;
+                cheats.targetingMarginBypass = 0; //codex (old code snippet) cheats.staticTargetingMarginBypass = 0;
                 var eyes = player.getEyePosition();
                 var target = new RemotePlayer(mc.level, new GameProfile(UUID.randomUUID(), "ReachRegression"));
                 target.setId(1_000_001);
@@ -105,7 +105,7 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
                 check(player.getYRot() != 0, "reach plus margin actually renders aura assistance");
                 check(block.getModifiers().equals(blockModifiers) && entity.getModifiers().equals(entityModifiers), "no reach modifiers leak from planning/rendering");
                 check(player.blockInteractionRange() == blockRange && player.entityInteractionRange() == entityRange, "normal interaction ranges unchanged afterward");
-                check(cheats.staticTargetingMarginBypass == 0, "temporary margin restored");
+                check(cheats.targetingMarginBypass == 0, "temporary margin restored"); //codex (old code snippet) check(cheats.staticTargetingMarginBypass == 0, "temporary margin restored");
             });
             System.out.println("PASS: extended reach picking, neutral assistance, aura routing and scoped attribute cleanup");
         }

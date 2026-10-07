@@ -1,5 +1,7 @@
 package com.example.Configs;
 
+import com.google.gson.annotations.SerializedName;
+
 import static com.example.UntitledClient.config;
 
 public class CheatConfig {
@@ -12,7 +14,10 @@ public class CheatConfig {
     public boolean isTargetingMarginReverted = false;
     //    public record MovementPair() {}
 //    public HashMap<> advanced?dynamic? reach
-    public float staticTargetingMarginBypass = .0f;
+    // codex start
+    @SerializedName(value = "targetingMarginBypass", alternate = {"staticTargetingMarginBypass"})
+    //codex end
+    public float targetingMarginBypass = .0f; //codex (old code snippet) public float staticTargetingMarginBypass = .0f;
 //    public float movingTargetMarginBypass = 0.f;
 //    public float doubleWalkingTargetMarginBypass = 0.f;
 //    TODO;
@@ -24,7 +29,7 @@ public class CheatConfig {
 //    public boolean isAutoCobweb = false; // TODO -> struct?
 //    public double cobwebRangeBypassDelta = .0f;
 
-    public float computeTargetingMarginBypass() {
+    public float computeTargetingMarginBypass(boolean isMoving, boolean isTargetMovingPlayer) { //codex (old code snippet) public float computeTargetingMarginBypass() {
         if (!config.isCheatsEnabled) {
             return 0.f;
         }
@@ -32,7 +37,7 @@ public class CheatConfig {
         float base = isTargetingMarginReverted
                 ? .1f
                 : 0.f;
-        float one = staticTargetingMarginBypass;
+        float one = isMoving && isTargetMovingPlayer ? targetingMarginBypass : 0.f; //codex (old code snippet) float one = staticTargetingMarginBypass;
 //        float two = isMoving
 //                ? movingTargetMarginBypass
 //                : 0.f;

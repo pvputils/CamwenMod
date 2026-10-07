@@ -48,7 +48,7 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 cfg.targetting.requires.notBreaking = false;
                 UntitledClient.config.isCheatsEnabled = true;
                 Utils.computeCheatConfig().isTargetingMarginReverted = false;
-                Utils.computeCheatConfig().staticTargetingMarginBypass = 0;
+                Utils.computeCheatConfig().targetingMarginBypass = 0; //codex (old code snippet) Utils.computeCheatConfig().staticTargetingMarginBypass = 0;
                 var eyes = mc.player.getEyePosition();
                 var target = new RemotePlayer(mc.level, new GameProfile(UUID.randomUUID(), "CenterBandRegression"));
                 target.setId(1_000_002);

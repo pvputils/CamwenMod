@@ -1,6 +1,7 @@
 package com.example.mixins;
 
 import com.example.Configs.Config;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
@@ -79,7 +80,11 @@ public abstract class EntityMixin {
                 config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam nameplateTeam) {
             return;
         }
-        cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass());
+        // codex start
+        var localPlayer = Minecraft.getInstance().player;
+        boolean isMoving = localPlayer != null && localPlayer.input.getMoveVector().lengthSquared() > 0.f;
+        //codex end
+        cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass(isMoving, isLocallyMoving)); //codex (old code snippet) cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass());
         cir.cancel();
     }
 

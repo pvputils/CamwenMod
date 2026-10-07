@@ -178,9 +178,9 @@ public final class ExternalConfigWindow {
         addCheckBox(grid, "targeting margin revert", () -> activeCheatConfig.isTargetingMarginReverted,
                 value -> activeCheatConfig.isTargetingMarginReverted = value,
                 "will flag hard on versions that use smaller hitboxes");
-        addFloatField(grid, "targeting margin (static)", activeCheatConfig.staticTargetingMarginBypass,
-                value -> activeCheatConfig.staticTargetingMarginBypass = value,
-                "targeting margin bypass while standing still; invalid input is shown in red");
+        addFloatField(grid, "targeting margin bypass", activeCheatConfig.targetingMarginBypass, //codex (old code snippet) addFloatField(grid, "targeting margin bypass", activeCheatConfig.staticTargetingMarginBypass,
+                value -> activeCheatConfig.targetingMarginBypass = value, //codex (old code snippet) value -> activeCheatConfig.staticTargetingMarginBypass = value,
+                "targeting margin bypass while both players are moving; invalid input is shown in red"); //codex (old code snippet) "targeting margin bypass while standing still; invalid input is shown in red");
 //        addFloatField(grid, "targeting margin (moving)", activeCheatConfig.movingTargetMarginBypass,
 //                value -> activeCheatConfig.movingTargetMarginBypass = value,
 //                "targeting margin bypass while moving; invalid input is shown in red");

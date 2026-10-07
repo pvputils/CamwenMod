@@ -40,7 +40,7 @@ public final class AimAssistControllerTodoAi {
         // codex start
         if (mc.player == null || mc.level == null || cfg.targetingMargin <= 0) return null;
         if (TargetingMarginPickTodoAi.pick(mc, 0f, cfg.range).getType() == HitResult.Type.ENTITY) return null;
-        float increased = Utils.computeCheatConfig().staticTargetingMarginBypass + (float) cfg.targetingMargin;
+        float increased = Utils.computeCheatConfig().targetingMarginBypass + (float) cfg.targetingMargin; //codex (old code snippet) float increased = Utils.computeCheatConfig().staticTargetingMarginBypass + (float) cfg.targetingMargin;
         HitResult expanded = TargetingMarginPickTodoAi.pick(mc, increased, cfg.range);
         //codex end
         return expanded instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living ? living : null;
