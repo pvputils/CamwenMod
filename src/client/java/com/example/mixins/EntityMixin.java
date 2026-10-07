@@ -86,8 +86,9 @@ public abstract class EntityMixin {
     }
 
     // codex start
-    @Inject(method = "shouldRenderAtSqrDistance", at = @At("HEAD"), cancellable = true)
-    private void onShouldRenderAtSqrDistance(double distance, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
+    private void onShouldRender(double cameraX, double cameraY, double cameraZ,
+                                CallbackInfoReturnable<Boolean> cir) {
         Minecraft minecraft = Minecraft.getInstance();
         if (config.isRiddenHorseRenderingDisabled
                 && (Object) this instanceof AbstractHorse horse
