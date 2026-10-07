@@ -104,7 +104,6 @@ public final class KillAuraScreenTodoAi extends Screen {
             if (name.equals("ticksUntilReset")) { min = 1; max = 30; }
             if (name.equals("resetThreshold")) min = 1;
             if (name.equals("distanceCoefficient")) { min = -2; max = 2; }
-            if (name.endsWith("Multiplier")) { min = 0.5; max = 2; }
             if (name.equals("rate")) { min = 1; max = owner instanceof KillAuraConfigTodoAi.ShortStop ? 25 : 100; }
             if (name.startsWith("duration")) { min = owner instanceof KillAuraConfigTodoAi.ShortStop ? 1 : 0; max = owner instanceof KillAuraConfigTodoAi.ShortStop ? 5 : 20; }
             double value = Double.parseDouble(text);
@@ -114,10 +113,9 @@ public final class KillAuraScreenTodoAi extends Screen {
         }
         List<String> choices = switch (name) {
             case "timing" -> List.of("Normal", "Snap", "OnTick");
-            case "smoothing" -> List.of("Linear", "Sigmoid", "Interpolation", "Acceleration", "AI");
+            case "smoothing" -> List.of("Linear", "Sigmoid", "Interpolation", "Acceleration");
             case "movementCorrection" -> List.of("Off", "Strict", "Silent", "ChangeLook");
             case "raycast" -> List.of("All", "OnlyEnemy", "None");
-            case "correction" -> List.of("Interpolation", "Linear", "None");
             case "priorities" -> List.of("Type", "Health", "Distance", "Direction", "HurtTime", "Age");
             default -> List.of();
         };
@@ -127,7 +125,6 @@ public final class KillAuraScreenTodoAi extends Screen {
             field.set(owner, new ArrayList<>(new LinkedHashSet<>(priorities)));
         } else {
             if (!choices.isEmpty() && !choices.contains(text)) throw new IllegalArgumentException("Enter " + String.join(", ", choices));
-            if (name.equals("model") && !text.matches("[A-Za-z0-9_-]{1,64}")) throw new IllegalArgumentException("Enter a model name, e.g. 21KC11KP or 19KC8KP");
             field.set(owner, text);
         }
     }

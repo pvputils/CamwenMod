@@ -32,7 +32,6 @@ public final class KillAuraConfigTodoAi {
         public Sigmoid sigmoid = new Sigmoid();
         public Interpolation interpolation = new Interpolation();
         public Acceleration acceleration = new Acceleration();
-        public Ai ai = new Ai();
         public ShortStop shortStop = new ShortStop();
         public Fail fail = new Fail();
     }
@@ -56,17 +55,6 @@ public final class KillAuraConfigTodoAi {
         public double yawAccelerationError = 0.1, pitchAccelerationError = 0.1;
         public double yawConstantError = 0.1, pitchConstantError = 0.1;
         public double steepness = 10, midpoint = 0.3;
-    }
-    public static final class Ai {
-        public String model = "21KC11KP", correction = "Interpolation";
-        public double yawMultiplier = 1.5, pitchMultiplier = 1;
-        public Interpolation interpolation = new Interpolation();
-        public Linear linear = new Linear();
-        public Ai() {
-            interpolation.horizontalMin = interpolation.verticalMin = 2;
-            interpolation.horizontalMax = interpolation.verticalMax = 5;
-            linear.horizontalMin = linear.horizontalMax = linear.verticalMin = linear.verticalMax = 5;
-        }
     }
     public static final class ShortStop {
         public boolean enabled = false;
@@ -97,16 +85,12 @@ public final class KillAuraConfigTodoAi {
         if (rotations.sigmoid == null) rotations.sigmoid = new Sigmoid();
         if (rotations.interpolation == null) rotations.interpolation = new Interpolation();
         if (rotations.acceleration == null) rotations.acceleration = new Acceleration();
-        if (rotations.ai == null) rotations.ai = new Ai();
-        if (rotations.ai.interpolation == null) rotations.ai.interpolation = new Ai().interpolation;
-        if (rotations.ai.linear == null) rotations.ai.linear = new Ai().linear;
         if (rotations.shortStop == null) rotations.shortStop = new ShortStop();
         if (rotations.fail == null) rotations.fail = new Fail();
         if (!List.of("All", "OnlyEnemy", "None").contains(raycast == null ? "" : raycast)) raycast = "All";
         if (!List.of("Normal", "Snap", "OnTick").contains(rotations.timing == null ? "" : rotations.timing)) rotations.timing = "Normal";
-        if (!List.of("Linear", "Sigmoid", "Interpolation", "Acceleration", "AI").contains(rotations.smoothing == null ? "" : rotations.smoothing)) rotations.smoothing = "Linear";
+        if (!List.of("Linear", "Sigmoid", "Interpolation", "Acceleration").contains(rotations.smoothing == null ? "" : rotations.smoothing)) rotations.smoothing = "Linear";
         if (!List.of("Off", "Strict", "Silent", "ChangeLook").contains(rotations.movementCorrection == null ? "" : rotations.movementCorrection)) rotations.movementCorrection = "Silent";
-        if (!List.of("Interpolation", "Linear", "None").contains(rotations.ai.correction == null ? "" : rotations.ai.correction)) rotations.ai.correction = "Interpolation";
         target.fov = finite(target.fov, 0, 180, 180);
         target.hurtTime = Math.clamp(target.hurtTime, 0, 10);
         rotations.resetThreshold = finite(rotations.resetThreshold, 1, 180, 2);

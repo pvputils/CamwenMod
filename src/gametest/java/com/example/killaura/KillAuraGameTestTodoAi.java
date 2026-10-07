@@ -28,10 +28,10 @@ public final class KillAuraGameTestTodoAi implements FabricClientGameTest {
                 var screen = new KillAuraScreenTodoAi(mc.gui.screen());
                 mc.gui.setScreen(screen);
                 check(screen.children().stream().filter(Button.class::isInstance).map(Button.class::cast).anyMatch(b -> b.getMessage().getString().startsWith("Enabled:")), "native enabled control");
-                var cfg = KillAuraControllerTodoAi.config(); cfg.enabled = true; cfg.rotations.smoothing = "AI";
+                var cfg = KillAuraControllerTodoAi.config(); cfg.enabled = true; cfg.rotations.smoothing = "Interpolation";
                 UntitledClient.config.saveConfig();
                 var restored = (com.example.Configs.Config) com.example.Utils.getDeserializedJsonBlocking("config", com.example.Configs.Config.class);
-                check(restored.killAura.enabled && restored.killAura.rotations.smoothing.equals("AI"), "KillAura persists in CamwenMod config");
+                check(restored.killAura.enabled && restored.killAura.rotations.smoothing.equals("Interpolation"), "KillAura persists in CamwenMod config");
                 cfg.enabled = false; cfg.rotations.smoothing = "Linear";
             });
             context.takeScreenshot("KillAuraNativeSettingsTodoAi");
@@ -118,7 +118,7 @@ public final class KillAuraGameTestTodoAi implements FabricClientGameTest {
         float yaw = mc.player.getYRot(), pitch = mc.player.getXRot();
         HitResult original = mc.hitResult;
         try {
-            for (String mode : java.util.List.of("Linear", "Sigmoid", "Interpolation", "Acceleration", "AI")) {
+            for (String mode : java.util.List.of("Linear", "Sigmoid", "Interpolation", "Acceleration")) {
                 KillAuraControllerTodoAi.reset(); cfg.rotations.smoothing = mode;
                 mc.player.setYRot(45); mc.player.setXRot(0);
                 KillAuraControllerTodoAi.tick(mc);

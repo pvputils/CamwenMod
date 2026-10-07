@@ -48,7 +48,7 @@ public final class KillAuraRotationTodoAi {
             : 1 / (1 + Math.exp(-0.5 * (t - 0.3))) * Math.clamp(speed + change, 0, 1);
     }
     public Rotation step(Rotation current, Rotation goal, KillAuraConfigTodoAi.Rotations config, boolean crosshair,
-                         double distance, float[] modelOutput) {
+                         double distance) {
         Rotation next = switch (config.smoothing) {
             case "Sigmoid" -> {
                 double factor = 1 / (1 + Math.exp(-KillAuraConfigTodoAi.finite(config.sigmoid.steepness, 0, 20, 10) *
@@ -58,17 +58,6 @@ public final class KillAuraRotationTodoAi {
             }
             case "Interpolation" -> interpolation(current, goal, config.interpolation);
             case "Acceleration" -> acceleration(current, goal, config.acceleration, crosshair, distance);
-            case "AI" -> {
-                if (modelOutput == null || modelOutput.length != 2 || !Float.isFinite(modelOutput[0]) || !Float.isFinite(modelOutput[1]))
-                    yield interpolation(current, goal, config.interpolation);
-                Rotation predicted = current.add(modelOutput[0] * KillAuraConfigTodoAi.finite(config.ai.yawMultiplier, 0.5, 2, 1.5),
-                    modelOutput[1] * KillAuraConfigTodoAi.finite(config.ai.pitchMultiplier, 0.5, 2, 1));
-                yield switch (config.ai.correction) {
-                    case "Linear" -> linear(predicted, goal, config.ai.linear);
-                    case "None" -> predicted;
-                    default -> interpolation(predicted, goal, config.ai.interpolation);
-                };
-            }
             default -> linear(current, goal, config.linear);
         };
         var fail = config.fail;
@@ -114,13 +103,12 @@ public final class KillAuraRotationTodoAi {
     }
     /** Conservative arrival estimate using minimum configured speeds, without altering live state. */
     public static int estimateTicks(Rotation current, Rotation goal, KillAuraConfigTodoAi.Rotations config) {
-        String mode = config.smoothing.equals("AI") ? config.ai.correction : config.smoothing;
+        String mode = config.smoothing;
         Rotation previous = current;
         for (int ticks = 0; ticks < 80; ticks++) {
             Rotation next;
-            if (mode.equals("None")) return 0;
             if (mode.equals("Interpolation")) {
-                var interpolation = config.smoothing.equals("AI") ? config.ai.interpolation : config.interpolation;
+                var interpolation = config.interpolation;
                 double yaw = Math.abs(wrap(goal.yaw - current.yaw)), pitch = Math.abs(goal.pitch - current.pitch);
                 next = linear(current, goal, yaw * factor(yaw, Math.clamp(Math.min(interpolation.horizontalMin, interpolation.horizontalMax), 1, 100) / 100.0, 0, interpolation.midpoint),
                     pitch * factor(pitch, Math.clamp(Math.min(interpolation.verticalMin, interpolation.verticalMax), 1, 100) / 100.0, 0, interpolation.midpoint));
@@ -131,7 +119,7 @@ public final class KillAuraRotationTodoAi {
                 double ap = KillAuraConfigTodoAi.finite(Math.min(config.acceleration.pitchMin, config.acceleration.pitchMax), 1, 180, 20);
                 next = current.add(vy + Math.clamp(wrap(yaw - vy), -ay, ay), vp + Math.clamp(wrap(pitch - vp), -ap, ap));
             } else {
-                var speed = config.smoothing.equals("AI") ? config.ai.linear : mode.equals("Sigmoid") ? config.sigmoid : config.linear;
+                var speed = mode.equals("Sigmoid") ? config.sigmoid : config.linear;
                 double factor = mode.equals("Sigmoid") ? 1 / (1 + Math.exp(-config.sigmoid.steepness * (Math.min(180, distance(current, goal)) / 120 - config.sigmoid.midpoint))) : 1;
                 next = linear(current, goal, factor * KillAuraConfigTodoAi.finite(Math.min(speed.horizontalMin, speed.horizontalMax), 0, 180, 180),
                     factor * KillAuraConfigTodoAi.finite(Math.min(speed.verticalMin, speed.verticalMax), 0, 180, 180));

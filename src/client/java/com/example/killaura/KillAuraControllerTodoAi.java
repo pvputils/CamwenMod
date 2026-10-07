@@ -2,7 +2,6 @@
  * GPL-3.0-or-later. See KillAuraLicenseTodoAi.txt. */
 package com.example.killaura;
 
-import com.example.Configs.Config;
 import com.example.UntitledClient;
 import com.example.aimassist.AimGeometryTodoAi;
 import net.minecraft.client.Minecraft;
@@ -20,10 +19,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Supplier;
-import org.slf4j.LoggerFactory;
 import static com.example.killaura.KillAuraRotationTodoAi.*;
 
 /** Only plans rotations. Attacks remain inside Minecraft.startAttack, driven by real presses. */
@@ -31,11 +28,8 @@ public final class KillAuraControllerTodoAi {
     private static final KillAuraRotationTodoAi smoother = new KillAuraRotationTodoAi();
     private static ClientLevel level;
     private static LivingEntity target;
-    private static Rotation rotation, previousRotation;
+    private static Rotation rotation;
     private static int idleTicks;
-    private static String loadedModel;
-    private static KillAuraModelTodoAi model;
-    private static final Set<String> failedModels = new HashSet<>();
     private KillAuraControllerTodoAi() {}
     public static KillAuraConfigTodoAi config() {
         if (UntitledClient.config.killAura == null) UntitledClient.config.killAura = new KillAuraConfigTodoAi();
@@ -45,7 +39,7 @@ public final class KillAuraControllerTodoAi {
     }
     public static LivingEntity target() { return target; }
     public static Rotation rotation() { return rotation; }
-    public static void reset() { target = null; rotation = previousRotation = null; idleTicks = 0; smoother.reset(); }
+    public static void reset() { target = null; rotation = null; idleTicks = 0; smoother.reset(); }
     private static boolean available(Minecraft mc) {
         return config().enabled && mc.player != null && mc.level != null && mc.gui.screen() == null
             && !mc.player.isSpectator() && !mc.player.isDeadOrDying();
@@ -141,37 +135,16 @@ public final class KillAuraControllerTodoAi {
         if (target == null) {
             if (rotation == null) return;
             if (++idleTicks > config().rotations.ticksUntilReset && distance(current, clientRotation(mc)) <= config().rotations.resetThreshold) { reset(); return; }
-            previousRotation = current;
-            rotation = quantize(current, smoother.step(current, clientRotation(mc), config().rotations, false, 0, null), mc.options.sensitivity().get());
+            rotation = quantize(current, smoother.step(current, clientRotation(mc), config().rotations, false, 0), mc.options.sensitivity().get());
             return;
         }
         idleTicks = 0;
         if (config().rotations.timing.equals("Snap")) { rotation = null; return; }
         if (config().rotations.timing.equals("OnTick") && estimateTicks(current, goal, config().rotations) <= 1) { rotation = null; return; }
         rotation = quantize(current, smoother.step(current, goal, config().rotations, hit(mc, target, current) != null,
-            Math.sqrt(boxedDistanceSquared(mc, target)), modelOutput(mc, current, goal)), mc.options.sensitivity().get());
-        previousRotation = current;
+            Math.sqrt(boxedDistanceSquared(mc, target))), mc.options.sensitivity().get());
         if (config().rotations.movementCorrection.equals("ChangeLook")) {
             mc.player.setYRot((float) rotation.yaw()); mc.player.setXRot((float) rotation.pitch());
-        }
-    }
-    private static float[] modelOutput(Minecraft mc, Rotation current, Rotation goal) {
-        if (!config().rotations.smoothing.equals("AI")) return null;
-        String name = config().rotations.ai.model;
-        if (name == null || failedModels.contains(name)) return null;
-        try {
-            if (!name.equals(loadedModel)) {
-                Path folder = mc.gameDirectory.toPath().resolve("LiquidBounceKillAura/deeplearning/models");
-                model = KillAuraModelTodoAi.load(name, folder); loadedModel = name;
-            }
-            Rotation previous = previousRotation == null ? current : previousRotation;
-            return model.predict(new float[]{(float) wrap(goal.yaw() - current.yaw()), (float) (goal.pitch() - current.pitch()),
-                (float) wrap(current.yaw() - previous.yaw()), (float) (current.pitch() - previous.pitch()),
-                (float) (mc.player.getDeltaMovement().horizontalDistance() + target.getDeltaMovement().horizontalDistance()), (float) boxedDistanceSquared(mc, target)});
-        } catch (Exception error) {
-            failedModels.add(name);
-            LoggerFactory.getLogger("CamwenMod/KillAura").warn("Cannot load KillAura AI model {}; using interpolation", name, error);
-            return null;
         }
     }
     /** Wraps vanilla's complete startAttack call, including CamwenMod's existing mixins.
