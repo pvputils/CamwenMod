@@ -13,6 +13,9 @@ public class CheatConfig {
     //    public record MovementPair() {}
 //    public HashMap<> advanced?dynamic? reach
     public float movingTargetingMarginBypass = .0f;
+    // codex start
+    public transient Float aimAssistMarginOverrideTodoAi;
+    //codex end
 //    public float movingTargetMarginBypass = 0.f;
 //    public float doubleWalkingTargetMarginBypass = 0.f;
 //    TODO;
@@ -30,6 +33,9 @@ public class CheatConfig {
             return 0.f;
         }
 
+        // codex start
+        if (aimAssistMarginOverrideTodoAi != null) return aimAssistMarginOverrideTodoAi;
+        //codex end
         float base = isTargetingMarginReverted
                 ? .1f
                 : 0.f;
