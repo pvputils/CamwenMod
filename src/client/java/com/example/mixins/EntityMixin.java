@@ -80,13 +80,6 @@ public abstract class EntityMixin {
                 config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam nameplateTeam) {
             return;
         }
-        // codex start
-        Float aimMargin = com.example.aimassist.AimAssistMarginScopeTodoAi.current();
-        if (aimMargin != null) {
-            cir.setReturnValue(aimMargin);
-            return;
-        }
-        //codex end
         cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass(isMoving, isTargetMoving));
         cir.cancel();
     }
