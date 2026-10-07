@@ -90,12 +90,17 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                         != net.minecraft.world.phys.HitResult.Type.ENTITY, "stationary normal pick misses");
                 check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == target,
                         "stationary aura combines default and module margin");
-                check(cheats.aimAssistMarginOverrideTodoAi == null && cheats.movingTargetingMarginBypass == 0.4f,
+                check(AimAssistMarginScopeTodoAi.current() == null && cheats.movingTargetingMarginBypass == 0.4f,
                         "aura probe restores override and preserves configured margin");
-                cheats.aimAssistMarginOverrideTodoAi = 0.2f;
-                TargetingMarginPickTodoAi.pick(mc, 0f, 4.2);
-                check(cheats.aimAssistMarginOverrideTodoAi == 0.2f, "nested probe restores prior override");
-                cheats.aimAssistMarginOverrideTodoAi = null;
+                AimAssistMarginScopeTodoAi.withMargin(0.2f, () -> {
+                    TargetingMarginPickTodoAi.pick(mc, 0f, 4.2);
+                    check(AimAssistMarginScopeTodoAi.current() == 0.2f, "nested probe restores prior margin");
+                    return null;
+                });
+                try {
+                    AimAssistMarginScopeTodoAi.withMargin(0.2f, () -> { throw new IllegalStateException("test"); });
+                } catch (IllegalStateException expected) {}
+                check(AimAssistMarginScopeTodoAi.current() == null, "failed probe clears temporary margin");
                 cheats.movingTargetingMarginBypass = 0;
                 cfg.aura.targetingMargin = 1;
                 cfg.aura.requires.attackWindow = 200;
