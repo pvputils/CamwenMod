@@ -2,7 +2,9 @@ package com.example.mixins;
 
 import com.example.Configs.Config;
 import com.example.aimassist.AimAssistControllerTodoAi;
-import net.ccbluex.liquidbounce.features.module.modules.combat.killaura.ModuleKillAura;
+import com.example.killaura.KillAuraControllerTodoAi;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.example.aimassist.TargetingMarginPickTodoAi;
 import com.example.overlayTodoAi.PlayerWaypointOverlay;
 import net.minecraft.world.phys.AABB;
@@ -28,6 +30,12 @@ import net.minecraft.world.phys.EntityHitResult;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftClientMixin {
+    // codex start
+    @WrapMethod(method = "startAttack")
+    private boolean killAuraAttackTodoAi(Operation<Boolean> original) {
+        return KillAuraControllerTodoAi.attack((Minecraft) (Object) this, original::call);
+    }
+    //codex end
     @Shadow
     @Nullable
     public LocalPlayer player;
@@ -111,12 +119,6 @@ public abstract class MinecraftClientMixin {
 ////            }
 //            return;
 //        }
-        // codex start
-        if (ModuleKillAura.INSTANCE.handleRealAttack()) {
-            cir.setReturnValue(true);
-            return;
-        }
-        //codex end
     }
 
 //    @Inject(at = @At(value = "RETURN"), method = "startAttack")

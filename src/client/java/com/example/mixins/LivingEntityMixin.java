@@ -1,4 +1,8 @@
 package com.example.mixins;
+import com.example.killaura.KillAuraControllerTodoAi;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.minecraft.client.Minecraft;
+import org.spongepowered.asm.mixin.injection.At;
 
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -7,6 +11,12 @@ import net.minecraft.world.entity.LivingEntity;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
+    // codex start
+    @ModifyExpressionValue(method = "jumpFromGround", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"))
+    private float killAuraJumpYawTodoAi(float original) {
+        return (Object) this == Minecraft.getInstance().player ? KillAuraControllerTodoAi.movementYaw(original) : original;
+    }
+    //codex end
 //    @Inject(at = @At(value = "HEAD"), method = "hasEffect", cancellable = true)
 //    private void onHasStatusEffect(
 //            Holder<MobEffect> effect, CallbackInfoReturnable<Boolean> cir) {

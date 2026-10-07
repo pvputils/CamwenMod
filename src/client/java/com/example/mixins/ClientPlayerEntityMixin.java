@@ -1,4 +1,6 @@
 package com.example.mixins;
+import com.example.killaura.KillAuraControllerTodoAi;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,6 +26,13 @@ import java.util.Objects;
 
 @Mixin(LocalPlayer.class)
 public abstract class ClientPlayerEntityMixin {
+    // codex start
+    @ModifyExpressionValue(method = "sendPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getYRot()F"))
+    private float killAuraPacketYawTodoAi(float original) { return KillAuraControllerTodoAi.packetYaw(original); }
+
+    @ModifyExpressionValue(method = "sendPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getXRot()F"))
+    private float killAuraPacketPitchTodoAi(float original) { return KillAuraControllerTodoAi.packetPitch(original); }
+    //codex end
     @Shadow
     public abstract boolean isUsingItem();
 

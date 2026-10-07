@@ -13,5 +13,8 @@ allprojects {
         tasks.named('runClientGameTest') {
             timeout = java.time.Duration.ofMinutes(5)
         }
+        // codex start
+        loom.runs.named('clientGameTest') { environmentVariable('ALSOFT_DRIVERS', 'null') }
+        //codex end
     }
 }

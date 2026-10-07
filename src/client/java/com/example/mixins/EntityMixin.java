@@ -1,4 +1,9 @@
 package com.example.mixins;
+import com.example.killaura.KillAuraControllerTodoAi;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
 
 import com.example.Configs.Config;
 import net.minecraft.network.chat.Component;
@@ -19,6 +24,15 @@ import net.minecraft.world.entity.Entity;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
+    // codex start
+    @WrapOperation(method = "moveRelative", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getInputVector(Lnet/minecraft/world/phys/Vec3;FF)Lnet/minecraft/world/phys/Vec3;"))
+    private Vec3 killAuraMovementTodoAi(Vec3 input, float speed, float yaw, Operation<Vec3> original) {
+        if ((Object) this == Minecraft.getInstance().player) {
+            return original.call(KillAuraControllerTodoAi.correctInput(input, yaw), speed, KillAuraControllerTodoAi.movementYaw(yaw));
+        }
+        return original.call(input, speed, yaw);
+    }
+    //codex end
     @Shadow
     public abstract double getX();
 

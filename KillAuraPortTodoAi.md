@@ -1,26 +1,37 @@
-# KillAura port
+# Native KillAura port
 
-CamwenMod retains its existing features and settings. KillAura is an additive client module, disabled by default. Open its Minecraft settings screen with Right Shift or the new **KillAura** button in the existing external configuration window. Its settings are persisted separately under the game directory's `LiquidBounceKillAura` folder.
+KillAura follows CamwenMod's AimAssist integration: focused Java classes, native Minecraft settings, CamwenMod's existing `config` JSON, and a few additions to existing mixins. It starts disabled. Open it with Right Shift or the **KillAura** button in the existing external configuration window. Settings are stored under `killAura` independently of `aimAssist`.
 
-The port uses the reduced module from `pvputils/LiquidBounce-silentaura` commit `64265fc3d`; platform support was adapted using CCBlueX LiquidBounce's last Minecraft 26.2 sources (`65c735c22^`). Minecraft, Fabric, Sodium, and CamwenMod's existing Kotlin versions remain unchanged.
+The behavior is adapted from the reduced `pvputils/LiquidBounce-silentaura` module at `64265fc3d`, with the Minecraft 26.2 platform APIs used by the previous port. The LiquidBounce module registry, event bus, coroutine startup, generic config system, debug module, chunk scanner, Blink framework, custom fonts/shaders/GPU renderer, and compatibility infrastructure are removed. KillAura adds no Kotlin source files, access widener, production mixin configuration, or external dependencies. CamwenMod's pre-existing Kotlin Gradle plugin and Fabric language dependency are unchanged.
 
-Attacks require real attack-button presses. Holding the button does not schedule extra entity attacks. Vanilla item reach, line of sight, attack cooldown, crits, and sprint slowdown are retained. Linear, Sigmoid, Interpolation, Acceleration, and AI smoothing, movement correction, ShortStop, Fail, and ResetThreshold remain available. The previously removed combat features, Requires, and AimPoint are not restored. CamwenMod's existing aimassist remains available with its original settings and behavior; enabling both aiming controllers can make their rotations compete.
+## Combat and rotations
 
-New source filenames end in `TodoAi`; Java public types were renamed accordingly. Kotlin type names retain their original names. New blocks in existing Java and Gradle files use the requested Codex markers. Fabric metadata and test registration remain valid JSON, which does not accept comments. `KillAuraResourcesTodoAi.zip` contains the runtime resources and service registration with their required internal paths; the build expands it into the client resources.
+- Only real attack presses invoke Minecraft's complete `startAttack` implementation. Holding attack does not schedule repeated entity attacks. Existing CamwenMod attack hooks still run against the redirected entity hit.
+- Acquisition and the actual press both check the held item's vanilla attack range, unexpanded entity bounds, and solid-block line of sight. No separate reach setting or wall bypass is added. Vanilla item attacks, cooldown scaling, crits, sprint slowdown, and shield behavior stay in Minecraft.
+- Targets retain FOV, hurt time, ordered Type/Health/Distance/Direction/HurtTime/Age priorities, shield filtering, entity categories, and a native teammate-exclusion option.
+- Rotations retain Normal/Snap/OnTick timing, lazy rotation, Linear/Sigmoid/Interpolation/Acceleration/AI smoothing, Off/Strict/Silent/ChangeLook movement correction, ShortStop, Fail, reset threshold, and reset timing. Silent rotation packets preserve the camera; ChangeLook changes it. OnTick estimates arrival using the selected smoother.
+- Crosshair and camera changes during a press are restored in `finally`, including cancellation or exceptions from existing hooks. Opening a screen, disabling KillAura, changing worlds, death, and spectator mode clear active aiming state.
 
-## Attribution and licensing
+The previous port's cosmetic rendering is replaced by a small native HUD target marker/name and optional held-item reach readout. LiquidBounce's multiple animated target styles, world-space range rings, custom colors/animation trees, and debug interface are not imported. This keeps the rendering integration as small as the AimAssist port; these visuals are not pixel-identical to LiquidBounce.
 
-The imported `net.ccbluex.liquidbounce` sources and resources originate from [CCBlueX/LiquidBounce](https://github.com/CCBlueX/LiquidBounce), copyright CCBlueX 2015–2026, under GPL version 3 or later. Original copyright headers are retained, and `KillAuraLicenseTodoAi.txt` is included in the JAR. The existing CamwenMod source and its license file remain unchanged. Fabric's metadata lists both existing CC0 and imported GPL licensing.
+## AI without an engine dependency
+
+The original `21KC11KP` and `19KC8KP` weights are retained unchanged, in two `TodoAi.params` assets. `KillAuraModelTodoAi` evaluates the fixed six-input, four-linear-layer model using Java float arrays, batch normalization, and ReLU. No DJL/PyTorch engine, native-library download, Okio, or Kotlin infrastructure is needed. Both models were checked against independent NumPy matrix inference, and the numerical reference is tested.
+
+The Model setting accepts either bundled name or a matching custom model. Put compatible FLOAT32 DJL weights in `<game directory>/LiquidBounceKillAura/deeplearning/models/<name>TodoAi.params`. The previous port's `<name>/tf-XXXX.params` user-model directory format is also supported. Files are limited to 1 MiB and must match the supported 6→128→64→32→2 architecture. Missing or invalid models fall back to interpolation and log one warning. The upstream training framework is not included.
+
+The old port's generic LiquidBounce settings JSON is not migrated. New settings use the same storage as CamwenMod's AimAssist; user model weights can still be reused.
 
 ## Validation
 
-Run with Java 25:
+Use Java 25:
 
 ```powershell
-$env:ALSOFT_DRIVERS = 'null'
-./gradlew build -I tests/aimAssistTestsTodoAi.gradle -I tests/trajectoryTestTodoAi.gradle -I tests/approachMouseGameTestsTodoAi.gradle aimAssistTestsTodoAi trajectoryTestTodoAi runClientGameTest
+./gradlew.bat build -I tests/aimAssistTestsTodoAi.gradle -I tests/trajectoryTestTodoAi.gradle -I tests/killAuraTestsTodoAi.gradle -I tests/approachMouseGameTestsTodoAi.gradle aimAssistTestsTodoAi trajectoryTestTodoAi killAuraTestsTodoAi runClientGameTest
 ```
 
-The client tests include CamwenMod's existing approach, reach, and centerline regressions, plus KillAura settings/persistence, real-click counts, reach and solid-wall rejection, and grounded/falling damage parity with vanilla combat. The imported build script also configures the client game test run to use OpenAL's null output driver.
+The suite covers existing AimAssist/trajectory regressions, native KillAura settings/persistence, shortest-path rotation and OnTick estimates, both real bundled models, corrupt inputs, actual held/rapid click counts, vanilla reach and walls, grounded/falling damage parity, all five live smoothing modes, silent camera preservation, and cancellation/exception restoration. Game tests use OpenAL's null output driver and a test-only Fabric initial-thread registration guard. Test classes and mixins are excluded from the production JAR.
 
-The test mod includes a registration guard for Fabric's initial test-thread race. It is excluded from the production JAR. For crit comparisons, the test invokes Minecraft's native jump method because CamwenMod's existing physical-key polling overwrites Fabric's synthetic movement-key state; subsequent motion and server crit evaluation remain vanilla.
+## Source conventions and attribution
+
+New files end in `TodoAi`. Added blocks in existing Java/Gradle files use `// codex start` and `//codex end`; imports need no markers. JSON metadata stays valid JSON, which cannot contain line comments. GPL attribution accompanies the adapted math and original model resources; `KillAuraLicenseTodoAi.txt` is bundled in the JAR. Fabric metadata retains both the original license label and the imported GPL label.

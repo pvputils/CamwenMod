@@ -75,6 +75,9 @@ java {
 }
 
 jar {
+    // codex start
+    from('KillAuraLicenseTodoAi.txt')
+    //codex end
     inputs.property "archivesName", project.base.archivesName
 
     from("LICENSE") {
@@ -125,6 +128,3 @@ kotlin {
 //		}
 //	}
 //}
-// codex start
-apply from: "KillAuraBuildTodoAi.gradle"
-//codex end

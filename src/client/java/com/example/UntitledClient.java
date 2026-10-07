@@ -3,6 +3,8 @@ package com.example;
 import com.example.Configs.CheatConfig;
 import com.example.Configs.Config;
 import com.example.aimassist.AimAssistControllerTodoAi;
+import com.example.killaura.KillAuraControllerTodoAi;
+import com.example.killaura.KillAuraHudTodoAi;
 import com.google.common.reflect.TypeToken;
 import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.api.ClientModInitializer;
@@ -166,6 +168,11 @@ public class UntitledClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // codex start
+        ClientTickEvents.START_CLIENT_TICK.register(KillAuraControllerTodoAi::tick);
+        HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR,
+                Identifier.fromNamespaceAndPath("camwenmod", "killaura"), KillAuraHudTodoAi::render);
+        //codex end
         // codex start
         ClientTickEvents.END_CLIENT_TICK.register(AimAssistControllerTodoAi::tick);
         //codex end
