@@ -94,6 +94,7 @@ public abstract class EntityMixin {
                 && minecraft.player != null
                 && minecraft.player.getVehicle() == horse) {
             cir.setReturnValue(false);
+            cir.cancel();
         }
     }
     //codex end
