@@ -11,6 +11,7 @@
     "GameRendererMixin",
     "HeldItemRendererMixin",
     "KeyboardMixin",
+    "LevelExtractorMixinTodoAi",
     "MinecraftClientMixin",
     "PlayerEntityRendererMixin",
     "SoundManagerMixin"

@@ -1,9 +1,7 @@
 package com.example.mixins;
 
 import com.example.Configs.Config;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -84,21 +82,6 @@ public abstract class EntityMixin {
         cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass());
         cir.cancel();
     }
-
-    // codex start
-    @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
-    private void onShouldRender(double cameraX, double cameraY, double cameraZ,
-                                CallbackInfoReturnable<Boolean> cir) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (config.isRiddenHorseRenderingDisabled
-                && (Object) this instanceof AbstractHorse horse
-                && minecraft.player != null
-                && minecraft.player.getVehicle() == horse) {
-            cir.setReturnValue(false);
-            cir.cancel();
-        }
-    }
-    //codex end
 
 //    @Inject(method = "onDamaged", at = @At("HEAD"))
 //    void onOnDamaged(DamageSource damageSource, CallbackInfo ci) {
