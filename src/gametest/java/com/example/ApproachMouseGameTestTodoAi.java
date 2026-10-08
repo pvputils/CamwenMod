@@ -5,9 +5,6 @@ import com.example.aimassist.AimAssistControllerTodoAi;
 import net.minecraft.client.player.RemotePlayer;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.core.Direction;
-import net.minecraft.core.BlockPos;
 import net.minecraft.client.Minecraft;
 import java.util.Map;
 import java.util.UUID;
@@ -85,14 +82,14 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     gates.put(target.getUUID(), gate);
                     mc.hitResult = new EntityHitResult(target);
                     var apply = AimAssistControllerTodoAi.class.getDeclaredMethod("apply",
-                            Minecraft.class, state.getClass(), cfg.getClass(), boolean.class, float.class);
+                            Minecraft.class, state.getClass(), cfg.getClass(), float.class); //codex (old code snippet) Minecraft.class, state.getClass(), cfg.getClass(), boolean.class, float.class);
                     apply.setAccessible(true);
                     player.setXRot(3);
                     long inputTime = System.nanoTime();
                     gate.update(AimCrosshairMotionTodoAi.sample(eyes, target.getBoundingBox(), new Rotation(0, 2)),
                             AimCrosshairMotionTodoAi.sample(eyes, target.getBoundingBox(), new Rotation(0, 3)), inputTime);
                     AimAssistControllerTodoAi.attackAttempt();
-                    apply.invoke(null, mc, state, cfg, true, 1f);
+                    apply.invoke(null, mc, state, cfg, 1f); //codex (old code snippet) apply.invoke(null, mc, state, cfg, true, 1f);
                     if (player.getXRot() != 3)
                         throw new AssertionError("Targeting dragged the view while moving inside toward exit");
                     history.put(target.getUUID(), new AimCrosshairMotionTodoAi.Observation(
@@ -100,55 +97,16 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     var stationary = AimCrosshairMotionTodoAi.sample(eyes, target.getBoundingBox(), new Rotation(0, 3));
                     gate.update(stationary, stationary, inputTime + 8_000_000L);
                     AimAssistControllerTodoAi.attackAttempt();
-                    apply.invoke(null, mc, state, cfg, true, 1f);
+                    apply.invoke(null, mc, state, cfg, 1f); //codex (old code snippet) apply.invoke(null, mc, state, cfg, true, 1f);
                     if (player.getXRot() != 3)
                         throw new AssertionError("Targeting pulled back between mouse updates");
                     gate.update(stationary, stationary, inputTime + 150_000_000L);
                     AimAssistControllerTodoAi.attackAttempt();
-                    apply.invoke(null, mc, state, cfg, true, 1f);
+                    apply.invoke(null, mc, state, cfg, 1f); //codex (old code snippet) apply.invoke(null, mc, state, cfg, true, 1f);
                     if (!(player.getXRot() < 3))
                         throw new AssertionError("Stationary targeting must still approach neutral pitch");
-                    var aura = AimAssistControllerTodoAi.config().aura;
-                    aura.enabled = true;
-                    aura.requires.attackWindow = 200;
-                    aura.requires.notBreaking = false;
-                    aura.targetingMargin = 1;
-                    UntitledClient.config.isCheatsEnabled = true;
-                    Utils.computeCheatConfig().movingTargetingMarginBypass = 0;
-                    aura.range = 5;
-                    aura.horizontal = aura.vertical = true;
-                    player.setYRot(0);
-                    player.setXRot(15);
-                    mc.hitResult = BlockHitResult.miss(eyes.add(0, 0, 4), Direction.NORTH, BlockPos.containing(eyes));
-                    if (AimAssistControllerTodoAi.auraEligibleTarget(mc, aura) != target)
-                        throw new AssertionError("Exit regression must exercise an eligible aura target");
-                    var auraField = AimAssistControllerTodoAi.class.getDeclaredField("AURA");
-                    auraField.setAccessible(true);
-                    var auraState = auraField.get(null);
-                    for (String name : new String[]{"target", "start", "end"}) {
-                        var field = auraState.getClass().getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(auraState, name.equals("target") ? target :
-                                new Rotation(0, name.equals("start") ? 15 : 0));
-                    }
-                    var exit = AimCrosshairMotionTodoAi.sample(eyes, target.getBoundingBox(), new Rotation(0, 15));
-                    gate.update(stationary, exit, inputTime + 160_000_000L);
-                    for (int frame = 1; frame <= 6; frame++) {
-                        gate.update(exit, exit, inputTime + 160_000_000L + frame * 8_000_000L);
-                        AimAssistControllerTodoAi.attackAttempt();
-                        apply.invoke(null, mc, auraState, aura, false, 1f);
-                        if (player.getXRot() != 15)
-                            throw new AssertionError("Aura sucked exit back during a mouse polling gap");
-                    }
-                    var approaching = AimCrosshairMotionTodoAi.sample(eyes, target.getBoundingBox(), new Rotation(0, 14.5));
-                    gate.update(exit, approaching, inputTime + 220_000_000L);
-                    player.setXRot(14.5f);
-                    AimAssistControllerTodoAi.attackAttempt();
-                    apply.invoke(null, mc, auraState, aura, false, 1f);
-                    if (!(player.getXRot() < 14.5f))
-                        throw new AssertionError("Aura reversal positive control must actually turn toward target");
-                    // Exercise render tracking while aura/targeting are not eligible, then activate aura after exit.
-                    cfg.enabled = aura.enabled = false;
+                    // codex start
+                    cfg.enabled = false;
                     history.clear();
                     gates.clear();
                     player.setXRot(2);
@@ -156,28 +114,17 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     player.setXRot(3);
                     AimAssistControllerTodoAi.render(mc, 1f);
                     if (gates.get(target.getUUID()).allowed())
-                        throw new AssertionError("Render failed to track exit before an assist was eligible");
-                    aura.enabled = true;
+                        throw new AssertionError("Render failed to track exit while targeting was disabled");
+                    cfg.enabled = true;
                     player.setXRot(15);
-                    for (String name : new String[]{"target", "start", "end"}) {
-                        var field = auraState.getClass().getDeclaredField(name);
-                        field.setAccessible(true);
-                        field.set(auraState, name.equals("target") ? target :
-                                new Rotation(0, name.equals("start") ? 15 : 0));
-                    }
                     AimAssistControllerTodoAi.attackAttempt();
-                    AimAssistControllerTodoAi.render(mc, 1f);
+                    AimAssistControllerTodoAi.tick(mc);
                     for (int frame = 0; frame < 6; frame++) {
-                        AimAssistControllerTodoAi.attackAttempt();
                         AimAssistControllerTodoAi.render(mc, 1f);
                         if (player.getXRot() != 15)
-                            throw new AssertionError("Full renderer sucked exit back between input updates");
+                            throw new AssertionError("Renderer assisted a missed hitbox after exit");
                     }
-                    player.setXRot(14.5f);
-                    AimAssistControllerTodoAi.attackAttempt();
-                    AimAssistControllerTodoAi.render(mc, 1f);
-                    if (!(player.getXRot() < 14.5f))
-                        throw new AssertionError("Full renderer must allow deliberate reversal toward target");
+                    //codex end
                 } catch (ReflectiveOperationException error) {
                     throw new AssertionError("Inside-to-outside targeting integration", error);
                 }
@@ -186,7 +133,7 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
             // codex start
             context.getInput().releaseMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
             //codex end
-            System.out.println("PASS: targeting/aura exit, polling gaps, full renderer and reversal controls");
+            System.out.println("PASS: targeting exit, polling gaps and full renderer miss rejection"); //codex (old code snippet) System.out.println("PASS: targeting/aura exit, polling gaps, full renderer and reversal controls");
         }
     }
 }

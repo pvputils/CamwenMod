@@ -129,12 +129,12 @@ public final class ExternalConfigWindow {
         grid.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         // codex start
         addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,
-                "opens aura and targetting settings");
+                "opens targetting settings"); //codex (old code snippet) "opens aura and targetting settings");
         //codex end
         // codex start
         addCheckBox(grid, "disable aim assist on teammates", () -> config.isAimAssistDisabledOnTeammates,
                 value -> config.isAimAssistDisabledOnTeammates = value,
-                "prevents aura and targetting from assisting toward players marked Ally or Friendly");
+                "prevents targetting from assisting toward players marked Ally or Friendly"); //codex (old code snippet) "prevents aura and targetting from assisting toward players marked Ally or Friendly");
         //codex end
         addCheckBox(grid, "togglesneak gui", () -> config.isToggleSneakGuiEnabled,
                 value -> config.isToggleSneakGuiEnabled = value,
