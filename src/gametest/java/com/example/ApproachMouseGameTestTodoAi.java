@@ -114,7 +114,7 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     aura.requires.notBreaking = false;
                     aura.targetingMargin = 1;
                     UntitledClient.config.isCheatsEnabled = true;
-                    Utils.computeCheatConfig().staticTargetingMarginBypass = 0;
+                    Utils.computeCheatConfig().movingTargetingMarginBypass = 0;
                     aura.range = 5;
                     aura.horizontal = aura.vertical = true;
                     player.setYRot(0);

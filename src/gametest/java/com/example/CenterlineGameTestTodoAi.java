@@ -48,7 +48,7 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 cfg.targetting.requires.notBreaking = false;
                 UntitledClient.config.isCheatsEnabled = true;
                 Utils.computeCheatConfig().isTargetingMarginReverted = false;
-                Utils.computeCheatConfig().staticTargetingMarginBypass = 0;
+                Utils.computeCheatConfig().movingTargetingMarginBypass = 0;
                 var eyes = mc.player.getEyePosition();
                 var target = new RemotePlayer(mc.level, new GameProfile(UUID.randomUUID(), "CenterBandRegression"));
                 target.setId(1_000_002);
@@ -75,6 +75,33 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 target.setBoundingBox(new AABB(eyes.x + 0.6, eyes.y - 0.5, eyes.z + 2,
                         eyes.x + 1.4, eyes.y + 0.5, eyes.z + 3));
                 cfg.aura.range = 4.2;
+                cfg.aura.targetingMargin = 0.4;
+                var cheats = Utils.computeCheatConfig();
+                cheats.movingTargetingMarginBypass = 0.4f;
+                mc.player.setYRot(0);
+                mc.player.setXRot(0);
+                for (boolean moving : new boolean[]{false, true}) {
+                    for (boolean targetMoving : new boolean[]{false, true}) {
+                        check(cheats.computeTargetingMarginBypass(moving, targetMoving)
+                                == (moving && targetMoving ? 0.4f : 0f), "normal margin retains movement condition");
+                    }
+                }
+                check(TargetingMarginPickTodoAi.pick(mc, null, 4.2).getType()
+                        != net.minecraft.world.phys.HitResult.Type.ENTITY, "stationary normal pick misses");
+                check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == target,
+                        "stationary aura combines default and module margin");
+                check(AimAssistMarginScopeTodoAi.current() == null && cheats.movingTargetingMarginBypass == 0.4f,
+                        "aura probe restores override and preserves configured margin");
+                AimAssistMarginScopeTodoAi.withMargin(0.2f, () -> {
+                    TargetingMarginPickTodoAi.pick(mc, 0f, 4.2);
+                    check(AimAssistMarginScopeTodoAi.current() == 0.2f, "nested probe restores prior margin");
+                    return null;
+                });
+                try {
+                    AimAssistMarginScopeTodoAi.withMargin(0.2f, () -> { throw new IllegalStateException("test"); });
+                } catch (IllegalStateException expected) {}
+                check(AimAssistMarginScopeTodoAi.current() == null, "failed probe clears temporary margin");
+                cheats.movingTargetingMarginBypass = 0;
                 cfg.aura.targetingMargin = 1;
                 cfg.aura.requires.attackWindow = 200;
                 cfg.aura.requires.notBreaking = false;
