@@ -29,7 +29,10 @@ import static com.example.Utils.computeCheatConfig;
 import static com.example.Utils.serializeJsonBlocking;
 
 // codex start
-/** Interactive configuration in a capture-excluded native window outside Minecraft's framebuffer. */
+
+/**
+ * Interactive configuration in a capture-excluded native window outside Minecraft's framebuffer.
+ */
 public final class ExternalConfigWindow {
     private static final int WDA_EXCLUDEFROMCAPTURE = 0x11;
     private static final int GWLP_HWNDPARENT = -8;
@@ -150,6 +153,9 @@ public final class ExternalConfigWindow {
         addCheckBox(grid, "disable view bobbing camera shake", () -> config.isViewBobbingCameraShakeDisabled,
                 value -> config.isViewBobbingCameraShakeDisabled = value,
                 "keeps view bobbing enabled while removing only the camera shake");
+        addCheckBox(grid, "disable ridden horse rendering", () -> config.isRiddenHorseRenderingDisabled,
+                value -> config.isRiddenHorseRenderingDisabled = value,
+                "");
         // codex start
         addCheckBox(grid, "hold inventory key to keep inventory open", () -> config.isInventoryKeyHoldEnabled,
                 value -> config.isInventoryKeyHoldEnabled = value,
@@ -178,8 +184,8 @@ public final class ExternalConfigWindow {
         addCheckBox(grid, "targeting margin revert", () -> activeCheatConfig.isTargetingMarginReverted,
                 value -> activeCheatConfig.isTargetingMarginReverted = value,
                 "will flag hard on versions that use smaller hitboxes");
-        addFloatField(grid, "targeting margin (static)", activeCheatConfig.staticTargetingMarginBypass,
-                value -> activeCheatConfig.staticTargetingMarginBypass = value,
+        addFloatField(grid, "targeting margin (static)", activeCheatConfig.movingTargetingMarginBypass,
+                value -> activeCheatConfig.movingTargetingMarginBypass = value,
                 "targeting margin bypass while standing still; invalid input is shown in red");
 //        addFloatField(grid, "targeting margin (moving)", activeCheatConfig.movingTargetMarginBypass,
 //                value -> activeCheatConfig.movingTargetMarginBypass = value,
@@ -258,9 +264,20 @@ public final class ExternalConfigWindow {
                 }
             }
 
-            @Override public void insertUpdate(DocumentEvent event) { changed(); }
-            @Override public void removeUpdate(DocumentEvent event) { changed(); }
-            @Override public void changedUpdate(DocumentEvent event) { changed(); }
+            @Override
+            public void insertUpdate(DocumentEvent event) {
+                changed();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent event) {
+                changed();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent event) {
+                changed();
+            }
         });
         panel.add(field);
     }

@@ -48,7 +48,7 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 cfg.targetting.requires.notBreaking = false;
                 UntitledClient.config.isCheatsEnabled = true;
                 Utils.computeCheatConfig().isTargetingMarginReverted = false;
-                Utils.computeCheatConfig().staticTargetingMarginBypass = 0;
+                Utils.computeCheatConfig().movingTargetingMarginBypass = 0;
                 var eyes = mc.player.getEyePosition();
                 var target = new RemotePlayer(mc.level, new GameProfile(UUID.randomUUID(), "CenterBandRegression"));
                 target.setId(1_000_002);
@@ -75,6 +75,55 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 target.setBoundingBox(new AABB(eyes.x + 0.6, eyes.y - 0.5, eyes.z + 2,
                         eyes.x + 1.4, eyes.y + 0.5, eyes.z + 3));
                 cfg.aura.range = 4.2;
+                cfg.aura.targetingMargin = 0.4;
+                var cheats = Utils.computeCheatConfig();
+                cheats.movingTargetingMarginBypass = 0.4f;
+                mc.player.setYRot(0);
+                mc.player.setXRot(0);
+                for (boolean moving : new boolean[]{false, true}) {
+                    for (boolean targetMoving : new boolean[]{false, true}) {
+                        check(cheats.computeTargetingMarginBypass(moving, targetMoving)
+                                == (moving && targetMoving ? 0.4f : 0f), "normal margin retains movement condition");
+                    }
+                }
+                check(TargetingMarginPickTodoAi.pick(mc, null, 4.2).getType()
+                        != net.minecraft.world.phys.HitResult.Type.ENTITY, "stationary normal pick misses");
+                check(TargetingMarginPickTodoAi.pick(mc, 0.4f, 4.2).getType()
+                        != net.minecraft.world.phys.HitResult.Type.ENTITY, "module margin alone is insufficient" );
+                check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == target,
+                        "stationary aura combines default and module margin");
+                check(AimAssistMarginScopeTodoAi.current() == null && cheats.movingTargetingMarginBypass == 0.4f,
+                        "aura probe restores override and preserves configured margin");
+                AimAssistMarginScopeTodoAi.withMargin(0.2f, () -> {
+                    TargetingMarginPickTodoAi.pick(mc, 0f, 4.2);
+                    check(AimAssistMarginScopeTodoAi.current() == 0.2f, "nested probe restores prior margin");
+                    return null;
+                });
+                try {
+                    AimAssistMarginScopeTodoAi.withMargin(0.2f, () -> { throw new IllegalStateException("test"); });
+                } catch (IllegalStateException expected) {}
+                check(AimAssistMarginScopeTodoAi.current() == null, "failed probe clears temporary margin");
+                cfg.targetting.enabled = false;
+                cfg.aura.enabled = true;
+                cfg.aura.horizontal = true;
+                cfg.aura.vertical = false;
+                cfg.aura.requires.notBreaking = false;
+                cfg.aura.requires.attackWindow = 200;
+                AimAssistControllerTodoAi.attackAttempt();
+                AimAssistControllerTodoAi.tick(mc);
+                try {
+                    for (String name : new String[]{"CROSSHAIR_HISTORY", "CROSSHAIR_GATES"}) {
+                        var field = AimAssistControllerTodoAi.class.getDeclaredField(name);
+                        field.setAccessible(true);
+                        ((Map<?, ?>) field.get(null)).clear();
+                    }
+                } catch (ReflectiveOperationException error) { throw new AssertionError(error); }
+                AimAssistControllerTodoAi.render(mc, 1f);
+                check(mc.player.getYRot() < 0, "stationary combined-margin target produces actual aura correction");
+                check(target.getPickRadius() == 0f && cheats.movingTargetingMarginBypass == 0.4f
+                        && AimAssistMarginScopeTodoAi.current() == null,
+                        "render correction preserves normal stationary radius and stored margin");
+                cheats.movingTargetingMarginBypass = 0;
                 cfg.aura.targetingMargin = 1;
                 cfg.aura.requires.attackWindow = 200;
                 cfg.aura.requires.notBreaking = false;
@@ -100,6 +149,8 @@ public final class CenterlineGameTestTodoAi implements FabricClientGameTest {
                 // codex start
                 cfg.aura.maxCorrectionFov = 1;
                 settled(mc, target, 0, 3, 40);
+                check(TargetingMarginPickTodoAi.pick(mc, 0.4f, 4.2).getType()
+                        != net.minecraft.world.phys.HitResult.Type.ENTITY, "module margin alone is insufficient" );
                 check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == target,
                         "FOV safeguard does not replace reach and margin eligibility");
                 check(mc.player.getYRot() == 0 && mc.player.getXRot() == 3,

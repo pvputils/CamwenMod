@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static com.example.Constants.MINECRAFT_CLIENT_INSTANCE;
 import static com.example.UntitledClient.config;
 import static com.example.Utils.computeCheatConfig;
 
@@ -56,9 +57,9 @@ public abstract class EntityMixin {
         if (!config.isCheatsEnabled) {
             return;
         }
-//            boolean isMoving = MINECRAFT_CLIENT_INSTANCE.player.input.getMoveVector().lengthSquared() > 0.f;
+        boolean isMoving = MINECRAFT_CLIENT_INSTANCE.player.input.getMoveVector().lengthSquared() > 0.f;
         // TODO ?
-//            boolean isTargetMoving = player.getDeltaMovement().horizontalDistanceSqr() > 0.0001f;
+        boolean isTargetMoving = player.getDeltaMovement().horizontalDistanceSqr() > 0.0001f;
 //            boolean foo = player == Constants.MINECRAFT_CLIENT_INSTANCE.player;
 //            if (foo)
 //                MINECRAFT_CLIENT_INSTANCE.player.sendSystemMessage(Component.literal(String.valueOf(foo)));
@@ -76,7 +77,7 @@ public abstract class EntityMixin {
                 config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam nameplateTeam) {
             return;
         }
-        cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass());
+        cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass(isMoving, isTargetMoving));
         cir.cancel();
     }
 
