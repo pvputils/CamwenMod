@@ -147,6 +147,40 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
                     apply.invoke(null, mc, auraState, aura, false, 1f);
                     if (!(player.getXRot() < 14.5f))
                         throw new AssertionError("Aura reversal positive control must actually turn toward target");
+                    // A fresh click must plan and turn before the next client tick.
+                    cfg.enabled = aura.enabled = false;
+                    AimAssistControllerTodoAi.tick(mc);
+                    history.clear();
+                    gates.clear();
+                    player.setXRot(15);
+                    AimAssistControllerTodoAi.render(mc, 1f);
+                    aura.enabled = true;
+                    AimAssistControllerTodoAi.attackAttempt();
+                    AimAssistControllerTodoAi.render(mc, 1f);
+                    if (!(player.getXRot() < 15))
+                        throw new AssertionError("First active aura frame waited for a client tick");
+                    // Also acquire a newly eligible target while the same click remains active.
+                    aura.targetingMargin = 0.01;
+                    player.setXRot(15);
+                    AimAssistControllerTodoAi.tick(mc);
+                    history.clear();
+                    gates.clear();
+                    AimAssistControllerTodoAi.render(mc, 1f);
+                    aura.targetingMargin = 1;
+                    AimAssistControllerTodoAi.render(mc, 1f);
+                    if (!(player.getXRot() < 15))
+                        throw new AssertionError("New aura acquisition waited for a client tick");
+                    cfg.enabled = aura.enabled = false;
+                    AimAssistControllerTodoAi.tick(mc);
+                    history.clear();
+                    gates.clear();
+                    player.setXRot(3);
+                    AimAssistControllerTodoAi.render(mc, 1f);
+                    cfg.enabled = true;
+                    AimAssistControllerTodoAi.attackAttempt();
+                    AimAssistControllerTodoAi.render(mc, 1f);
+                    if (!(player.getXRot() < 3))
+                        throw new AssertionError("First active targeting frame waited for a client tick");
                     // Exercise render tracking while aura/targeting are not eligible, then activate aura after exit.
                     cfg.enabled = aura.enabled = false;
                     history.clear();

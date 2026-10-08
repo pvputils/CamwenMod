@@ -33,6 +33,9 @@ public final class AimAssistControllerTodoAi {
         LivingEntity target;
         Rotation start, end, goal;
         long lastAttack;
+        // codex start
+        boolean renderActive;
+        //codex end
         void clear() { target = null; start = end = goal = null; lastAttack = 0; }
     }
     private AimAssistControllerTodoAi() {}
@@ -186,6 +189,7 @@ public final class AimAssistControllerTodoAi {
         if (mc.player == null || mc.level != level || mc.gui.screen() != null) { //codex (old code snippet) if (mc.player == null || mc.level != level) return;
             CROSSHAIR_HISTORY.clear();
             CROSSHAIR_GATES.clear();
+            AURA.renderActive = TARGETTING.renderActive = false;
             return;
         }
         //codex end
@@ -213,6 +217,10 @@ public final class AimAssistControllerTodoAi {
         }
         CROSSHAIR_GATES.keySet().retainAll(tracked);
         //codex end
+        // codex start
+        planFirstActiveFrame(mc, AURA, config().aura, false);
+        planFirstActiveFrame(mc, TARGETTING, config().targetting, true);
+        //codex end
         apply(mc, AURA, config().aura, false, partialTicks);
         apply(mc, TARGETTING, config().targetting, true, partialTicks);
         lastApplied = current(mc);
@@ -224,6 +232,15 @@ public final class AimAssistControllerTodoAi {
         }
         //codex end
     }
+    // codex start
+    private static void planFirstActiveFrame(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting) {
+        boolean enabledNow = active(mc, state, cfg);
+        if (enabledNow && (!state.renderActive || state.target == null || state.end == null)) {
+            plan(mc, state, cfg, targeting);
+        }
+        state.renderActive = enabledNow;
+    }
+    //codex end
     private static void apply(Minecraft mc, State state, AimAssistConfigTodoAi.Assist cfg, boolean targeting, float partial) {
         if (!active(mc, state, cfg) || state.target == null || state.end == null || !allowed(mc, state.target)) return;
         // codex start
