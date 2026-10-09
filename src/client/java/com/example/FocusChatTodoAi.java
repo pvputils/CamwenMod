@@ -12,12 +12,13 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/** Captures server text briefly after a user-submitted FOCUS query. */
+/** Captures server text briefly after a user-submitted nameplate query. */
 public final class FocusChatTodoAi {
     private static final long RESPONSE_NANOS = 5_000_000_000L;
     private static final Pattern WORD = Pattern.compile("[A-Za-z0-9_]+");
     private static Object pendingConnection;
     private static long deadline;
+    private static Config.NameplateTeam pendingTeam;
 
     private FocusChatTodoAi() {}
 
@@ -29,18 +30,31 @@ public final class FocusChatTodoAi {
     }
 
     public static void submit(String input) {
+        submit(input, Config.NameplateTeam.FOCUS);
+    }
+
+    public static void cancel(Config.NameplateTeam team) {
+        if (pendingTeam == team) pendingConnection = null;
+    }
+
+    public static void submit(String input, Config.NameplateTeam team) {
+        if (team != Config.NameplateTeam.FOCUS && team != Config.NameplateTeam.ALLY) {
+            throw new IllegalArgumentException("Unsupported query team");
+        }
         Minecraft client = Minecraft.getInstance();
         var connection = client.getConnection();
         String message = input.strip();
         if (connection == null || client.player == null || message.isEmpty() || message.equals("/")) return;
         if (message.length() > 256 || message.indexOf('\n') >= 0 || message.indexOf('\r') >= 0) {
             client.player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
-                    "FOCUS message must be one line of at most 256 characters."));
+                    team.name() + " message must be one line of at most 256 characters."));
             return;
         }
-        UntitledClient.config.focusChatMessage = message;
+        if (team == Config.NameplateTeam.FOCUS) UntitledClient.config.focusChatMessage = message;
+        else UntitledClient.config.allyChatMessage = message;
         UntitledClient.config.saveConfig();
         pendingConnection = connection;
+        pendingTeam = team;
         deadline = System.nanoTime() + RESPONSE_NANOS;
         if (message.startsWith("/")) connection.sendCommand(message.substring(1));
         else connection.sendChat(message);
@@ -59,7 +73,7 @@ public final class FocusChatTodoAi {
         }
         boolean changed = false;
         for (UUID uuid : matchingPlayers(message, online)) {
-            if (UntitledClient.config.nameplateUuids.put(uuid, Config.NameplateTeam.FOCUS) != Config.NameplateTeam.FOCUS) {
+            if (UntitledClient.config.nameplateUuids.put(uuid, pendingTeam) != pendingTeam) {
                 changed = true;
             }
         }

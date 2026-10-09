@@ -38,6 +38,9 @@ public class Config {
 
     // codex start
     public String focusChatMessage = "";
+    // codex start
+    public String allyChatMessage = "";
+    //codex end
     //codex end
     public HashMap<UUID, NameplateTeam> nameplateUuids = new HashMap<>();
     public boolean isToggleSneakGuiEnabled = false;
