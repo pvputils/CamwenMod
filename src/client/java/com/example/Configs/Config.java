@@ -89,7 +89,7 @@ public class Config {
     }
     public PlayerWaypointCategory playerWaypointCategory = PlayerWaypointCategory.ALL;
 //    public boolean isPlayerLoginMessagingEnabled = false;
-    public boolean isCheatsEnabled = true;
+    public boolean isCheatsEnabled = false;
 
     public boolean isDebugModeEnabled = false;
     public boolean isReachDebugModeEnabled = false; // TODO -> combine this with min range, maybe with Float's nullability
