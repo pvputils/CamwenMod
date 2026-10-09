@@ -64,6 +64,23 @@ public class HitDeltaCounterTestTodoAi {
         HitDeltaCounterTodoAi.recordDamage(2, 1, 1, 100_000_000_000L);
         HitDeltaCounterTodoAi.recordDamage(2, 1, 1, 130_000_000_000L);
         check(HitDeltaCounterTodoAi.value(130_000_000_000L) == 1);
+        HitDeltaCounterTodoAi.updateSession(world, player, false);
+        HitDeltaCounterTodoAi.updateSession(world, player, true);
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1, true, 0L);
+        check(HitDeltaCounterTodoAi.text(0L).equals("+1, (1)"));
+        HitDeltaCounterTodoAi.recordDamage(3, 1, 1, false, 1L);
+        check(HitDeltaCounterTodoAi.text(1L).equals("+2, (1)"));
+        HitDeltaCounterTodoAi.recordDamage(1, 2, 1, true, 2L);
+        check(HitDeltaCounterTodoAi.text(2L).equals("+1, (1)"));
+        HitDeltaCounterTodoAi.recordDamage(1, 1, 1, true, 3L);
+        HitDeltaCounterTodoAi.recordDamage(2, 3, 1, true, 4L);
+        check(HitDeltaCounterTodoAi.text(4L).equals("+1, (1)"));
+        check(HitDeltaCounterTodoAi.text(30_000_000_002L).isEmpty());
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1, false, 40_000_000_000L);
+        check(HitDeltaCounterTodoAi.text(40_000_000_000L).equals("+1, (0)"));
+        HitDeltaCounterTodoAi.updateSession(world, new Object(), true);
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1, false, 50_000_000_000L);
+        check(HitDeltaCounterTodoAi.text(50_000_000_000L).equals("+1, (0)"));
         System.out.println("Hit delta counter tests passed");
     }
 }

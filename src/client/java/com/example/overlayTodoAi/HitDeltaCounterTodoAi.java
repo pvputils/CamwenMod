@@ -9,6 +9,7 @@ public final class HitDeltaCounterTodoAi {
     private static Object player;
     private static boolean enabled;
     private static int delta;
+    private static int friendlyFire;
     private static final long IDLE_RESET_NANOS = 30_000_000_000L;
     private static long lastChangeNanos;
 
@@ -16,7 +17,10 @@ public final class HitDeltaCounterTodoAi {
 
     public static void updateSession(Object currentLevel, Object currentPlayer, boolean requested) {
         boolean active = requested && currentLevel != null && currentPlayer != null;
-        if (level != currentLevel || player != currentPlayer || enabled != active) delta = 0;
+        if (level != currentLevel || player != currentPlayer || enabled != active) {
+            delta = 0;
+            friendlyFire = 0;
+        }
         level = currentLevel;
         player = currentPlayer;
         enabled = active;
@@ -27,12 +31,21 @@ public final class HitDeltaCounterTodoAi {
         recordDamage(victimId, attackerId, localId, System.nanoTime());
     }
 
+    public static void recordDamage(int victimId, int attackerId, int localId, boolean victimTeammate) {
+        recordDamage(victimId, attackerId, localId, victimTeammate, System.nanoTime());
+    }
+
     static void recordDamage(int victimId, int attackerId, int localId, long now) {
+        recordDamage(victimId, attackerId, localId, false, now);
+    }
+
+    static void recordDamage(int victimId, int attackerId, int localId, boolean victimTeammate, long now) {
         expire(now);
         if (!enabled || victimId == attackerId) return;
         if (attackerId == localId) delta++;
         else if (victimId == localId) delta--;
         else return;
+        if (attackerId == localId && victimTeammate) friendlyFire++;
         lastChangeNanos = now;
     }
 
@@ -44,7 +57,15 @@ public final class HitDeltaCounterTodoAi {
     }
 
     private static void expire(long now) {
-        if (delta != 0 && now - lastChangeNanos >= IDLE_RESET_NANOS) delta = 0;
+        if (now - lastChangeNanos >= IDLE_RESET_NANOS) {
+            delta = 0;
+            friendlyFire = 0;
+        }
+    }
+
+    static String text(long now) {
+        int current = value(now);
+        return current == 0 ? "" : (current > 0 ? "+" : "") + current + ", (" + friendlyFire + ")";
     }
 
     public static Color color() {
@@ -53,9 +74,8 @@ public final class HitDeltaCounterTodoAi {
     }
 
     public static void draw(Graphics2D graphics, int width, int height) {
-        int current = value();
-        if (current == 0) return;
-        String text = (current > 0 ? "+" : "") + current;
+        String text = text(System.nanoTime());
+        if (text.isEmpty()) return;
         int x = Math.max(8, width - graphics.getFontMetrics().stringWidth(text) - 8);
         int y = height - graphics.getFontMetrics().getDescent() - 8;
         graphics.setColor(Color.BLACK);

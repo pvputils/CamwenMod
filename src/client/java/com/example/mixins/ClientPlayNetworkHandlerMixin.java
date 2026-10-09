@@ -1,6 +1,7 @@
 package com.example.mixins;
 
 import com.example.overlayTodoAi.HitDeltaCounterTodoAi;
+import com.example.Configs.Config;
 import com.example.overlayTodoAi.TeamHitEventsTodoAi;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -53,7 +54,10 @@ public class ClientPlayNetworkHandlerMixin {
         HitDeltaCounterTodoAi.updateSession(clientWorld, localPlayer, config.isHitDeltaCounterEnabled);
         if (localPlayer != null && clientWorld.getEntity(packet.entityId()) instanceof Player
                 && clientWorld.getEntity(packet.sourceCauseId()) instanceof Player) {
-            HitDeltaCounterTodoAi.recordDamage(packet.entityId(), packet.sourceCauseId(), localPlayer.getId());
+            Config.NameplateTeam victimTeam = config.nameplateUuids.get(
+                    clientWorld.getEntity(packet.entityId()).getUUID());
+            HitDeltaCounterTodoAi.recordDamage(packet.entityId(), packet.sourceCauseId(), localPlayer.getId(),
+                    victimTeam == Config.NameplateTeam.ALLY || victimTeam == Config.NameplateTeam.FRIENDLY);
         }
         //codex end
         // codex start
