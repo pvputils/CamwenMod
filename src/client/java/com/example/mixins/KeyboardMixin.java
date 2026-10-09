@@ -1,7 +1,5 @@
 package com.example.mixins;
 
-import com.example.killaura.KillAuraScreenTodoAi;
-
 import com.example.Configs.Config;
 import com.example.overlayTodoAi.ExternalConfigWindow;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -55,12 +53,6 @@ public class KeyboardMixin {
     @Inject(at = @At(value = "RETURN"), method = "keyPress")
     private void onKeyPress(
             long handle, int action, KeyEvent event, CallbackInfo ci) {
-        // codex start
-        if (action == GLFW.GLFW_PRESS && event.key() == GLFW.GLFW_KEY_RIGHT_SHIFT &&
-                MINECRAFT_CLIENT_INSTANCE.gui.screen() == null) {
-            KillAuraScreenTodoAi.open();
-        }
-        // codex end
         // codex start
         if (MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(event)) {
 //            if (action == GLFW.GLFW_PRESS && MINECRAFT_CLIENT_INSTANCE.player instanceof LocalPlayer) {

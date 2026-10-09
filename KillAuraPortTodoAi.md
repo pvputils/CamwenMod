@@ -1,6 +1,6 @@
 # Aim-only KillAura port
 
-Open the Minecraft settings screen with Right Shift, or choose **KillAura (aim only)** in CamwenMod's configuration window. Enable it in that screen; it starts disabled and saves through CamwenMod's config. There is no module toggle keybind.
+Open the Minecraft settings screen by choosing **KillAura (aim only)** in CamwenMod's configuration window. Enable it in that screen; it starts disabled and saves through CamwenMod's config. There is no module toggle keybind.
 
 This adapts the player-only aim controller from `pvputils/LiquidBounce-silentaura`, branch `codex/killaura-native-screen`, commit `06147c60e`, to CamwenMod 26.2. It uses native client tick/render hooks, visible player yaw/pitch, and CamwenMod persistence. It adds no LiquidBounce runtime dependency.
 
