@@ -205,6 +205,13 @@ public final class ExternalConfigWindow {
             config.nameplateUuids.values().removeIf(each -> each == Config.NameplateTeam.ALLY);
             saveAll();
         }, "");
+        // codex start
+        addButton(grid, "reset focus nameplates", () -> {
+            com.example.FocusChatTodoAi.cancel(Config.NameplateTeam.FOCUS);
+            config.nameplateUuids.values().removeIf(each -> each == Config.NameplateTeam.FOCUS);
+            saveAll();
+        }, "");
+        //codex end
         addCheckBox(grid, "combat cheats", () -> config.isCheatsEnabled,
                 value -> config.isCheatsEnabled = value, "");
         addWaypointCategoryButton(grid);
@@ -226,6 +233,32 @@ public final class ExternalConfigWindow {
                 value -> config.isPlayerNameplateSimplified = value, "");
         addCheckBox(grid, "chat coordinate waypointer", () -> config.isChatCoordinateWaypointingEnabled,
                 value -> config.isChatCoordinateWaypointingEnabled = value, "");
+        // codex start
+        JPanel focusPanel = new JPanel(new BorderLayout(4, 0));
+        JTextField focusMessage = new JTextField(config.focusChatMessage);
+        focusMessage.setName("FOCUS chat message");
+        focusMessage.setToolTipText("Enter sends chat or a /command; server replies for five seconds mark online usernames as FOCUS.");
+        focusMessage.addActionListener(_ -> {
+            String message = focusMessage.getText();
+            onClientThread(() -> com.example.FocusChatTodoAi.submit(message));
+        });
+        focusPanel.add(new JLabel("FOCUS query"), BorderLayout.WEST);
+        focusPanel.add(focusMessage, BorderLayout.CENTER);
+        grid.add(focusPanel);
+        //codex end
+        // codex start
+        JPanel allyPanel = new JPanel(new BorderLayout(4, 0));
+        JTextField allyMessage = new JTextField(config.allyChatMessage);
+        allyMessage.setName("ALLY chat message");
+        allyMessage.setToolTipText("Enter sends chat or a /command; server replies for five seconds mark online usernames as ALLY.");
+        allyMessage.addActionListener(_ -> {
+            String message = allyMessage.getText();
+            onClientThread(() -> com.example.FocusChatTodoAi.submit(message, Config.NameplateTeam.ALLY));
+        });
+        allyPanel.add(new JLabel("ALLY query"), BorderLayout.WEST);
+        allyPanel.add(allyMessage, BorderLayout.CENTER);
+        grid.add(allyPanel);
+        //codex end
         result.setContentPane(grid);
         return result;
     }

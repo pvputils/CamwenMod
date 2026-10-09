@@ -1,0 +1,16 @@
+allprojects {
+    afterEvaluate {
+        tasks.register('focusChatTestsTodoAi', JavaExec) {
+            dependsOn 'clientClasses'
+            classpath = sourceSets.client.runtimeClasspath
+            mainClass = 'com.example.FocusChatTestTodoAi'
+            doFirst {
+                def outputDir = file('build/focus-chat-tests')
+                outputDir.mkdirs()
+                ant.javac(srcdir: 'tests', includes: 'FocusChatTestTodoAi.java', destdir: outputDir,
+                    includeantruntime: false, release: '25', classpath: classpath.asPath)
+                classpath += files(outputDir)
+            }
+        }
+    }
+}

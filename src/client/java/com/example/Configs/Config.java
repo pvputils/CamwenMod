@@ -15,18 +15,33 @@ public class Config {
     public boolean isAimAssistDisabledOnTeammates = false;
     //codex end
     public enum NameplateTeam {
-        // targeting margin relies on this being only allies
-        FRIENDLY(TextColor.GREEN),
-        ALLY(TextColor.AQUA);
+        // Ally behavior uses isFriendly. //codex (old code snippet) // targeting margin relies on this being only allies
+        FRIENDLY(TextColor.GREEN, true), //codex (old code snippet) FRIENDLY(TextColor.GREEN),
+        ALLY(TextColor.AQUA, true), //codex (old code snippet) ALLY(TextColor.AQUA);
+        // codex start
+        FOCUS(TextColor.fromRgb(0xFF55FF), false);
+        //codex end
         //        ENEMY,
 //        FOCUS,
         public final TextColor color;
+        // codex start
+        public final boolean isFriendly;
+        //codex end
 
-        NameplateTeam(TextColor color) {
+        NameplateTeam(TextColor color, boolean isFriendly) { //codex (old code snippet) NameplateTeam(TextColor color) {
             this.color = color;
+            // codex start
+            this.isFriendly = isFriendly;
+            //codex end
         }
     }
 
+    // codex start
+    public String focusChatMessage = "";
+    // codex start
+    public String allyChatMessage = "";
+    //codex end
+    //codex end
     public HashMap<UUID, NameplateTeam> nameplateUuids = new HashMap<>();
     public boolean isToggleSneakGuiEnabled = false;
 //    public boolean isSneakEnabled = false;

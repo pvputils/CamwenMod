@@ -156,6 +156,11 @@ public class KeyboardMixin {
         while (FRIENDLY_TOGGLE.consumeClick()) {
             onAbstractNameplateToggle(Config.NameplateTeam.FRIENDLY);
         }
+        // codex start
+        while (FOCUS_TOGGLE.consumeClick()) {
+            onAbstractNameplateToggle(Config.NameplateTeam.FOCUS);
+        }
+        //codex end
         while (ALLY_TOGGLE.consumeClick()) {
             onAbstractNameplateToggle(Config.NameplateTeam.ALLY);
         }

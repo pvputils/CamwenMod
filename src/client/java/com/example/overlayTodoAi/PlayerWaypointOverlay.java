@@ -115,7 +115,7 @@ public final class PlayerWaypointOverlay {
                         if (player == client.player) continue;
                         var team = config.nameplateUuids.get(player.getUUID());
                         if (config.playerWaypointCategory == Config.PlayerWaypointCategory.ENEMIES
-                                && (team == Config.NameplateTeam.ALLY || team == Config.NameplateTeam.FRIENDLY))
+                                && team != null && team.isFriendly) //codex (old code snippet) && (team == Config.NameplateTeam.ALLY || team == Config.NameplateTeam.FRIENDLY))
                             continue;
                         Vec3 world = player.position().add(0, player.getBbHeight() / 2, 0);
                         Vector2i point = project.apply(world);
@@ -142,7 +142,7 @@ public final class PlayerWaypointOverlay {
                 if (config.isTeammateTargetCrosshairMarkerEnabled
                         && client.hitResult instanceof EntityHitResult hit
                         && hit.getEntity() instanceof Player target
-                        && (config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.ALLY || config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.FRIENDLY)) {
+                        && config.nameplateUuids.get(target.getUUID()) instanceof Config.NameplateTeam team && team.isFriendly) { //codex (old code snippet) && (config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.ALLY || config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.FRIENDLY)) {
                     // codex start
                     hasOverlayContent = true;
                     // codex end
