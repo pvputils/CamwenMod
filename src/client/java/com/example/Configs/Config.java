@@ -38,6 +38,7 @@ public class Config {
 //    public boolean isWeakAttackSoundDisabled = false;
     // codex start
     public boolean isHitDeltaCounterEnabled = false;
+    public boolean isTeamHitDeltaCounterEnabled = false;
     //codex end
     public boolean isDamageTakenValueNotificationEnabled = false;
 //    public boolean isDepthStriderReverted = true; // TODO ?

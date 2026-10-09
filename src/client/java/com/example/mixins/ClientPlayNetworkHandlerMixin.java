@@ -1,6 +1,7 @@
 package com.example.mixins;
 
 import com.example.overlayTodoAi.HitDeltaCounterTodoAi;
+import com.example.overlayTodoAi.TeamHitEventsTodoAi;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -54,6 +55,9 @@ public class ClientPlayNetworkHandlerMixin {
                 && clientWorld.getEntity(packet.sourceCauseId()) instanceof Player) {
             HitDeltaCounterTodoAi.recordDamage(packet.entityId(), packet.sourceCauseId(), localPlayer.getId());
         }
+        //codex end
+        // codex start
+        TeamHitEventsTodoAi.record(MINECRAFT_CLIENT_INSTANCE, packet);
         //codex end
         Entity entity = clientWorld.getEntity(packet.entityId());
         if (clientWorld.getEntity(packet.sourceCauseId()) instanceof Player attacker) {

@@ -45,6 +45,7 @@ public final class PlayerWaypointOverlay {
     public void tick(Minecraft client) {
         // codex start
         HitDeltaCounterTodoAi.updateSession(client.level, client.player, config.isHitDeltaCounterEnabled);
+        TeamHitDeltaCounterTodoAi.updateSession(client.level, client.player, config.isTeamHitDeltaCounterEnabled);
         //codex end
         if (!visible(client)) hide();
         if (client.level == null) faces.clear();
@@ -83,8 +84,14 @@ public final class PlayerWaypointOverlay {
                 if (config.isHitDeltaCounterEnabled) {
                     HitDeltaCounterTodoAi.updateSession(client.level, client.player, true);
                     HitDeltaCounterTodoAi.draw(graphics, client.getWindow().getGuiScaledWidth(),
-                            client.getWindow().getGuiScaledHeight());
+                            client.getWindow().getGuiScaledHeight()
+                                    - (config.isTeamHitDeltaCounterEnabled ? graphics.getFontMetrics().getHeight() + 2 : 0));
                     hasOverlayContent = true;
+                }
+                if (config.isTeamHitDeltaCounterEnabled) {
+                    TeamHitDeltaCounterTodoAi.updateSession(client.level, client.player, true);
+                    hasOverlayContent |= TeamHitDeltaCounterTodoAi.draw(graphics,
+                            client.getWindow().getGuiScaledWidth(), client.getWindow().getGuiScaledHeight());
                 }
                 //codex end
                 Vector3f forward = cameraRenderState.orientation.transform(new Vector3f(0, 0, -1));
