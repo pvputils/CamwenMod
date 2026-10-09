@@ -75,9 +75,9 @@ public abstract class EntityMixin {
 //            if (isLocallyMoving) {
 //                MINECRAFT_CLIENT_INSTANCE.player.sendSystemMessage(Component.literal("gey"));
 //            }
-        // TODO -> this relies on these teams all being allies
+        // Only allied teams bypass the targeting margin. //codex (old code snippet) // TODO -> this relies on these teams all being allies
         if (config.teammateSwingSuppressionChance > 0.f &&
-                config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam nameplateTeam) {
+                (config.nameplateUuids.get(player.getUUID()) == Config.NameplateTeam.ALLY || config.nameplateUuids.get(player.getUUID()) == Config.NameplateTeam.FRIENDLY)) { //codex (old code snippet) config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam nameplateTeam) {
             return;
         }
         cir.setReturnValue(computeCheatConfig().computeTargetingMarginBypass(isMoving, isTargetMoving));
