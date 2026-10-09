@@ -1,5 +1,7 @@
 package com.example.mixins;
 
+import com.example.killaura.KillAuraControllerTodoAi;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.example.aimassist.AimAssistControllerTodoAi;
 import net.minecraft.client.DeltaTracker;
@@ -23,6 +25,9 @@ public class GameRendererMixin {
     // codex start
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void aimAssistRenderTodoAi(DeltaTracker delta, CallbackInfo ci) {
+        // codex start
+        KillAuraControllerTodoAi.render(MINECRAFT_CLIENT_INSTANCE, delta.getGameTimeDeltaPartialTick(false));
+        // codex end
         AimAssistControllerTodoAi.render(MINECRAFT_CLIENT_INSTANCE, delta.getGameTimeDeltaPartialTick(false));
     }
     //codex end

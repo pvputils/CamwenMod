@@ -1,5 +1,7 @@
 package com.example.aimassist;
 
+import com.example.killaura.KillAuraControllerTodoAi;
+
 import com.example.UntitledClient;
 import com.example.Utils;
 import net.minecraft.client.Minecraft;
@@ -58,6 +60,13 @@ public final class AimAssistControllerTodoAi {
             (!cfg.requires.notBreaking || mc.gameMode != null && !mc.gameMode.isDestroying());
     }
     public static void tick(Minecraft mc) {
+        // codex start
+        if (KillAuraControllerTodoAi.ownsLook(mc)) {
+            TARGETTING.clear(); lastApplied = null;
+            CROSSHAIR_HISTORY.clear(); CROSSHAIR_GATES.clear();
+            return;
+        }
+        // codex end
         if (level != mc.level) {
             level = mc.level; TARGETTING.clear(); locks.clear(); lastApplied = null; CROSSHAIR_HISTORY.clear(); CROSSHAIR_GATES.clear(); //codex (old code snippet) level = mc.level; AURA.clear(); TARGETTING.clear(); locks.clear(); lastApplied = null; CROSSHAIR_HISTORY.clear(); CROSSHAIR_GATES.clear();
         }
@@ -130,6 +139,9 @@ public final class AimAssistControllerTodoAi {
         return block.getType() == HitResult.Type.MISS || block.getLocation().distanceToSqr(eyes) + 1e-7 >= point.distanceToSqr(eyes);
     }
     public static void render(Minecraft mc, float partialTicks) {
+        // codex start
+        if (KillAuraControllerTodoAi.ownsLook(mc)) return;
+        // codex end
         // codex start
         if (mc.player == null || mc.level != level || mc.gui.screen() != null) { //codex (old code snippet) if (mc.player == null || mc.level != level) return;
             CROSSHAIR_HISTORY.clear();

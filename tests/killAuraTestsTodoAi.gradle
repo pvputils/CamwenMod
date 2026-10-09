@@ -1,0 +1,16 @@
+allprojects {
+    afterEvaluate {
+        tasks.register('killAuraTestsTodoAi', JavaExec) {
+            dependsOn 'clientClasses'
+            classpath = sourceSets.client.runtimeClasspath
+            mainClass = 'com.example.killaura.KillAuraTestTodoAi'
+            doFirst {
+                def outputDir = file('build/killaura-tests')
+                outputDir.mkdirs()
+                ant.javac(srcdir: 'tests', includes: 'KillAuraTestTodoAi.java', destdir: outputDir,
+                    includeantruntime: false, release: '25', classpath: classpath.asPath)
+                classpath += files(outputDir)
+            }
+        }
+    }
+}

@@ -1,5 +1,7 @@
 package com.example.Configs;
 
+import com.example.killaura.KillAuraConfigTodoAi;
+
 import java.util.HashMap;
 import java.util.UUID;
 import net.minecraft.network.chat.TextColor;
@@ -8,6 +10,9 @@ import com.example.aimassist.AimAssistConfigTodoAi;
 import static com.example.Utils.serializeJsonBlocking;
 
 public class Config {
+    // codex start
+    public KillAuraConfigTodoAi killAura = new KillAuraConfigTodoAi();
+    // codex end
     // codex start
     public AimAssistConfigTodoAi aimAssist = new AimAssistConfigTodoAi();
     //codex end

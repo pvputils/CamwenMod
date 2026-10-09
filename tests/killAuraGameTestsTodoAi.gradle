@@ -1,0 +1,18 @@
+allprojects {
+    afterEvaluate {
+        fabricApi {
+            configureTests {
+                createSourceSet = true
+                modId = 'camwen-killaura-tests'
+                enableGameTests = false
+            }
+        }
+        tasks.named('processGametestResources') {
+            include('KillAuraGameTestTodoAi.json')
+            rename('KillAuraGameTestTodoAi.json', 'fabric.mod.json')
+        }
+        tasks.named('runClientGameTest') {
+            timeout = java.time.Duration.ofMinutes(5)
+        }
+    }
+}

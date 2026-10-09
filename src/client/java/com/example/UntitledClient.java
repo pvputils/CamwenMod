@@ -1,5 +1,7 @@
 package com.example;
 
+import com.example.killaura.KillAuraControllerTodoAi;
+
 import com.example.Configs.CheatConfig;
 import com.example.Configs.Config;
 import com.example.aimassist.AimAssistControllerTodoAi;
@@ -169,6 +171,9 @@ public class UntitledClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // codex start
+        ClientTickEvents.END_CLIENT_TICK.register(KillAuraControllerTodoAi::tick);
+        // codex end
         // codex start
         ClientTickEvents.END_CLIENT_TICK.register(AimAssistControllerTodoAi::tick);
         //codex end

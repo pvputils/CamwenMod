@@ -1,5 +1,7 @@
 package com.example.overlayTodoAi;
 
+import com.example.killaura.KillAuraScreenTodoAi;
+
 import com.example.Configs.Config;
 import com.example.aimassist.AimAssistScreenTodoAi;
 import com.example.Configs.CheatConfig;
@@ -126,6 +128,10 @@ public final class ExternalConfigWindow {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         JPanel grid = new JPanel(new GridLayout(0, 4, 8, 8));
+        // codex start
+        addButton(grid, "KillAura (aim only)", KillAuraScreenTodoAi::open,
+                "opens player-only aiming settings; never clicks or attacks");
+        // codex end
         grid.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         // codex start
         addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,
