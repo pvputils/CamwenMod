@@ -323,6 +323,10 @@ public class UntitledClient implements ClientModInitializer {
         // codex end
         // ai end
 
+        // codex start
+        FocusChatTodoAi.initialize();
+        //codex end
+
         // messageCoordsListener
         ClientReceiveMessageEvents.CHAT.register((
                 message,

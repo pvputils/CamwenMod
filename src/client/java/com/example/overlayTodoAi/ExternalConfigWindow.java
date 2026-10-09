@@ -218,6 +218,19 @@ public final class ExternalConfigWindow {
                 value -> config.isPlayerNameplateSimplified = value, "");
         addCheckBox(grid, "chat coordinate waypointer", () -> config.isChatCoordinateWaypointingEnabled,
                 value -> config.isChatCoordinateWaypointingEnabled = value, "");
+        // codex start
+        JPanel focusPanel = new JPanel(new BorderLayout(4, 0));
+        JTextField focusMessage = new JTextField(config.focusChatMessage);
+        focusMessage.setName("FOCUS chat message");
+        focusMessage.setToolTipText("Enter sends chat or a /command; server replies for five seconds mark online usernames as FOCUS.");
+        focusMessage.addActionListener(_ -> {
+            String message = focusMessage.getText();
+            onClientThread(() -> com.example.FocusChatTodoAi.submit(message));
+        });
+        focusPanel.add(new JLabel("FOCUS query"), BorderLayout.WEST);
+        focusPanel.add(focusMessage, BorderLayout.CENTER);
+        grid.add(focusPanel);
+        //codex end
         result.setContentPane(grid);
         return result;
     }
