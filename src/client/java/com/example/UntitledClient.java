@@ -172,7 +172,7 @@ public class UntitledClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // codex start
-        ClientTickEvents.END_CLIENT_TICK.register(KillAuraControllerTodoAi::tick);
+        ClientTickEvents.START_CLIENT_TICK.register(KillAuraControllerTodoAi::tick); //codex (ClientTickEvents.END_CLIENT_TICK.register(KillAuraControllerTodoAi::tick);)
         // codex end
         // codex start
         ClientTickEvents.END_CLIENT_TICK.register(AimAssistControllerTodoAi::tick);

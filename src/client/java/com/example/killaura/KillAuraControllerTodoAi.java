@@ -21,7 +21,8 @@ import static com.example.killaura.KillAuraGeometryTodoAi.*;
 public final class KillAuraControllerTodoAi {
     private static ClientLevel level;
     private static Player target, pointOwner;
-    private static Rotation start, end, lastApplied, previousGoal, previous;
+    private static Rotation start, end, lastApplied, previousGoal, previous, managed;
+    private static KillAuraConfigTodoAi.MovementCorrection plannedMode;
     private static Vec3 delayedPoint, lazyPoint, gaussianOffset = Vec3.ZERO, gaussianGoal = Vec3.ZERO;
     private static int delayTicks;
     private static double lazyThreshold;
@@ -37,12 +38,20 @@ public final class KillAuraControllerTodoAi {
     public static boolean ownsLook(Minecraft mc) {
         return enabledContext(mc) && target != null && marginTarget(mc) == target;
     }
+    /** Used only by movement/network hooks; ordinary picking keeps the camera rotation. */
+    public static Rotation managedRotation(Minecraft mc) {
+        return ownsLook(mc) && plannedMode == config().rotations.movementCorrection &&
+                plannedMode != KillAuraConfigTodoAi.MovementCorrection.CHANGE_LOOK ? managed : null;
+    }
+    public static Rotation movementRotation(Minecraft mc) {
+        return config().rotations.movementCorrection == KillAuraConfigTodoAi.MovementCorrection.OFF ? null : managedRotation(mc);
+    }
     private static boolean enabledContext(Minecraft mc) {
         return config().enabled && mc.player != null && mc.level != null && mc.player.isAlive() &&
                 !mc.player.isSpectator() && mc.gui.screen() == null && mc.getCameraEntity() == mc.player;
     }
     private static Rotation current(Minecraft mc) { return new Rotation(mc.player.getYRot(), mc.player.getXRot()); }
-    private static void clearPlan() { start = end = lastApplied = previousGoal = previous = null; }
+    private static void clearPlan() { start = end = lastApplied = previousGoal = previous = managed = null; }
     private static void resetPoints() {
         pointOwner = null; delayedPoint = lazyPoint = null; delayTicks = 0;
         gaussianOffset = gaussianGoal = Vec3.ZERO;
@@ -107,6 +116,9 @@ public final class KillAuraControllerTodoAi {
         if (level != mc.level) { level = mc.level; target = null; resetPoints(); clearPlan(); }
         if (!enabledContext(mc)) { target = null; paused = false; clearPlan(); resetPoints(); return; }
         var cfg = config();
+        if (plannedMode != cfg.rotations.movementCorrection) {
+            clearPlan(); plannedMode = cfg.rotations.movementCorrection;
+        }
         double maximum = mc.player.entityInteractionRange();
         Vec3 eyes = mc.player.getEyePosition();
         Player selected = marginTarget(mc);
@@ -120,15 +132,18 @@ public final class KillAuraControllerTodoAi {
         if (pointOwner != selected) { resetPoints(); pointOwner = selected; }
         Vec3 point = processPoint(selectedPoint, selected.getBoundingBox());
         if (!inRange(mc, eyes, point, maximum)) point = selectedPoint;
-        Rotation actual = current(mc), goal = AimGeometryTodoAi.lookAt(eyes, point);
+        Rotation actual = managed != null ? managed : current(mc), goal = AimGeometryTodoAi.lookAt(eyes, point);
         if (cfg.rotations.lazyRotation && AimGeometryTodoAi.hits(eyes, selected.getBoundingBox(), actual, maximum)) goal = actual;
         start = actual;
         end = smooth(actual, goal, previousGoal, previous, cfg.rotations);
-        previousGoal = goal; previous = actual; lastApplied = actual;
+        previousGoal = goal; previous = actual; lastApplied = current(mc);
+        if (plannedMode != KillAuraConfigTodoAi.MovementCorrection.CHANGE_LOOK) managed = normalize(mc, actual, end);
     }
     public static void render(Minecraft mc, float partial) {
         if (!ownsLook(mc)) { paused = true; target = null; clearPlan(); return; }
         paused = false;
+        if (plannedMode != config().rotations.movementCorrection) { clearPlan(); return; }
+        if (plannedMode != KillAuraConfigTodoAi.MovementCorrection.CHANGE_LOOK) return;
         if (start == null || end == null) return;
         Rotation actual = current(mc);
         if (lastApplied != null) {
@@ -137,9 +152,15 @@ public final class KillAuraControllerTodoAi {
             end = new Rotation(end.yaw() + yaw, end.pitch() + pitch);
         }
         Rotation proposed = start.toward(end, Math.clamp(partial, 0, 1));
-        double f = mc.options.sensitivity().get() * 0.6 + 0.2, step = f * f * f * 8 * 0.15;
-        mc.player.setYRot((float) (actual.yaw() + Math.round(AimGeometryTodoAi.wrap(proposed.yaw() - actual.yaw()) / step) * step));
-        mc.player.setXRot((float) Math.clamp(actual.pitch() + Math.round((proposed.pitch() - actual.pitch()) / step) * step, -90, 90));
+        Rotation applied = normalize(mc, actual, proposed);
+        mc.player.setYRot((float)applied.yaw());
+        mc.player.setXRot((float)applied.pitch());
         lastApplied = current(mc);
     }
+    private static Rotation normalize(Minecraft mc, Rotation actual, Rotation proposed) {
+        double f = mc.options.sensitivity().get() * 0.6 + 0.2, step = f * f * f * 8 * 0.15;
+        return new Rotation(actual.yaw() + Math.round(AimGeometryTodoAi.wrap(proposed.yaw() - actual.yaw()) / step) * step,
+                Math.clamp(actual.pitch() + Math.round((proposed.pitch() - actual.pitch()) / step) * step, -90, 90));
+    }
+
 }

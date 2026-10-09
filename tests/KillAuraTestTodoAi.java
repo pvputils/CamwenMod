@@ -52,6 +52,18 @@ public final class KillAuraTestTodoAi {
         cfg.enabled=true;
         var restored=gson.fromJson(gson.toJson(cfg),KillAuraConfigTodoAi.class);
         check(restored.enabled&&restored.margin==0.5,"config JSON preserves enable and settings");
+        var forward = new net.minecraft.world.entity.player.Input(true,false,false,false,true,true,true);
+        for (var mode:KillAuraConfigTodoAi.MovementCorrection.values()) {
+            var managed = new Rotation(90,0);
+            var transformed = KillAuraRotationModesTodoAi.transform(forward,0,managed,mode);
+            check(transformed.jump()&&transformed.shift()&&transformed.sprint(),"movement transform preserves non-directional keys: "+mode);
+            check(mode==KillAuraConfigTodoAi.MovementCorrection.SILENT ? transformed.left()&&!transformed.forward() : transformed.equals(forward),"only Silent remaps directional input: "+mode);
+            check(KillAuraRotationModesTodoAi.movementYaw(0,managed,mode)==(mode==KillAuraConfigTodoAi.MovementCorrection.OFF?0:90),"Off leaves world movement yaw unchanged: "+mode);
+        }
+        check(KillAuraRotationModesTodoAi.transform(forward,0,null,KillAuraConfigTodoAi.MovementCorrection.SILENT).equals(forward),"no managed rotation leaves keys untouched");
+        cfg.rotations.movementCorrection=KillAuraConfigTodoAi.MovementCorrection.STRICT;
+        restored=gson.fromJson(gson.toJson(cfg),KillAuraConfigTodoAi.class);
+        check(restored.rotations.movementCorrection==KillAuraConfigTodoAi.MovementCorrection.STRICT,"mode survives config serialization");
         System.out.println("PASS: "+checks+" KillAura geometry, smoothing and settings checks");
     }
 }

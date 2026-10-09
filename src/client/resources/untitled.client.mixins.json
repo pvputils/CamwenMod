@@ -3,6 +3,12 @@
   "package": "com.example.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    // codex start
+    "KillAuraLocalPlayerMixinTodoAi",
+    "KillAuraKeyboardInputMixinTodoAi",
+    "KillAuraEntityMovementMixinTodoAi",
+    "KillAuraLivingMovementMixinTodoAi",
+    // codex end
     "AbstractClientPlayerMixinTodoAi",
     "AimAssistPickRadiusMixinTodoAi",
     "BipedEntityRendererMixin",

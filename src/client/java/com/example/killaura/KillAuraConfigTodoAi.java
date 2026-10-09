@@ -10,6 +10,7 @@ public final class KillAuraConfigTodoAi {
     public double margin = 0.3;
     public AimPoint aimPoint = new AimPoint();
     public Rotations rotations = new Rotations();
+    public enum MovementCorrection { OFF, STRICT, SILENT, CHANGE_LOOK }
     public enum Smoothing { LINEAR, SIGMOID, INTERPOLATION, ACCELERATION }
     public static final class AimPoint {
         public boolean exemptHead, exemptBody, exemptFeet, exemptBestHitVector;
@@ -22,6 +23,7 @@ public final class KillAuraConfigTodoAi {
         public double gaussianTolerance = 0.05, gaussianChance = 100;
     }
     public static final class Rotations {
+        public MovementCorrection movementCorrection = MovementCorrection.CHANGE_LOOK;
         public Smoothing smoothing = Smoothing.LINEAR;
         public double horizontalMin = 180, horizontalMax = 180;
         public double verticalMin = 180, verticalMax = 180;
@@ -37,6 +39,7 @@ public final class KillAuraConfigTodoAi {
     public void repair() {
         if (aimPoint == null) aimPoint = new AimPoint();
         if (rotations == null) rotations = new Rotations();
+        if (rotations.movementCorrection == null) rotations.movementCorrection = MovementCorrection.CHANGE_LOOK;
         if (rotations.smoothing == null) rotations.smoothing = Smoothing.LINEAR;
     }
 }
