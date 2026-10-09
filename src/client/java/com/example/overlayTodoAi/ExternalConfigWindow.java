@@ -182,7 +182,7 @@ public final class ExternalConfigWindow {
         // codex start
         addCheckBox(grid, "hit delta counter", () -> config.isHitDeltaCounterEnabled,
                 value -> config.isHitDeltaCounterEnabled = value,
-                "shows player hits dealt minus received at the bottom right; resets on respawn or toggle");
+                "shows signed player hit delta; hidden at zero and resets after 30 seconds without changes");
         //codex end
         addCheckBox(grid, "damage taken value notification", () -> config.isDamageTakenValueNotificationEnabled,
                 value -> config.isDamageTakenValueNotificationEnabled = value, "");

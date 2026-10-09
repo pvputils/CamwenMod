@@ -1,4 +1,4 @@
-import com.example.overlayTodoAi.HitDeltaCounterTodoAi;
+package com.example.overlayTodoAi;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
@@ -39,12 +39,31 @@ public class HitDeltaCounterTestTodoAi {
         BufferedImage image = new BufferedImage(320, 180, BufferedImage.TYPE_INT_ARGB);
         var graphics = image.createGraphics();
         HitDeltaCounterTodoAi.draw(graphics, 320, 180);
+        for (int y = 0; y < 180; y++) for (int x = 0; x < 320; x++) {
+            check(image.getRGB(x, y) == 0);
+        }
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1);
+        HitDeltaCounterTodoAi.draw(graphics, 320, 180);
         graphics.dispose();
         boolean bottomRight = false;
         for (int y = 150; y < 180; y++) for (int x = 200; x < 320; x++) {
             bottomRight |= image.getRGB(x, y) != 0;
         }
         check(bottomRight);
+        HitDeltaCounterTodoAi.updateSession(world, player, false);
+        HitDeltaCounterTodoAi.updateSession(world, player, true);
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1, 0L);
+        check(HitDeltaCounterTodoAi.value(29_999_999_999L) == 1);
+        HitDeltaCounterTodoAi.recordDamage(2, 3, 1, 29_000_000_000L);
+        check(HitDeltaCounterTodoAi.value(30_000_000_000L) == 0);
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1, 31_000_000_000L);
+        HitDeltaCounterTodoAi.recordDamage(1, 2, 1, 50_000_000_000L);
+        HitDeltaCounterTodoAi.recordDamage(1, 2, 1, 60_000_000_000L);
+        check(HitDeltaCounterTodoAi.value(89_999_999_999L) == -1);
+        check(HitDeltaCounterTodoAi.value(90_000_000_000L) == 0);
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1, 100_000_000_000L);
+        HitDeltaCounterTodoAi.recordDamage(2, 1, 1, 130_000_000_000L);
+        check(HitDeltaCounterTodoAi.value(130_000_000_000L) == 1);
         System.out.println("Hit delta counter tests passed");
     }
 }
