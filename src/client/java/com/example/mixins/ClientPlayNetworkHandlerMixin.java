@@ -1,5 +1,9 @@
 package com.example.mixins;
 
+import com.example.overlayTodoAi.HitDeltaCounterTodoAi;
+import com.example.Configs.Config;
+import com.example.overlayTodoAi.TeamHitEventsTodoAi;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,6 +49,20 @@ public class ClientPlayNetworkHandlerMixin {
             return;
         }
 
+        // codex start
+        LocalPlayer localPlayer = MINECRAFT_CLIENT_INSTANCE.player;
+        HitDeltaCounterTodoAi.updateSession(clientWorld, localPlayer, config.isHitDeltaCounterEnabled);
+        if (localPlayer != null && clientWorld.getEntity(packet.entityId()) instanceof Player
+                && clientWorld.getEntity(packet.sourceCauseId()) instanceof Player) {
+            Config.NameplateTeam victimTeam = config.nameplateUuids.get(
+                    clientWorld.getEntity(packet.entityId()).getUUID());
+            HitDeltaCounterTodoAi.recordDamage(packet.entityId(), packet.sourceCauseId(), localPlayer.getId(),
+                    victimTeam == Config.NameplateTeam.ALLY || victimTeam == Config.NameplateTeam.FRIENDLY);
+        }
+        //codex end
+        // codex start
+        TeamHitEventsTodoAi.record(MINECRAFT_CLIENT_INSTANCE, packet);
+        //codex end
         Entity entity = clientWorld.getEntity(packet.entityId());
         if (clientWorld.getEntity(packet.sourceCauseId()) instanceof Player attacker) {
             if (MINECRAFT_CLIENT_INSTANCE.player instanceof LocalPlayer player &&

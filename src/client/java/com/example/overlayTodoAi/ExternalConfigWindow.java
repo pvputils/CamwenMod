@@ -179,6 +179,14 @@ public final class ExternalConfigWindow {
                 value -> config.isProjectileTrajectoryPreviewEnabled = value,
                 "marks the held projectile's predicted impact point on the protected click-through overlay");
         // codex end
+        // codex start
+        addCheckBox(grid, "hit delta counter", () -> config.isHitDeltaCounterEnabled,
+                value -> config.isHitDeltaCounterEnabled = value,
+                "shows signed player hit delta; hidden at zero and resets after 30 seconds without changes");
+        addCheckBox(grid, "team hit delta counter", () -> config.isTeamHitDeltaCounterEnabled,
+                value -> config.isTeamHitDeltaCounterEnabled = value,
+                "shows teammate hit delta and (friendly fire hits); resets after 30 seconds without changes");
+        //codex end
         addCheckBox(grid, "damage taken value notification", () -> config.isDamageTakenValueNotificationEnabled,
                 value -> config.isDamageTakenValueNotificationEnabled = value, "");
         addCheckBox(grid, "targeting margin revert", () -> activeCheatConfig.isTargetingMarginReverted,
