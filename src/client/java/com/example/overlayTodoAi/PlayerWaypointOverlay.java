@@ -43,6 +43,9 @@ public final class PlayerWaypointOverlay {
     }
 
     public void tick(Minecraft client) {
+        // codex start
+        HitDeltaCounterTodoAi.updateSession(client.level, client.player, config.isHitDeltaCounterEnabled);
+        //codex end
         if (!visible(client)) hide();
         if (client.level == null) faces.clear();
     }
@@ -76,6 +79,14 @@ public final class PlayerWaypointOverlay {
                         (double) frame.getHeight() / client.getWindow().getGuiScaledHeight());
                 graphics.setFont(new Font(Font.MONOSPACED, Font.BOLD, 9));
                 graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                // codex start
+                if (config.isHitDeltaCounterEnabled) {
+                    HitDeltaCounterTodoAi.updateSession(client.level, client.player, true);
+                    HitDeltaCounterTodoAi.draw(graphics, client.getWindow().getGuiScaledWidth(),
+                            client.getWindow().getGuiScaledHeight());
+                    hasOverlayContent = true;
+                }
+                //codex end
                 Vector3f forward = cameraRenderState.orientation.transform(new Vector3f(0, 0, -1));
                 Vec3 look = new Vec3(forward.x, forward.y, forward.z).normalize();
                 // codex start
