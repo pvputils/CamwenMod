@@ -97,8 +97,8 @@ public final class AimAssistControllerTodoAi {
         var t = config().targets;
         if (UntitledClient.config.isAimAssistDisabledOnTeammates && e instanceof Player) {
             var team = UntitledClient.config.nameplateUuids.get(e.getUUID());
-            if (team == com.example.Configs.Config.NameplateTeam.ALLY ||
-                team == com.example.Configs.Config.NameplateTeam.FRIENDLY) return false;
+            if (team != null && team.isFriendly) //codex (old code snippet) if (team == com.example.Configs.Config.NameplateTeam.ALLY ||
+                return false; //codex (old code snippet) team == com.example.Configs.Config.NameplateTeam.FRIENDLY) return false;
         }
         if (e == mc.player || e.isRemoved() || !e.isAlive() && !t.dead || e.isInvisible() && !t.invisible || e.isSpectator()) return false;
         boolean type = e instanceof Player ? t.players : e instanceof ArmorStand ? t.armorStand :

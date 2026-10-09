@@ -15,18 +15,24 @@ public class Config {
     public boolean isAimAssistDisabledOnTeammates = false;
     //codex end
     public enum NameplateTeam {
-        // Ally behavior explicitly checks ALLY or FRIENDLY. //codex (old code snippet) // targeting margin relies on this being only allies
-        FRIENDLY(TextColor.GREEN),
-        ALLY(TextColor.AQUA), //codex (old code snippet) ALLY(TextColor.AQUA);
+        // Ally behavior uses isFriendly. //codex (old code snippet) // targeting margin relies on this being only allies
+        FRIENDLY(TextColor.GREEN, true), //codex (old code snippet) FRIENDLY(TextColor.GREEN),
+        ALLY(TextColor.AQUA, true), //codex (old code snippet) ALLY(TextColor.AQUA);
         // codex start
-        FOCUS(TextColor.fromRgb(0xFF55FF));
+        FOCUS(TextColor.fromRgb(0xFF55FF), false);
         //codex end
         //        ENEMY,
 //        FOCUS,
         public final TextColor color;
+        // codex start
+        public final boolean isFriendly;
+        //codex end
 
-        NameplateTeam(TextColor color) {
+        NameplateTeam(TextColor color, boolean isFriendly) { //codex (old code snippet) NameplateTeam(TextColor color) {
             this.color = color;
+            // codex start
+            this.isFriendly = isFriendly;
+            //codex end
         }
     }
 

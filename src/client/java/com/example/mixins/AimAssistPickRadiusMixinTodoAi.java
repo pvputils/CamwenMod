@@ -22,7 +22,7 @@ public abstract class AimAssistPickRadiusMixinTodoAi {
         var config = UntitledClient.config;
         if (margin == null || !(entity instanceof Player player) || !config.isCheatsEnabled
                 || (config.teammateSwingSuppressionChance > 0f
-                    && (config.nameplateUuids.get(player.getUUID()) == Config.NameplateTeam.ALLY || config.nameplateUuids.get(player.getUUID()) == Config.NameplateTeam.FRIENDLY))) { //codex (old code snippet) && config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam)) {
+                    && (config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam team && team.isFriendly))) { //codex (old code snippet) && config.nameplateUuids.get(player.getUUID()) instanceof Config.NameplateTeam)) {
             return original.call(entity);
         }
         return margin;
