@@ -87,10 +87,7 @@ public final class KillAuraScreenTodoAi extends Screen {
         }
         double max = 180, min = 0;
         String name = field.getName();
-        if (name.equals("rangeIncrease")) max = 5;
-        else if (name.equals("throughWallsRange")) max = 8;
-        else if (name.startsWith("scanRange")) max = 7;
-        else if (name.equals("hurtTime")) max = 10;
+        if (name.equals("margin")) max = 1;
         else if (name.startsWith("delay")) max = 5;
         else if (name.startsWith("lazy")) { min = 0.01; max = 0.4; }
         else if (name.contains("Percent") || name.equals("gaussianChance")) max = 100;

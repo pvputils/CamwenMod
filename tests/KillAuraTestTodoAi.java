@@ -39,19 +39,19 @@ public final class KillAuraTestTodoAi {
         check(result.yaw()==20&&result.pitch()==0,"linear limit applies in degrees per tick");
         check(finite(Double.NaN,3,0,5)==3,"invalid persisted number uses fallback");
         check(random(7,2,2,7)>=2,"reversed random bounds are safe");
-        cfg.range=null;cfg.target=null;cfg.aimPoint=null;cfg.rotations=null;cfg.repair();
-        check(cfg.range!=null&&cfg.target!=null&&cfg.aimPoint!=null&&cfg.rotations!=null,"old/null configs migrate safely");
-        for (String bad : new String[]{"NaN", "Infinity", "-1", "6"}) {
+        cfg.aimPoint=null;cfg.rotations=null;cfg.repair();
+        check(cfg.aimPoint!=null&&cfg.rotations!=null,"old/null configs migrate safely");
+        for (String bad : new String[]{"NaN", "Infinity", "-1", "1.1"}) {
             try {
-                KillAuraScreenTodoAi.applyNumber(cfg.range,cfg.range.getClass().getField("rangeIncrease"),bad);
-                throw new AssertionError("invalid aim range accepted: "+bad);
+                KillAuraScreenTodoAi.applyNumber(cfg,cfg.getClass().getField("margin"),bad);
+                throw new AssertionError("invalid activation margin accepted: "+bad);
             } catch (IllegalArgumentException expected) {checks++;}
         }
-        KillAuraScreenTodoAi.applyNumber(cfg.range,cfg.range.getClass().getField("rangeIncrease"),"2.5");
+        KillAuraScreenTodoAi.applyNumber(cfg,cfg.getClass().getField("margin"),"0.5");
         var gson=new com.google.gson.Gson();
         cfg.enabled=true;
         var restored=gson.fromJson(gson.toJson(cfg),KillAuraConfigTodoAi.class);
-        check(restored.enabled&&restored.range.rangeIncrease==2.5,"config JSON preserves enable and settings");
+        check(restored.enabled&&restored.margin==0.5,"config JSON preserves enable and settings");
         System.out.println("PASS: "+checks+" KillAura geometry, smoothing and settings checks");
     }
 }

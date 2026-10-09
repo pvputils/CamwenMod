@@ -1,6 +1,7 @@
 package com.example.mixins;
 
 import com.example.UntitledClient;
+import com.example.killaura.KillAuraMarginPickTodoAi;
 import com.example.Configs.Config;
 import com.example.aimassist.AimAssistMarginScopeTodoAi;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -18,6 +19,10 @@ public abstract class AimAssistPickRadiusMixinTodoAi {
         method = "getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getPickRadius()F"))
     private static float aimAssistRadius(Entity entity, Operation<Float> original) {
+        // codex start
+        Float killAuraMargin = KillAuraMarginPickTodoAi.current();
+        if (killAuraMargin != null && entity instanceof Player) return killAuraMargin;
+        // codex end
         Float margin = AimAssistMarginScopeTodoAi.current();
         var config = UntitledClient.config;
         if (margin == null || !(entity instanceof Player player) || !config.isCheatsEnabled
