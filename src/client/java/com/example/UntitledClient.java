@@ -69,6 +69,9 @@ public class UntitledClient implements ClientModInitializer {
             FRIENDLY_TOGGLE = getAbstractPvpUtilsKeybind("Friendly (Toggle)");
     //            ENEMY_TOGGLE = getAbstractPvpUtilsKeybind("Enemy (Toggle)"),
 //            FOCUS_TOGGLE = getAbstractPvpUtilsKeybind("Focus (Toggle)"),
+    // codex start
+    public static final KeyMapping FOCUS_TOGGLE = getAbstractPvpUtilsKeybind("Focus (Toggle)");
+    //codex end
     public static final KeyMapping HEAD_RUN_CAMERA_OFFSET_ENABLE = getAbstractPvpUtilsKeybind("Head-run camera offset enable");
     public static final KeyMapping
 //            PLAYER_WAYPOINTS_TOGGLE = getAbstractPvpUtilsKeybind("Player waypoints (Toggle)"),
@@ -315,6 +318,10 @@ public class UntitledClient implements ClientModInitializer {
         });
         // codex end
         // ai end
+
+        // codex start
+        FocusChatTodoAi.initialize();
+        //codex end
 
         // messageCoordsListener
         ClientReceiveMessageEvents.CHAT.register((

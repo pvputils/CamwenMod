@@ -10,8 +10,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import java.util.UUID;
 import java.util.Set;
-import java.util.Map;
-import com.example.aimassist.AimGeometryTodoAi.Rotation;
 
 /** Actual extended-reach picking, planning, rendering and attribute restoration. */
 public final class ReachGameTestTodoAi implements FabricClientGameTest {
@@ -61,7 +59,6 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
                 check(!(TargetingMarginPickTodoAi.pick(mc, 0f) instanceof EntityHitResult), "vanilla reach misses distant target");
                 check(TargetingMarginPickTodoAi.pick(mc, 0f, 5) instanceof EntityHitResult hit && hit.getEntity() == target, "reach alone hits unexpanded target");
                 var cfg = AimAssistControllerTodoAi.config();
-                cfg.aura.enabled = false;
                 cfg.targetting.enabled = true;
                 cfg.targetting.range = 5;
                 cfg.targetting.requires.attackWindow = 200;
@@ -71,43 +68,21 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
                 AimAssistControllerTodoAi.tick(mc);
                 AimAssistControllerTodoAi.render(mc, 1f);
                 check(player.getXRot() < 3 && player.getYRot() == 0, "extended reach actually renders neutral-pitch assistance");
-                cfg.targetting.enabled = false;
-                cfg.aura.enabled = true;
-                cfg.aura.range = 5;
-                cfg.aura.targetingMargin = 1;
-                cfg.aura.requires.attackWindow = 200;
-                cfg.aura.requires.notBreaking = false;
+                // codex start
                 target.setBoundingBox(new AABB(eyes.x + 0.6, eyes.y - 0.5, eyes.z + 4.2,
                         eyes.x + 1.4, eyes.y + 0.5, eyes.z + 4.8));
                 player.setXRot(0);
                 check(!(TargetingMarginPickTodoAi.pick(mc, 0f, 5) instanceof EntityHitResult), "reach alone misses off-axis target");
-                check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == target, "reach plus margin selects aura target");
-                cfg.aura.range = 3;
-                check(AimAssistControllerTodoAi.auraEligibleTarget(mc, cfg.aura) == null, "margin alone cannot bypass insufficient reach");
-                cfg.aura.range = 5;
-                AimAssistControllerTodoAi.attackAttempt();
-                AimAssistControllerTodoAi.tick(mc);
-                // Initialize stationary history after repositioning the target.
-                AimAssistControllerTodoAi.render(mc, 1f);
-                try {
-                    var field = AimAssistControllerTodoAi.class.getDeclaredField("CROSSHAIR_GATES");
-                    field.setAccessible(true);
-                    var gates = (Map<UUID, AimCrosshairMotionTodoAi.Gate>) field.get(null);
-                    var proximity = AimCrosshairMotionTodoAi.sample(player.getEyePosition(1f), target.getBoundingBox(),
-                            new Rotation(player.getYRot(), player.getXRot()));
-                    gates.get(target.getUUID()).update(proximity, proximity, System.nanoTime() + 150_000_000L);
-                } catch (ReflectiveOperationException error) {
-                    throw new AssertionError("stationary aura fixture", error);
-                }
                 AimAssistControllerTodoAi.attackAttempt();
                 AimAssistControllerTodoAi.tick(mc);
                 AimAssistControllerTodoAi.render(mc, 1f);
-                check(player.getYRot() != 0, "reach plus margin actually renders aura assistance");
+                check(player.getYRot() == 0 && player.getXRot() == 0, "targeting leaves off-axis misses unassisted");
+                //codex end
                 check(block.getModifiers().equals(blockModifiers) && entity.getModifiers().equals(entityModifiers), "no reach modifiers leak from planning/rendering");
                 check(player.blockInteractionRange() == blockRange && player.entityInteractionRange() == entityRange, "normal interaction ranges unchanged afterward");
                 check(cheats.movingTargetingMarginBypass == 0, "temporary margin restored");
             });
-            System.out.println("PASS: extended reach picking, neutral assistance, aura routing and scoped attribute cleanup");
+            System.out.println("PASS: extended reach picking, neutral assistance, miss rejection and scoped attribute cleanup"); //codex (old code snippet) System.out.println("PASS: extended reach picking, neutral assistance, aura routing and scoped attribute cleanup");
         }
     }
 }

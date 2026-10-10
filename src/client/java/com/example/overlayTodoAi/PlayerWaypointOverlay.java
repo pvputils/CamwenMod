@@ -43,6 +43,10 @@ public final class PlayerWaypointOverlay {
     }
 
     public void tick(Minecraft client) {
+        // codex start
+        HitDeltaCounterTodoAi.updateSession(client.level, client.player, config.isHitDeltaCounterEnabled);
+        TeamHitDeltaCounterTodoAi.updateSession(client.level, client.player, config.isTeamHitDeltaCounterEnabled);
+        //codex end
         if (!visible(client)) hide();
         if (client.level == null) faces.clear();
     }
@@ -76,6 +80,20 @@ public final class PlayerWaypointOverlay {
                         (double) frame.getHeight() / client.getWindow().getGuiScaledHeight());
                 graphics.setFont(new Font(Font.MONOSPACED, Font.BOLD, 9));
                 graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                // codex start
+                if (config.isHitDeltaCounterEnabled) {
+                    HitDeltaCounterTodoAi.updateSession(client.level, client.player, true);
+                    HitDeltaCounterTodoAi.draw(graphics, client.getWindow().getGuiScaledWidth(),
+                            client.getWindow().getGuiScaledHeight()
+                                    - (config.isTeamHitDeltaCounterEnabled ? graphics.getFontMetrics().getHeight() + 2 : 0));
+                    hasOverlayContent = true;
+                }
+                if (config.isTeamHitDeltaCounterEnabled) {
+                    TeamHitDeltaCounterTodoAi.updateSession(client.level, client.player, true);
+                    hasOverlayContent |= TeamHitDeltaCounterTodoAi.draw(graphics,
+                            client.getWindow().getGuiScaledWidth(), client.getWindow().getGuiScaledHeight());
+                }
+                //codex end
                 Vector3f forward = cameraRenderState.orientation.transform(new Vector3f(0, 0, -1));
                 Vec3 look = new Vec3(forward.x, forward.y, forward.z).normalize();
                 // codex start
@@ -97,7 +115,7 @@ public final class PlayerWaypointOverlay {
                         if (player == client.player) continue;
                         var team = config.nameplateUuids.get(player.getUUID());
                         if (config.playerWaypointCategory == Config.PlayerWaypointCategory.ENEMIES
-                                && (team == Config.NameplateTeam.ALLY || team == Config.NameplateTeam.FRIENDLY))
+                                && team != null && team.isFriendly) //codex (old code snippet) && (team == Config.NameplateTeam.ALLY || team == Config.NameplateTeam.FRIENDLY))
                             continue;
                         Vec3 world = player.position().add(0, player.getBbHeight() / 2, 0);
                         Vector2i point = project.apply(world);
@@ -124,7 +142,7 @@ public final class PlayerWaypointOverlay {
                 if (config.isTeammateTargetCrosshairMarkerEnabled
                         && client.hitResult instanceof EntityHitResult hit
                         && hit.getEntity() instanceof Player target
-                        && (config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.ALLY || config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.FRIENDLY)) {
+                        && config.nameplateUuids.get(target.getUUID()) instanceof Config.NameplateTeam team && team.isFriendly) { //codex (old code snippet) && (config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.ALLY || config.nameplateUuids.get(target.getUUID()) == Config.NameplateTeam.FRIENDLY)) {
                     // codex start
                     hasOverlayContent = true;
                     // codex end
@@ -197,7 +215,7 @@ public final class PlayerWaypointOverlay {
 
     // codex start
     private static void drawCameraAngleIndicator(Graphics2D graphics, int x, int y, float pitch) {
-        graphics.setColor(new Color(0x8000FF00, true));
+        graphics.setColor(new Color(0x80FF0000, true));
         graphics.setStroke(new BasicStroke(2.0f));
         int size = 2;
         int offset = 9;

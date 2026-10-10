@@ -3,8 +3,6 @@
     >make autorun it's own mod
     >make xray it's own mod
 
->aimassist lags on initial proc?
-
 test if ethylene even does anything? + test if ethylene gets flagged by grim
 >make w tap helper work with togglesprint?
 >armor dura notification external screen thing?

@@ -1,11 +1,8 @@
 package com.example.aimassist;
 
-import java.util.ArrayList;
-import java.util.List;
 
-/** Only the two aim assists and their live settings; saved with CamwenMod's config. */
+/** Targeting assist and its live settings; saved with CamwenMod's config. */ //codex (old code snippet) /** Only the two aim assists and their live settings; saved with CamwenMod's config. */
 public final class AimAssistConfigTodoAi {
-    public Assist aura = new Assist();
     public Assist targetting = new Assist();
     public Targets targets = new Targets();
     public TargetLock targetLock = new TargetLock();
@@ -19,11 +16,6 @@ public final class AimAssistConfigTodoAi {
         public double centerlineWidth = 40;
         public double maxCorrectionFov = 30;
         //codex end
-        public double targetingMargin = 0.1;
-        public int hurtTime = 10;
-        public boolean horizontal = true;
-        public boolean vertical = true;
-        public List<String> priorities = new ArrayList<>(List.of("Type", "Direction"));
     }
     public static final class Requirements {
         public int attackWindow = 200;

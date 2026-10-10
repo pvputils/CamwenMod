@@ -15,18 +15,33 @@ public class Config {
     public boolean isAimAssistDisabledOnTeammates = false;
     //codex end
     public enum NameplateTeam {
-        // targeting margin relies on this being only allies
-        FRIENDLY(TextColor.fromRgb(0x55FF55)), //codex (old code snippet) FRIENDLY(TextColor.GREEN),
-        ALLY(TextColor.fromRgb(0x55FFFF)); //codex (old code snippet) ALLY(TextColor.AQUA);
+        // Ally behavior uses isFriendly. //codex (old code snippet) // targeting margin relies on this being only allies
+        FRIENDLY(TextColor.fromRgb(0x55FF55), true), //codex (old code snippet) FRIENDLY(TextColor.GREEN),
+        ALLY(TextColor.fromRgb(0x55FFFF), true), //codex (old code snippet) ALLY(TextColor.AQUA);
+        // codex start
+        FOCUS(TextColor.fromRgb(0xFF55FF), false);
+        //codex end
         //        ENEMY,
 //        FOCUS,
         public final TextColor color;
+        // codex start
+        public final boolean isFriendly;
+        //codex end
 
-        NameplateTeam(TextColor color) {
+        NameplateTeam(TextColor color, boolean isFriendly) { //codex (old code snippet) NameplateTeam(TextColor color) {
             this.color = color;
+            // codex start
+            this.isFriendly = isFriendly;
+            //codex end
         }
     }
 
+    // codex start
+    public String focusChatMessage = "";
+    // codex start
+    public String allyChatMessage = "";
+    //codex end
+    //codex end
     public HashMap<UUID, NameplateTeam> nameplateUuids = new HashMap<>();
     public boolean isToggleSneakGuiEnabled = false;
 //    public boolean isSneakEnabled = false;
@@ -36,6 +51,10 @@ public class Config {
     //    public boolean isSharpnessParticleReverted = false;
 //    public boolean isCritParticleReverted = false;
 //    public boolean isWeakAttackSoundDisabled = false;
+    // codex start
+    public boolean isHitDeltaCounterEnabled = false;
+    public boolean isTeamHitDeltaCounterEnabled = false;
+    //codex end
     public boolean isDamageTakenValueNotificationEnabled = false;
 //    public boolean isDepthStriderReverted = true; // TODO ?
 //    public boolean isNameplateIronLeatherSwapped = true;
@@ -70,7 +89,7 @@ public class Config {
     }
     public PlayerWaypointCategory playerWaypointCategory = PlayerWaypointCategory.ALL;
 //    public boolean isPlayerLoginMessagingEnabled = false;
-    public boolean isCheatsEnabled = true;
+    public boolean isCheatsEnabled = false;
 
     public boolean isDebugModeEnabled = false;
     public boolean isReachDebugModeEnabled = false; // TODO -> combine this with min range, maybe with Float's nullability

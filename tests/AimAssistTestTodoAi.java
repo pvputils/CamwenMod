@@ -14,9 +14,9 @@ public final class AimAssistTestTodoAi {
         Rotation outside = new Rotation(0, 0);
         Rotation nearest = lookAt(eyes, nearestPoint(eyes, edgeBox, outside, 8, 0.15));
         check(error(outside, nearest) < 7.5, "nearest screen-space edge, not world-space closest point");
-        check(hits(eyes, edgeBox.deflate(0.001), nearest, 8), "aura enters hitbox interior");
+        check(hits(eyes, edgeBox.deflate(0.001), nearest, 8), "nearest point enters hitbox interior"); //codex (old code snippet) check(hits(eyes, edgeBox.deflate(0.001), nearest, 8), "aura enters hitbox interior");
         Rotation inside = new Rotation(-14, 0);
-        check(error(inside, lookAt(eyes, nearestPoint(eyes, edgeBox, inside, 8, 0.15))) < 1e-6, "aura preserves existing hit");
+        check(error(inside, lookAt(eyes, nearestPoint(eyes, edgeBox, inside, 8, 0.15))) < 1e-6, "nearest point preserves existing hit"); //codex (old code snippet) check(error(inside, lookAt(eyes, nearestPoint(eyes, edgeBox, inside, 8, 0.15))) < 1e-6, "aura preserves existing hit");
         AABB close = new AABB(-0.25, -1.62, 0.75, 0.25, 0.3, 1.25);
         check(error(outside, lookAt(eyes, nearestPoint(eyes, close, outside, 4.2, 0.15))) < 1e-6, "close hitbox stays inside FOV");
         for (int sign : new int[]{-1, 1}) {
@@ -52,32 +52,20 @@ public final class AimAssistTestTodoAi {
         cfg.targetting.interpolation.verticalMin = cfg.targetting.interpolation.verticalMax = 25;
         Rotation smoothed = smooth(new Rotation(8, 10), new Rotation(0, 0), cfg.targetting.interpolation, null);
         check(smoothed.yaw() > 0 && smoothed.yaw() < 8 && smoothed.pitch() > 0 && smoothed.pitch() < 10, "both axes interpolate together");
-        check(cfg.aura.interpolation != cfg.targetting.interpolation, "independent settings");
         try {
-            AimAssistScreenTodoAi.apply(cfg.aura.requires, cfg.aura.requires.getClass().getField("attackWindow"), "201");
+            AimAssistScreenTodoAi.apply(cfg.targetting.requires, cfg.targetting.requires.getClass().getField("attackWindow"), "201"); //codex (old code snippet) AimAssistScreenTodoAi.apply(cfg.aura.requires, cfg.aura.requires.getClass().getField("attackWindow"), "201");
             throw new AssertionError("window must reject >200ms");
         } catch (IllegalArgumentException expected) {}
         // codex start
         var scaling = new AimAssistConfigTodoAi.Interpolation();
-        scaling.horizontalMin = scaling.horizontalMax = scaling.verticalMin = scaling.verticalMax = 100;
-        scaling.directionMin = scaling.directionMax = 0;
-        Rotation start = new Rotation(0, 0), finish = new Rotation(10, 10);
-        Rotation baseScaling = smooth(start, finish, scaling, null, true);
         for (String fieldName : new String[]{"horizontalMin", "horizontalMax", "verticalMin", "verticalMax", "directionMin", "directionMax"}) {
-            AimAssistScreenTodoAi.apply(scaling, scaling.getClass().getField(fieldName), "250", true);
-            check(scaling.getClass().getField(fieldName).getInt(scaling) == 250, "aura accepts scaling above 100: " + fieldName);
+            try {
+                AimAssistScreenTodoAi.apply(scaling, scaling.getClass().getField(fieldName), "250");
+                throw new AssertionError("targeting editor must retain its limit: " + fieldName);
+            } catch (IllegalArgumentException expected) {}
         }
-        Rotation fasterScaling = smooth(start, finish, scaling, null, true);
-        check(Math.abs(fasterScaling.yaw() - baseScaling.yaw() * 2.5) < 1e-9 &&
-              Math.abs(fasterScaling.pitch() - baseScaling.pitch() * 2.5) < 1e-9, "250 percent aura scaling increases actual turn by 2.5 times");
-        Rotation cappedScaling = smooth(start, finish, scaling, null);
-        check(error(baseScaling, cappedScaling) < 1e-9, "targeting keeps its existing scaling limit");
-        try {
-            AimAssistScreenTodoAi.apply(scaling, scaling.getClass().getField("horizontalMin"), "250");
-            throw new AssertionError("targeting editor must retain its limit");
-        } catch (IllegalArgumentException expected) {}
-        scaling.horizontalMin = scaling.horizontalMax = Integer.MAX_VALUE;
-        check(Double.isFinite(smooth(start, finish, scaling, null, true).yaw()), "maximum integer scaling does not overflow random bounds");
+        check(java.util.Arrays.stream(AimAssistConfigTodoAi.class.getFields()).noneMatch(f -> f.getName().equals("aura")),
+                "removed module has no persisted config or settings entry");
         //codex end
         // codex start
         AABB motionBox = new AABB(-0.5, -0.5, 3, 0.5, 0.5, 4);
@@ -123,10 +111,10 @@ public final class AimAssistTestTodoAi {
         long time = 1_000_000_000L;
         check(gesture.update(insideProximity, insideProximity, time), "initial stationary held-click assist remains available");
         var movingInside = AimCrosshairMotionTodoAi.sample(eyes, motionBox, new Rotation(1, 0));
-        check(!gesture.update(insideProximity, movingInside, time += 8_000_000), "outward gesture begins before aura is eligible");
+        check(!gesture.update(insideProximity, movingInside, time += 8_000_000), "outward gesture begins while inside the hitbox"); //codex (old code snippet) check(!gesture.update(insideProximity, movingInside, time += 8_000_000), "outward gesture begins before aura is eligible");
         for (int frame = 0; frame < 8; frame++)
             check(!gesture.update(movingInside, movingInside, time += 8_000_000), "render frames between mouse updates do not re-enable assist");
-        check(!gesture.update(movingInside, outsideProximity, time += 8_000_000), "targeting-to-aura transition preserves outward block");
+        check(!gesture.update(movingInside, outsideProximity, time += 8_000_000), "crossing the hitbox edge preserves outward block"); //codex (old code snippet) check(!gesture.update(movingInside, outsideProximity, time += 8_000_000), "targeting-to-aura transition preserves outward block");
         check(!gesture.update(outsideProximity, outsideProximity, time += 8_000_000), "first still outside frame does not pull back");
         check(!gesture.update(outsideProximity, fartherProximity, time += 8_000_000), "continued outward input refreshes suppression");
         check(!gesture.update(fartherProximity, fartherProximity, time + 149_000_000), "short mouse polling gap remains blocked");
@@ -136,9 +124,9 @@ public final class AimAssistTestTodoAi {
         //codex end
         // codex start
         var reachConfig = new AimAssistConfigTodoAi();
-        check(reachConfig.aura.range == 4.2 && reachConfig.targetting.range == 4.2, "existing range defaults preserved");
-        AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("range"), "2.5");
-        check(reachConfig.aura.range == 2.5 && reachConfig.targetting.range == 4.2, "independent per-module reach editor values");
+        check(reachConfig.targetting.range == 4.2, "targeting range default preserved"); //codex (old code snippet) check(reachConfig.aura.range == 4.2 && reachConfig.targetting.range == 4.2, "existing range defaults preserved");
+        AimAssistScreenTodoAi.apply(reachConfig.targetting, reachConfig.targetting.getClass().getField("range"), "2.5"); //codex (old code snippet) AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("range"), "2.5");
+        check(reachConfig.targetting.range == 2.5, "targeting reach editor saves value"); //codex (old code snippet) check(reachConfig.aura.range == 2.5 && reachConfig.targetting.range == 4.2, "independent per-module reach editor values");
         for (String invalid : new String[]{"-1", "NaN", "Infinity"}) {
             try {
                 AimAssistScreenTodoAi.apply(reachConfig.targetting, reachConfig.targetting.getClass().getField("range"), invalid);
@@ -182,8 +170,8 @@ public final class AimAssistTestTodoAi {
         check(!AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(Double.NaN, 0), 30), "invalid rotations fail closed");
         check(!AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(1, 0), Double.NaN), "invalid FOV fails closed");
         check(AimCorrectionFovTodoAi.allows(new Rotation(0, 0), new Rotation(180, 0), 180), "180 degrees permits all finite turns");
-        AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("maxCorrectionFov"), "180");
-        check(reachConfig.aura.maxCorrectionFov == 180 && reachConfig.targetting.maxCorrectionFov == 30, "independent module FOV settings");
+        AimAssistScreenTodoAi.apply(reachConfig.targetting, reachConfig.targetting.getClass().getField("maxCorrectionFov"), "180"); //codex (old code snippet) AimAssistScreenTodoAi.apply(reachConfig.aura, reachConfig.aura.getClass().getField("maxCorrectionFov"), "180");
+        check(reachConfig.targetting.maxCorrectionFov == 180, "targeting FOV editor saves value"); //codex (old code snippet) check(reachConfig.aura.maxCorrectionFov == 180 && reachConfig.targetting.maxCorrectionFov == 30, "independent module FOV settings");
         //codex end
         System.out.println("Aim assist geometry, interpolation, requirements and config checks passed.");
     }

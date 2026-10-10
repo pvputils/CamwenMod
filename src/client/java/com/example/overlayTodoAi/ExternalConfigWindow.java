@@ -121,7 +121,7 @@ public final class ExternalConfigWindow {
             }
         });
         result.getRootPane().registerKeyboardAction(
-                unusedTodoAi1 -> result.dispose(), //codex (old code snippet) _ -> result.dispose(),
+                unusedTodoAi1 -> result.dispose(), //codex (old code snippet) event -> result.dispose(),
                 KeyStroke.getKeyStroke("ESCAPE"),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
@@ -129,12 +129,12 @@ public final class ExternalConfigWindow {
         grid.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         // codex start
         addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,
-                "opens aura and targetting settings");
+                "opens targetting settings"); //codex (old code snippet) "opens aura and targetting settings");
         //codex end
         // codex start
         addCheckBox(grid, "disable aim assist on teammates", () -> config.isAimAssistDisabledOnTeammates,
                 value -> config.isAimAssistDisabledOnTeammates = value,
-                "prevents aura and targetting from assisting toward players marked Ally or Friendly");
+                "prevents targetting from assisting toward players marked Ally or Friendly"); //codex (old code snippet) "prevents aura and targetting from assisting toward players marked Ally or Friendly");
         //codex end
         addCheckBox(grid, "togglesneak gui", () -> config.isToggleSneakGuiEnabled,
                 value -> config.isToggleSneakGuiEnabled = value,
@@ -179,6 +179,14 @@ public final class ExternalConfigWindow {
                 value -> config.isProjectileTrajectoryPreviewEnabled = value,
                 "marks the held projectile's predicted impact point on the protected click-through overlay");
         // codex end
+        // codex start
+        addCheckBox(grid, "hit delta counter", () -> config.isHitDeltaCounterEnabled,
+                value -> config.isHitDeltaCounterEnabled = value,
+                "shows signed player hit delta; hidden at zero and resets after 30 seconds without changes");
+        addCheckBox(grid, "team hit delta counter", () -> config.isTeamHitDeltaCounterEnabled,
+                value -> config.isTeamHitDeltaCounterEnabled = value,
+                "shows teammate hit delta and (friendly fire hits); resets after 30 seconds without changes");
+        //codex end
         addCheckBox(grid, "damage taken value notification", () -> config.isDamageTakenValueNotificationEnabled,
                 value -> config.isDamageTakenValueNotificationEnabled = value, "");
         addCheckBox(grid, "targeting margin revert", () -> activeCheatConfig.isTargetingMarginReverted,
@@ -197,6 +205,13 @@ public final class ExternalConfigWindow {
             config.nameplateUuids.values().removeIf(each -> each == Config.NameplateTeam.ALLY);
             saveAll();
         }, "");
+        // codex start
+        addButton(grid, "reset focus nameplates", () -> {
+            com.example.FocusChatTodoAi.cancel(Config.NameplateTeam.FOCUS);
+            config.nameplateUuids.values().removeIf(each -> each == Config.NameplateTeam.FOCUS);
+            saveAll();
+        }, "");
+        //codex end
         addCheckBox(grid, "combat cheats", () -> config.isCheatsEnabled,
                 value -> config.isCheatsEnabled = value, "");
         addWaypointCategoryButton(grid);
@@ -218,6 +233,32 @@ public final class ExternalConfigWindow {
                 value -> config.isPlayerNameplateSimplified = value, "");
         addCheckBox(grid, "chat coordinate waypointer", () -> config.isChatCoordinateWaypointingEnabled,
                 value -> config.isChatCoordinateWaypointingEnabled = value, "");
+        // codex start
+        JPanel focusPanel = new JPanel(new BorderLayout(4, 0));
+        JTextField focusMessage = new JTextField(config.focusChatMessage);
+        focusMessage.setName("FOCUS chat message");
+        focusMessage.setToolTipText("Enter sends chat or a /command; server replies for five seconds mark online usernames as FOCUS.");
+        focusMessage.addActionListener(event -> {
+            String message = focusMessage.getText();
+            onClientThread(() -> com.example.FocusChatTodoAi.submit(message));
+        });
+        focusPanel.add(new JLabel("FOCUS query"), BorderLayout.WEST);
+        focusPanel.add(focusMessage, BorderLayout.CENTER);
+        grid.add(focusPanel);
+        //codex end
+        // codex start
+        JPanel allyPanel = new JPanel(new BorderLayout(4, 0));
+        JTextField allyMessage = new JTextField(config.allyChatMessage);
+        allyMessage.setName("ALLY chat message");
+        allyMessage.setToolTipText("Enter sends chat or a /command; server replies for five seconds mark online usernames as ALLY.");
+        allyMessage.addActionListener(event -> {
+            String message = allyMessage.getText();
+            onClientThread(() -> com.example.FocusChatTodoAi.submit(message, Config.NameplateTeam.ALLY));
+        });
+        allyPanel.add(new JLabel("ALLY query"), BorderLayout.WEST);
+        allyPanel.add(allyMessage, BorderLayout.CENTER);
+        grid.add(allyPanel);
+        //codex end
         result.setContentPane(grid);
         return result;
     }
@@ -230,7 +271,7 @@ public final class ExternalConfigWindow {
             String tooltip) {
         JCheckBox box = new JCheckBox(label, getter.getAsBoolean());
         configure(box, tooltip);
-        box.addActionListener(unusedTodoAi2 -> onClientThread(() -> { //codex (old code snippet) box.addActionListener(_ -> onClientThread(() -> {
+        box.addActionListener(unusedTodoAi2 -> onClientThread(() -> { //codex (old code snippet) box.addActionListener(event -> onClientThread(() -> {
             setter.accept(box.isSelected());
             saveAll();
         }));
@@ -285,14 +326,14 @@ public final class ExternalConfigWindow {
     private static void addButton(JPanel panel, String label, Runnable action, String tooltip) {
         JButton button = new JButton(label);
         configure(button, tooltip);
-        button.addActionListener(unusedTodoAi3 -> onClientThread(action)); //codex (old code snippet) button.addActionListener(_ -> onClientThread(action));
+        button.addActionListener(unusedTodoAi3 -> onClientThread(action)); //codex (old code snippet) button.addActionListener(event -> onClientThread(action));
         panel.add(button);
     }
 
     private static void addWaypointCategoryButton(JPanel panel) {
         JButton button = new JButton(waypointCategoryLabel());
         configure(button, "current: " + config.playerWaypointCategory.name() + ". cycles which player waypoints appear");
-        button.addActionListener(unusedTodoAi4 -> onClientThread(() -> { //codex (old code snippet) button.addActionListener(_ -> onClientThread(() -> {
+        button.addActionListener(unusedTodoAi4 -> onClientThread(() -> { //codex (old code snippet) button.addActionListener(event -> onClientThread(() -> {
             Config.PlayerWaypointCategory[] values = Config.PlayerWaypointCategory.values();
             config.playerWaypointCategory = values[
                     (config.playerWaypointCategory.ordinal() + 1) % values.length];
