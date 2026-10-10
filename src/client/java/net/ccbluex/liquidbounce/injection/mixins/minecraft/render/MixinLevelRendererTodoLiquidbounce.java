@@ -1,0 +1,209 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+package net.ccbluex.liquidbounce.injection.mixins.minecraft.render;
+
+import org.jspecify.annotations.Nullable;
+
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+
+@Mixin(LevelRenderer.class)
+public abstract class MixinLevelRendererTodoLiquidbounce {
+
+    @Final
+    @Shadow
+    private SubmitNodeStorage submitNodeStorage;
+
+    @Shadow
+    @Nullable
+    public abstract RenderTarget entityOutlineTarget();
+
+    // codex start
+    // @Unique
+    // private boolean liquid_bounce$hasCustomOutlineMesh = false;
+    // codex end
+    // codex start
+    //
+    // @Inject(
+    //     method = "render",
+    //     at = @At(
+    //         value = "INVOKE",
+    //         target = "Lnet/minecraft/client/renderer/LevelRenderer;submitFeatures(Lnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/renderer/SubmitNodeCollector;Z)V"
+    //     )
+    // )
+    // private void hookWorldFeatureSubmit(CallbackInfo ci) {
+    //     ModuleChams.INSTANCE.beginFrame();
+    //     var poseStack = Pools.MatStack.borrow();
+    //
+    //     EventManager.INSTANCE.callEvent(new WorldFeatureSubmitEvent(
+    //         poseStack,
+    //         Minecraft.getInstance().gameRenderer.mainCamera(),
+    //         this.submitNodeStorage
+    //     ));
+    //
+    //     Pools.MatStack.recycle(poseStack);
+    // }
+    //
+    // /**
+    //  * Clears the chams entity tracking once all level entity submissions are done.
+    //  *
+    //  * The entity context captured by {@code trackIfNeeded} during level entity submission must not
+    //  * leak into the first-person held item submissions that happen afterwards (they are not chams
+    //  * targets), otherwise the player's own hand and held item would be removed from the main render target.
+    //  */
+    // @Inject(
+    //     method = "render",
+    //     at = @At(
+    //         value = "INVOKE",
+    //         target = "Lnet/minecraft/client/renderer/LevelRenderer;submitFeatures(Lnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/renderer/SubmitNodeCollector;Z)V",
+    //         shift = At.Shift.AFTER
+    //     )
+    // )
+    // private void clearChamsEntityContext(CallbackInfo ci) {
+    //     ModuleChams.INSTANCE.clearEntityContext();
+    // }
+    // codex end
+
+    // TODO: removed because of vanilla changes
+//    // After ModelViewMatrix setup
+//    @Inject(method = "render", at = @At(value = "NEW", target = "Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;"))
+//    private void onRender(GraphicsResourceAllocator resourceAllocator, DeltaTracker deltaTracker, boolean renderOutline, CameraRenderState cameraState, Matrix4fc modelViewMatrix, GpuBufferSlice terrainFog, Vector4f fogColor, boolean shouldRenderSky, CallbackInfo ci) {
+//        OutlineShaderRenderer renderer = OutlineShaderRenderer.INSTANCE;
+//        if (!renderer.shouldRender()) {
+//            return;
+//        }
+//
+//        var matrixStack = Pools.MatStack.borrow();
+//        var event = new DrawOutlinesEvent(
+//            renderer.prepareRenderTarget(),
+//            matrixStack,
+//            cameraState,
+//            deltaTracker.getGameTimeDeltaPartialTick(false),
+//            DrawOutlinesEvent.OutlineType.INBUILT_OUTLINE
+//        );
+//        EventManager.INSTANCE.callEvent(event);
+//        Pools.MatStack.recycle(matrixStack);
+//
+//        if (event.getDirtyFlag()) {
+//            renderer.setDirty(true);
+//        }
+//    }
+
+    // codex start
+    // @ModifyArg(
+    //     method = "lambda$render$0",
+    //     at = @At(value = "INVOKE", target = "Lcom/mojang/renderpearl/api/commands/CommandEncoder;clearColorAndDepthTextures(Lcom/mojang/renderpearl/api/textures/GpuTexture;Lorg/joml/Vector4fc;Lcom/mojang/renderpearl/api/textures/GpuTexture;D)V"),
+    //     index = 1
+    // )
+    // private Vector4fc customFogClearColor(Vector4fc original) {
+    //     return ModuleCustomAmbience.FogValueGroup.INSTANCE.modifyClearColor(original);
+    // }
+    //
+    // codex end
+//    @Inject(method = "lambda$addMainPass$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;executeOutline()V", shift = At.Shift.AFTER))
+//    private void onDrawOutlines(CallbackInfo ci) {
+//        OutlineShaderRenderer.INSTANCE.drawBlitIfDirty(Minecraft.getInstance().gameRenderer.mainRenderTarget());
+//    }
+
+    // codex start
+    // @Inject(method = "lambda$addMainPass$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;executeOutline(Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;)V", shift = At.Shift.AFTER))
+    // private void onRenderGlow(CallbackInfo ci) {
+    //     var minecraft = Minecraft.getInstance();
+    //     var entityOutlineFb = entityOutlineTarget;
+    //     if (entityOutlineFb == null
+    //         || !minecraft.gameRenderer.gameRenderState().levelRenderState.shouldShowEntityOutlines) {
+    //         return;
+    //     }
+    //
+    //     liquid_bounce$hasCustomOutlineMesh = false;
+    //     var matrixStack = Pools.MatStack.borrow();
+    //     var event = new DrawOutlinesEvent(
+    //         entityOutlineFb, matrixStack,
+    //         minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false)
+    //     );
+    //     EventManager.INSTANCE.callEvent(event);
+    //     liquid_bounce$hasCustomOutlineMesh = event.getDirtyFlag();
+    //     Pools.MatStack.recycle(matrixStack);
+    // }
+    // codex end
+
+    // codex start
+    // // codex start
+    // // @Inject(
+    // //     method = "lambda$addMainPass$0",
+    // //     at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/Lighting;setupFor(Lcom/mojang/blaze3d/platform/Lighting$Entry;)V", shift = At.Shift.AFTER)
+    // // )
+    // // private void prepareChamsRenderTarget(CallbackInfo ci) {
+    // //     ModuleChams.INSTANCE.prepareFrame();
+    // //     ModuleChams.INSTANCE.renderChams();
+    // // }
+    // //
+    // // @Inject(
+    // //     method = "render",
+    // //     at = @At(
+    // //         value = "INVOKE",
+    // //         target = "Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;execute(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder$Inspector;)V",
+    // //         shift = At.Shift.BEFORE
+    // //     )
+    // // )
+    // // private void scheduleChamsComposite(GraphicsResourceAllocator resourceAllocator, boolean renderOutline, CameraRenderState cameraState, GpuBufferSlice terrainFog, Vector4f fogColor, boolean shouldRenderSky, boolean consistentDepthRequired, CallbackInfo ci, @Local(name = "frame") FrameGraphBuilder frame) {
+    // //     FramePass pass = frame.addPass((LiquidBounce.CLIENT_NAME + ' ' + ModuleChams.INSTANCE.getName()).toLowerCase(Locale.ROOT));
+    // //     pass.disableCulling();
+    // //     pass.executes(() -> ModuleChams.INSTANCE.compositeIfNeeded(Minecraft.getInstance().gameRenderer.mainRenderTarget()));
+    // // }
+    // //
+    // // codex end
+    // @ModifyExpressionValue(
+    //     method = {"submitFeatures", "lambda$addMainPass$0"},
+    //     at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/state/level/LevelRenderState;shouldShowEntityOutlines:Z", opcode = Opcodes.GETFIELD)
+    // )
+    // private boolean includeCustomOutlines(boolean original) {
+    //     return original || liquid_bounce$hasCustomOutlineMesh;
+    // }
+    // codex end
+
+    // codex start
+    // @ModifyExpressionValue(
+    //     method = {"render", "addMainPass"},
+    //     at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;hasAnyOutline()Z")
+    // )
+    // private boolean includeCustomOutlineTargetInMainPass(boolean original) {
+    //     return original || liquid_bounce$hasCustomOutlineMesh;
+    // }
+    // codex end
+
+    // codex start
+    // @Inject(method = "submitBlockOutline", at = @At("HEAD"), cancellable = true)
+    // private void cancelBlockOutline(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, LevelRenderState levelRenderState, CallbackInfo ci) {
+    //     if (ModuleBlockOutline.INSTANCE.getRunning()) {
+    //         ci.cancel();
+    //     }
+    // }
+    //
+    // @WrapWithCondition(method = "submitBlockDestroyAnimation", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitBreakingBlockModel(Lcom/mojang/blaze3d/vertex/PoseStack;Ljava/util/List;IZ)V"))
+    // private boolean cancelRenderBreakingTexture(SubmitNodeCollector instance, PoseStack poseStack, List<?> list, int i, boolean b) {
+    //     return ModuleAntiBlind.canRender(DoRender.BLOCK_BREAK_OVERLAY);
+    // }
+    //
+    // codex end
+}

@@ -1,0 +1,278 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+package net.ccbluex.liquidbounce.api.core
+
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import net.ccbluex.liquidbounce.utils.client.error.ErrorHandlerTodoLiquidbounce
+import net.minecraft.ReportedException
+
+// codex start
+// val renderScope = CoroutineScope(
+//     Dispatchers.Main + SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
+//         if (throwable is ReportedException) {
+//             ErrorHandler.fatal(throwable, additionalMessage = "Render scope")
+//         }
+//     }
+// )
+// codex end
+
+val ioScope = CoroutineScope(
+    Dispatchers.IO + SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
+        if (throwable is ReportedException) {
+            ErrorHandlerTodoLiquidbounce.fatal(throwable, additionalMessage = "IO scope")
+        }
+    }
+)
+
+// codex start
+// fun withScope(block: suspend CoroutineScope.() -> Unit) = ioScope.launch { block() }
+// codex end
+
+// codex start
+// object HttpClient {
+//
+//     @JvmField
+//     val DEFAULT_AGENT = "${LiquidBounce.CLIENT_NAME}/${LiquidBounce.clientVersion}" +
+//         " (${LiquidBounce.clientCommit}, ${LiquidBounce.clientBranch}, " +
+//         "${if (LiquidBounce.IN_DEVELOPMENT) "dev" else "release"}, ${System.getProperty("os.name")})"
+//
+//     /**
+//      * Unfortunately, Lunar Client uses OkHttp 4.12.0 which does not have [Headers.EMPTY]
+//      */
+//     @Deprecated("Use Headers.EMPTY instead when Lunar Client updates OkHttp to 5.10 or newer.")
+//     @JvmField
+//     val EMPTY_HEADERS = Headers.Builder().build()
+//
+//     object MediaTypes {
+//         @JvmField
+//         val TEXT_PLAIN = "text/plain; charset=utf-8".toMediaType()
+//
+//         @JvmField
+//         val JSON = "application/json; charset=utf-8".toMediaType()
+//
+//         @JvmField
+//         val FORM = "application/x-www-form-urlencoded".toMediaType()
+//
+//         @JvmField
+//         val IMAGE_PNG = "image/png".toMediaType()
+//
+//         @JvmField
+//         val OCTET_STREAM = "application/octet-stream".toMediaType()
+//     }
+//
+//     private val defaultClient = OkHttpClient.Builder()
+//         .dispatcher(
+//             Dispatcher(
+//                 Executors.newThreadPerTaskExecutor(
+//                     Thread.ofVirtual().name("OkHttpClient Dispatcher ", 0L).factory()
+//                 )
+//             )
+//         )
+//         .connectTimeout(10, TimeUnit.SECONDS)
+//         .readTimeout(20, TimeUnit.SECONDS)
+//         .writeTimeout(20, TimeUnit.SECONDS)
+//         .followRedirects(true)
+//         .followSslRedirects(true).apply {
+//             try {
+//                 val file = File(
+//                     System.getProperty("java.io.tmpdir"),
+//                     "${LiquidBounce.CLIENT_NAME.lowercase(Locale.ROOT)}_http_cache",
+//                 )
+//                 file.mkdirs()
+//                 cache(Cache(file, 128L shl 20))
+//             } catch (e: IOException) {
+//                 logger.error("Failed to initialize cache directory for HTTP client", e)
+//             }
+//         }
+//         .addInterceptor(CacheBlacklistInterceptor(setOf("localhost", "127.0.0.1")))
+//         .addInterceptor(DefaultHeaderInterceptor("User-Agent", DEFAULT_AGENT, skipIfExists = true))
+//         .proxy(java.net.Proxy.NO_PROXY)
+//         .build()
+//
+//     /**
+//      * This interceptor rejects all non-2xx responses
+//      */
+//     private val clientHttpApiInterceptor = Interceptor { chain ->
+//         val request = chain.request()
+//         try {
+//             val response = chain.proceed(request)
+//
+//             if (response.isSuccessful) {
+//                 response
+//             } else {
+//                 // Response is not successful (code is not 2xx)
+//                 throw HttpException(
+//                     enumValueOf(request.method),
+//                     request.url.toString(), response.code, response.body.string()
+//                 )
+//             }
+//         } catch (e: IOException) {
+//             // Failed to request
+//             logger.error("Failed to execute request ${request.method} ${request.url})", e)
+//             throw e
+//         }
+//     }
+//
+//     /**
+//      * API client
+//      */
+//     @get:JvmStatic
+//     val client = defaultClient.newBuilder()
+//         .addInterceptor(clientHttpApiInterceptor)
+//         .build()
+//
+//     // codex start
+//     // @get:JvmStatic
+//     // val mojangApiClient = MojangApiClient.Builder()
+//     //     .gson(interopGson)
+//     //     .httpClient(this.defaultClient)
+//     //     .tokenProvider { mc.user.accessToken }
+//     //     .build()
+//     // codex end
+//     @Suppress("LongParameterList")
+//     suspend fun request(
+//         url: String,
+//         method: HttpMethod,
+//         agent: String = DEFAULT_AGENT,
+//         headers: Headers.Builder.() -> Unit = {},
+//         body: RequestBody? = null,
+//         progressListener: OkHttpProgressInterceptor.ProgressListener? = null
+//     ): Response {
+//         val request = Request.Builder()
+//             .url(url)
+//             .method(method.name, body)
+//             .headers(Headers.Builder().apply(headers).build())
+//             .header("User-Agent", agent)
+//             .build()
+//
+//         return if (progressListener == null) {
+//             client.newCall(request).executeAsync()
+//         } else {
+//             client.newBuilder()
+//                 .addNetworkInterceptor(OkHttpProgressInterceptor(progressListener))
+//                 .build()
+//                 .newCall(request).executeAsync()
+//         }
+//     }
+//
+//     suspend fun download(
+//         url: String,
+//         file: File,
+//         agent: String = DEFAULT_AGENT,
+//         progressListener: OkHttpProgressInterceptor.ProgressListener? = null
+//     ) = withContext(Dispatchers.IO) {
+//         request(url, HttpMethod.GET, agent, progressListener = progressListener).toFile(file)
+//     }
+//
+//     /** For Java and JS. Cancelling the returned future also cancels the HTTP call. */
+//     @JvmStatic
+//     fun Call.sendAsync(): CompletableFuture<Response> = enqueueAsFuture()
+//
+// }
+// codex end
+
+// codex start
+// enum class HttpMethod {
+//     GET, POST, PUT, DELETE, PATCH, HEAD
+// }
+//
+// /**
+//  * Parse body from [Response].
+//  *
+//  * If [T] is one of following types, it should be closed after using:
+//  * [InputStream] / [BufferedSource] / [Reader]
+//  */
+// codex end
+// codex start
+//
+// inline fun <reified T> Response.parse(): T {
+//     return when (T::class.java) {
+//         String::class.java -> body.string() as T
+//         Unit::class.java -> close() as T
+//         InputStream::class.java -> body.byteStream() as T
+//         BufferedSource::class.java -> body.source() as T
+//         Reader::class.java -> body.charStream() as T
+//         NativeImage::class.java -> body.source().readNativeImage() as T
+//         else -> body.charStream().readJson<T>()
+//     }
+// }
+//
+// /**
+//  * Read all UTF-8 lines from [BufferedSource] as an [Iterator].
+//  *
+//  * When there are no more lines to read, the source is closed automatically.
+//  */
+// // codex start
+// // fun BufferedSource.utf8Lines(): Iterator<String> =
+// //     object : AbstractIterator<String>() {
+// //         override fun computeNext() {
+// //             val nextLine = readUtf8Line()
+// //             if (nextLine != null) {
+// //                 setNext(nextLine)
+// //             } else {
+// //                 close()
+// //                 done()
+// //             }
+// //         }
+// //     }
+// //
+// // /**
+// //  * Save response body to file.
+// //  */
+// // codex end
+// codex end
+// codex start
+// fun Response.toFile(file: File) = use { response ->
+//     file.sink().use(response.body.source()::readAll)
+// }
+// // codex start
+// //
+// // fun String.asForm() = toRequestBody(HttpClient.MediaTypes.FORM)
+// // codex end
+//
+// // codex start
+// // class HttpException(val method: HttpMethod, val url: String, val code: Int, val content: String)
+// //     : Exception("${method.name} $url failed with code $code: $content")
+// //
+// // /**
+// //  * The [HttpException] behind this. OkHttp hands one thrown by an interceptor of an async call on
+// //  * wrapped in an [IOException].
+// //  */
+// // // codex start
+// // // val Throwable.httpException: HttpException?
+// // //     get() = this as? HttpException
+// // //         ?: cause as? HttpException
+// // //         ?: suppressed.firstNotNullOfOrNull { it as? HttpException }
+// // //
+// // // /**
+// // //  * [block]'s result, `null` when the server answers 404.
+// // //  */
+// // // // codex start
+// // // // internal inline fun <T> orNotFound(block: () -> T): T? = try {
+// // // //     block()
+// // // // } catch (e: Exception) {
+// // // //     if (e.httpException?.code == HttpURLConnection.HTTP_NOT_FOUND) null else throw e
+// // // // }
+// // // // codex end
+// // // codex end
+// // codex end
+// codex end

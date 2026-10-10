@@ -51,7 +51,7 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     implementation("maven.modrinth:sodium:${project.sodium_version}")
-    implementation("net.fabricmc:fabric-language-kotlin:1.13.13+kotlin.2.4.10") // TODO -> modImpl?
+    implementation("net.fabricmc:fabric-language-kotlin:1.14.1+kotlin.2.4.20") //codex (implementation("net.fabricmc:fabric-language-kotlin:1.13.13+kotlin.2.4.10") // TODO -> modImpl?)
 }
 
 processResources {
@@ -125,3 +125,108 @@ kotlin {
 //		}
 //	}
 //}
+// codex start
+repositories {
+    maven { url 'https://maven.ccbluex.net/releases' }
+    maven { url 'https://repo.viaversion.com' }
+}
+loom {
+    accessWidenerPath = file('src/client/resources/LiquidBounceAccessTodoLiquidbounce.accesswidener')
+}
+dependencies {
+    implementation include('ai.djl:api:0.38.0')
+    implementation include('ai.djl.pytorch:pytorch-engine:0.38.0')
+    implementation include('com.squareup.okhttp3:okhttp:5.5.0')
+    implementation include('net.ccbluex:fastutil4k-more-collections:0.2.10')
+    compileOnly 'net.ccbluex:fastutil4k-extensions-only:0.2.10'
+    compileOnly 'com.viaversion:viafabricplus-api:5.1.1'
+}
+kotlin.compilerOptions {
+    freeCompilerArgs.add('-Xcollection-literals')
+    freeCompilerArgs.add('-Xcompanion-blocks-and-extensions')
+}
+def liquidBounceResources = tasks.register('unpackLiquidBounceResources', Copy) {
+    from zipTree('LiquidBounceResourcesTodoLiquidbounce.zip')
+    into layout.buildDirectory.dir('generated/liquidbounceResources')
+}
+sourceSets.client.resources.srcDir(liquidBounceResources)
+// codex end
+
+// codex start
+processResources.doLast {
+    def metadataFile = new File(destinationDir, 'fabric.mod.json')
+    def metadata = new groovy.json.JsonSlurper().parse(metadataFile)
+    metadata.entrypoints.client.add('net.ccbluex.liquidbounce.integration.screen.KillAuraSettingsEntrypointTodoLiquidbounce')
+    metadata.mixins.add([config: 'LiquidBounceMixinsTodoLiquidbounce.json', environment: 'client'])
+    metadata.accessWidener = 'LiquidBounceAccessTodoLiquidbounce.accesswidener'
+    metadata.depends['fabric-language-kotlin'] = '>=1.14.1+kotlin.2.4.20'
+    metadata.license = 'GPL-3.0-or-later'
+    metadataFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(metadata))
+}
+jar.from('LICENSE-TodoLiquidbounce')
+// codex end
+
+// codex start
+configurations {
+    liquidBounceBundled
+}
+dependencies {
+    liquidBounceBundled('ai.djl:api:0.38.0')
+    liquidBounceBundled('ai.djl.pytorch:pytorch-engine:0.38.0')
+    liquidBounceBundled('com.squareup.okhttp3:okhttp:5.5.0')
+    liquidBounceBundled('net.ccbluex:fastutil4k-more-collections:0.2.10')
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5:2.4.20'
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+configurations.liquidBounceBundled.exclude(group: 'org.jetbrains.kotlin')
+configurations.liquidBounceBundled.exclude(group: 'org.jetbrains.kotlinx')
+['com.google.code.gson', 'org.slf4j', 'it.unimi.dsi'].each {
+    configurations.liquidBounceBundled.exclude(group: it)
+}
+configurations.include.withDependencies {
+    configurations.liquidBounceBundled.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+        def id = artifact.moduleVersion.id
+        if (!any { it.group == id.group && it.name == id.name }) {
+            add(project.dependencies.create("${id.group}:${id.name}:${id.version}") { transitive = false })
+        }
+    }
+}
+sourceSets.test.compileClasspath += sourceSets.client.output + sourceSets.client.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.client.output + sourceSets.client.runtimeClasspath
+def liquidBounceTestResources = tasks.register('unpackLiquidBounceTestResources', Copy) {
+    from zipTree('LiquidBounceTestResourcesTodoLiquidbounce.zip')
+    into layout.buildDirectory.dir('generated/liquidbounceTestResources')
+}
+sourceSets.test.resources.srcDir(liquidBounceTestResources)
+test {
+    useJUnitPlatform()
+    systemProperty 'java.awt.headless', 'true'
+    systemProperty 'fabric.side', 'client'
+    systemProperty 'fabric.debug.disableModIds', 'org_jetbrains_kotlin_kotlin-reflect,org_jetbrains_kotlin_kotlin-stdlib,org_jetbrains_kotlin_kotlin-stdlib-jdk7,org_jetbrains_kotlin_kotlin-stdlib-jdk8'
+    doFirst {
+        systemProperty 'fabric.systemLibraries', classpath.files.findAll { it.name.startsWith('kotlin-') }.collect { it.absolutePath }.sort().join(File.pathSeparator)
+    }
+}
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'camwen-liquidbounce-gametest'
+        enableGameTests = false
+        eula = true
+    }
+}
+// codex end
+
+// codex start
+processGametestResources {
+    from('GameTestMetadataTodoAi.json') { rename { 'fabric.mod.json' } }
+}
+sourceSets.gametest.compileClasspath += sourceSets.client.output + sourceSets.client.compileClasspath
+sourceSets.gametest.runtimeClasspath += sourceSets.client.output + sourceSets.client.runtimeClasspath
+// codex end
+// codex start
+kotlin.target.compilations.getByName('test').associateWith(kotlin.target.compilations.getByName('client'))
+kotlin.target.compilations.getByName('gametest').associateWith(kotlin.target.compilations.getByName('client'))
+// codex end

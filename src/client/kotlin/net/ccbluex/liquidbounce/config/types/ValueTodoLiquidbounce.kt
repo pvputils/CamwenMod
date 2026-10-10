@@ -1,0 +1,370 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+package net.ccbluex.liquidbounce.config.types
+
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.annotations.SerializedName
+import it.unimi.dsi.fastutil.objects.ObjectArrayList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import net.ccbluex.liquidbounce.config.OptionalInclusionTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.autoconfig.AutoConfigTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.gson.stategies.ExcludeTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroupTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.types.list.MultiChoiceListValueTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.types.list.TaggedTodoLiquidbounce
+import net.ccbluex.liquidbounce.features.addon.AddonApiTodoLiquidbounce
+import net.ccbluex.liquidbounce.lang.translation
+import net.ccbluex.liquidbounce.utils.client.logger
+import net.ccbluex.liquidbounce.utils.text.toLowerCamelCase
+import java.util.function.BooleanSupplier
+import java.util.function.Consumer
+import java.util.function.Supplier
+import java.util.function.UnaryOperator
+import kotlin.reflect.KProperty
+
+typealias ValueListenerTodoLiquidbounce<T> = UnaryOperator<T>
+typealias ValueChangedListenerTodoLiquidbounce<T> = Consumer<in T>
+
+/**
+ * Order by name of [Value] (ignoreCase)
+ */
+@JvmField
+val VALUE_NAME_ORDER: Comparator<in ValueTodoLiquidbounce<*>> = compareBy(String.CASE_INSENSITIVE_ORDER) { it.name }
+
+/**
+ * Value based on generics and support for readable names and descriptions.
+ */
+@Suppress("TooManyFunctions")
+@AddonApiTodoLiquidbounce
+open class ValueTodoLiquidbounce<T : Any>(
+    @SerializedName("name") val name: String,
+    @ExcludeTodoLiquidbounce val aliases: List<String> = emptyList(), //codex (@ProtocolExclude)
+    @ExcludeTodoLiquidbounce private var defaultValue: T, //codex (@ProtocolExclude)
+    @ExcludeTodoLiquidbounce val valueType: ValueTypeTodoLiquidbounce,
+
+    /**
+     * If true, the description won't be bound to any [net.ccbluex.liquidbounce.config.types.group.ValueGroup].
+     */
+    @ExcludeTodoLiquidbounce var independentDescription: Boolean = false //codex (@ProtocolExclude)
+) {
+
+    @SerializedName("value")
+    internal var inner: T = defaultValue
+
+    internal val loweredName
+        get() = name.lowercase()
+
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    private val listeners = ObjectArrayList<ValueListenerTodoLiquidbounce<T>>()
+
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    private val changedListeners = ObjectArrayList<ValueChangedListenerTodoLiquidbounce<T>>()
+
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    private val stateFlow = MutableStateFlow(inner)
+
+    fun asStateFlow(): StateFlow<T> = stateFlow
+
+    /**
+     * If true, value will not be included in generated public config.
+     * Can be set using [doNotIncludeWhen] or [doNotIncludeAlways].
+     */
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var doNotInclude: BooleanSupplier = { false }
+        private set
+
+    /**
+     * Group for optional inclusion during configuration saving.
+     * Managed by [AutoConfig].
+     */
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var inclusionGroup: OptionalInclusionTodoLiquidbounce? = null
+        private set
+
+    /**
+     * If true, value will not be included in generated RestAPI config.
+     */
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var notAnOption = false
+        private set
+
+    /**
+     * If true, value will always keep [inner] equals [defaultValue].
+     */
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var isImmutable = false
+        private set
+
+    /**
+     * If false, the value is neither written to nor read from config files, but still reaches the GUI.
+     * For values whose state lives elsewhere, such as another client's modules.
+     */
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var isPersistent = true
+        private set
+
+    /**
+     * Hides the value from the GUI while false. Configs keep it either way.
+     */
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var visibleCondition = BooleanSupplier { true }
+        private set
+
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var hasLiteralDescription = false
+        private set
+
+    /**
+     * Checks if this value should be included in the public configuration based on
+     * its [doNotInclude] condition and [inclusionGroup].
+     */
+    fun checkIfInclude(): Boolean {
+        if (doNotInclude.asBoolean) {
+            return false
+        }
+
+        val group = inclusionGroup ?: return true
+        val includeConfiguration = AutoConfigTodoLiquidbounce.includeConfiguration
+
+        return group in includeConfiguration.optionalInclusions
+    }
+
+    @ExcludeTodoLiquidbounce
+    var key: String? = null
+        set(value) {
+            field = value
+
+            this.descriptionKey = value?.let {
+                if (independentDescription) {
+                    "liquidbounce.common.${name.toLowerCamelCase()}.description"
+                } else {
+                    this.key?.let { s -> "$s.description" }
+                }
+            }
+        }
+
+    @ExcludeTodoLiquidbounce
+    // codex start
+    // @ProtocolExclude
+    // codex end
+    var descriptionKey: String? = null
+
+    @ExcludeTodoLiquidbounce
+    open var description = Supplier {
+        descriptionKey?.let { key -> translation(key).string }
+    }
+
+    /**
+     * Support for delegated properties
+     * example:
+     *  var autoaim by boolean(name = "autoaim", default = true)
+     *  if(!autoaim)
+     *    autoaim = true
+     *
+     * Important: To use values a class has to be configurable
+     *
+     * @docs https://kotlinlang.org/docs/reference/delegated-properties.html
+     */
+
+    operator fun getValue(u: Any?, property: KProperty<*>) = get()
+
+    operator fun setValue(u: Any?, property: KProperty<*>, t: T) {
+        set(t)
+    }
+
+    @JvmName("getTagValue")
+    fun getTagValue(): Any = when (this) {
+        is MultiChoiceListValueTodoLiquidbounce<*> -> "${get().size}/${choices.size}"
+        else -> getValue()
+    }
+
+    @AddonApiTodoLiquidbounce
+    @JvmName("getValue")
+    fun getValue(): Any = when (this) {
+        is ModeValueGroupTodoLiquidbounce<*> -> activeMode.name
+        else -> when (val v = get()) {
+            is ClosedFloatingPointRange<*> -> arrayOf(v.start, v.endInclusive)
+            is IntRange -> intArrayOf(v.first, v.last)
+            is TaggedTodoLiquidbounce -> v.tag
+            else -> v
+        }
+    }
+
+
+    fun get() = inner
+
+    fun set(t: T) {
+        // Do nothing if value is the same
+        if (t == inner) {
+            return
+        }
+
+        set(t) { inner = it }
+    }
+
+    fun set(t: T, apply: ValueChangedListenerTodoLiquidbounce<T>) {
+        var currT = t
+        runCatching {
+            listeners.forEach {
+                currT = it.apply(currT)
+            }
+
+            if (isImmutable) {
+                return
+            }
+        }.onSuccess {
+            apply.accept(currT)
+            // codex start
+            // EventManager.callEvent(ValueChangedEvent(this))
+            // codex end
+            changedListeners.forEach { it.accept(currT) }
+            stateFlow.value = currT
+        }.onFailure { ex ->
+            logger.error("Failed to set ${this.name} from ${this.inner} to $t", ex)
+        }
+    }
+
+    /**
+     * Restore value to default value
+     */
+    open fun restore() {
+        set(defaultValue)
+    }
+
+    fun type() = valueType
+
+    fun immutable() = apply {
+        isImmutable = true
+    }
+
+    fun onChange(listener: ValueListenerTodoLiquidbounce<T>) = apply {
+        listeners += listener
+    }
+
+    fun onChanged(listener: ValueChangedListenerTodoLiquidbounce<T>) = apply {
+        changedListeners += listener
+    }
+
+    fun doNotIncludeAlways() = apply {
+        doNotInclude = { true }
+    }
+
+    fun doNotIncludeWhen(condition: BooleanSupplier) = apply {
+        doNotInclude = condition
+    }
+
+    open fun inclusionGroup(group: OptionalInclusionTodoLiquidbounce) = apply {
+        this.inclusionGroup = group
+    }
+
+    fun notAnOption() = apply {
+        notAnOption = true
+    }
+
+    @AddonApiTodoLiquidbounce
+    fun notPersistent() = apply {
+        isPersistent = false
+    }
+
+    @AddonApiTodoLiquidbounce
+    fun visibleWhen(condition: BooleanSupplier) = apply {
+        visibleCondition = condition
+    }
+
+    /**
+     * Uses [text] instead of a translation key, for descriptions that come from outside LiquidBounce.
+     */
+    @AddonApiTodoLiquidbounce
+    fun literalDescription(text: Supplier<String?>) = apply {
+        description = text
+        hasLiteralDescription = true
+    }
+
+    fun independentDescription() = apply {
+        independentDescription = true
+    }
+
+    /**
+     * Deserialize value from JSON
+     */
+    @Suppress("UNCHECKED_CAST")
+    open fun deserializeFrom(gson: Gson, element: JsonElement) {
+        val currValue = this.inner
+
+        var clazz: Class<*>? = currValue.javaClass
+        var r: T? = null
+
+        while (clazz != null && clazz != Any::class.java) {
+            try {
+                r = gson.fromJson(element, clazz) as T?
+                break
+            } catch (@Suppress("SwallowedException") _: ClassCastException) {
+                clazz = clazz.superclass
+            }
+        }
+
+        set(r ?: error("Failed to deserialize value"))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    open fun setByString(string: String) {
+        val deserializer = this.valueType.deserializer
+
+        requireNotNull(deserializer) { "Cannot deserialize values of type ${this.valueType} yet." }
+
+        set(deserializer.deserializeThrowing(string) as T)
+    }
+
+    override fun toString(): String {
+        return "${javaClass.simpleName}(name=$name, type=${valueType})"
+    }
+
+}
