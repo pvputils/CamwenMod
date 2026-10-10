@@ -1,0 +1,238 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+package net.ccbluex.liquidbounce.event
+
+import net.ccbluex.liquidbounce.features.addon.AddonApiTodoLiquidbounce
+import net.ccbluex.liquidbounce.features.misc.DebuggedOwnerTodoLiquidbounce
+import net.ccbluex.liquidbounce.features.misc.SelfDestructTodoLiquidbounce.isDestructed
+import net.ccbluex.liquidbounce.utils.text.plus
+import net.ccbluex.liquidbounce.utils.text.withFormat
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Style
+import net.minecraft.util.FormattedCharSequence
+import java.util.function.Consumer
+
+class EventHookTodoLiquidbounce<T : EventTodoLiquidbounce>(
+    val handlerClass: EventListenerTodoLiquidbounce,
+    val priority: Short = 0,
+    val handler: Consumer<T>,
+)
+
+@AddonApiTodoLiquidbounce
+interface EventListenerTodoLiquidbounce : DebuggedOwnerTodoLiquidbounce {
+
+    /**
+     * Returns whether the listenable is running or not, this is based on the parent listenable
+     * and if no parent is present, it will return the opposite of [isDestructed].
+     *
+     * When destructed, the listenable will not handle any events. This is likely to be overridden by
+     * the implementing class to provide a toggleable feature.
+     *
+     * This can be ignored by handlers when [ignoreNotRunning] is set to true on the [EventHook].
+     */
+    val running: Boolean
+        get() = parent()?.running ?: !isDestructed
+
+    /**
+     * Parent [EventListener]
+     */
+    fun parent(): EventListenerTodoLiquidbounce? = null
+
+    // codex start
+    // /**
+    //  * Calls [handler] for every [type] event while this listener is running. Higher [priority] runs
+    //  * first. Close the result to stop early; [unregister] does the same for all of them.
+    //  */
+    // @AddonApi
+    // fun <E : Event> on(type: Class<E>, priority: Short, handler: Consumer<E>): AutoCloseable {
+    //     val hook = EventManager.registerEventHook(type, EventHook(this, priority, handler))
+    //     return AutoCloseable { EventManager.unregisterEventHook(type, hook) }
+    // }
+//
+    // @AddonApi
+    // fun <E : Event> on(type: Class<E>, handler: Consumer<E>): AutoCloseable = on(type, 0, handler)
+//
+    // /**
+    //  * [task] every game tick while this listener is running.
+    //  */
+    // @AddonApi
+    // fun onTick(task: Runnable): AutoCloseable = on(GameTickEvent::class.java) { task.run() }
+//
+    // /**
+    //  * Runs [task] once, [ticks] game ticks from now, unless this listener stops running first.
+    //  */
+    // @AddonApi
+    // fun after(ticks: Int, task: Runnable): AutoCloseable {
+    //     val job = eventListenerScope.launch {
+    //         waitTicks(ticks)
+    //         task.run()
+    //     }
+    //     return AutoCloseable { job.cancel() }
+    // }
+//
+    // /**
+    //  * Runs [task] every [ticks] game ticks while this listener is running, the first time after [ticks].
+    //  */
+    // @AddonApi
+    // fun every(ticks: Int, task: Runnable): AutoCloseable {
+    //     val job = eventListenerScope.launch {
+    //         while (isActive) {
+    //             waitTicks(ticks)
+    //             task.run()
+    //         }
+    //     }
+    //     return AutoCloseable { job.cancel() }
+    // }
+    // codex end
+    /**
+     * Children [EventListener]
+     */
+    fun children(): List<EventListenerTodoLiquidbounce> = emptyList()
+
+    /**
+     * Unregisters the event handler from the manager. This decision is FINAL!
+     * After the class was unregistered we cannot restore the handlers.
+     */
+    fun unregister() {
+        EventManagerTodoLiquidbounce.unregisterEventHandler(this)
+        removeEventListenerScope()
+
+        for (child in children()) {
+            child.unregister()
+        }
+    }
+
+    override val debugDisplayName: FormattedCharSequence
+        get() {
+            val parentPart = this.parent()?.debugDisplayName
+            val selfPart =
+                this.javaClass.simpleName.withFormat(Style.EMPTY + ChatFormatting.AQUA + ChatFormatting.ITALIC)
+
+            return if (parentPart != null) {
+                FormattedCharSequence.composite(
+                    parentPart,
+                    FormattedCharSequence.codepoint('$'.code, Style.EMPTY + ChatFormatting.GRAY),
+                    selfPart,
+                )
+            } else {
+                selfPart
+            }
+        }
+
+    override val debugOwnerId: String
+        get() {
+            val parentPart = this.parent()?.debugOwnerId
+            val selfPart = this.javaClass.simpleName
+            return if (parentPart != null) {
+                "$parentPart$$selfPart"
+            } else {
+                selfPart
+            }
+        }
+
+}
+
+inline fun <E : EventTodoLiquidbounce> EventListenerTodoLiquidbounce.newEventHook(
+    priority: Short = 0,
+    handler: Consumer<E>,
+): EventHookTodoLiquidbounce<E> = EventHookTodoLiquidbounce(this, priority, handler)
+
+fun <T : EventTodoLiquidbounce> EventListenerTodoLiquidbounce.handler(
+    eventClass: Class<T>,
+    priority: Short = 0,
+    handler: Consumer<T>,
+): EventHookTodoLiquidbounce<T> = EventManagerTodoLiquidbounce.registerEventHook(eventClass, newEventHook(priority, handler))
+
+inline fun <reified T : EventTodoLiquidbounce> EventListenerTodoLiquidbounce.handler(
+    priority: Short = 0,
+    handler: Consumer<T>,
+): EventHookTodoLiquidbounce<T> = handler(T::class.java, priority, handler)
+
+// codex start
+// inline fun <reified T : Event> EventListener.until(
+//     priority: Short = 0,
+//     crossinline handler: (T) -> Boolean
+// ): EventHook<T> {
+//     lateinit var eventHook: EventHook<T>
+//     eventHook = handler(T::class.java, priority) {
+//         if (!this.running || handler(it)) {
+//             EventManager.unregisterEventHook(T::class.java, eventHook)
+//         }
+//     }
+//     return eventHook
+// }
+//
+// inline fun <reified T : Event> EventListener.once(
+//     priority: Short = 0,
+//     crossinline handler: (T) -> Unit
+// ): EventHook<T> = until(priority) { event -> // Don't use `repeated` 'cause for no overhead
+//     handler(event)
+//     true // This will unregister the handler after the first call
+// }
+//
+// inline fun <reified T : Event> EventListener.repeated(
+//     times: Int = 1,
+//     priority: Short = 1,
+//     crossinline handler: (T) -> Unit
+// ): EventHook<T> {
+//     require(times > 0) { "times must be > 0" }
+//
+//     var called = 0
+//     return until<T>(priority) { event ->
+//         handler(event)
+//         ++called >= times
+//     }
+// }
+// codex end
+/**
+ * Returns computed [ReadWriteProperty] based on the [accumulator] of specific event.
+ *
+ * The value of property will be updated on event received with [accumulator].
+ *
+ * Example:
+ * ```kotlin
+ * var ticksSinceEnabled by computedOn<GameTickEvent, Int>(0) { _, prev -> prev + 1 }
+ *
+ * fun enabled() { ticksSinceEnabled = 0 }
+ * ```
+ *
+ * @author MukjepScarlet
+ * @since 0.30.1
+ */
+// codex start
+// inline fun <reified E : Event, V> EventListener.computedOn(
+//     initialValue: V,
+//     priority: Short = 0,
+//     crossinline accumulator: (event: E, prev: V) -> V,
+// ): ReadWriteProperty<EventListener, V> = object : ReadWriteProperty<EventListener, V> {
+//     @Volatile // Make this value visible to all threads
+//     private var value = initialValue
+//
+//     @Suppress("unused") // May be useful?
+//     private val eventHook = handler<E>(priority) { event ->
+//         value = accumulator(event, value)
+//     }
+//
+//     override fun getValue(thisRef: EventListener, property: KProperty<*>): V = value
+//     override fun setValue(thisRef: EventListener, property: KProperty<*>, value: V) {
+//         this.value = value
+//     }
+//     override fun toString(): String = "ComputedProperty<${E::class.java.simpleName}>($value)"
+// }
+// codex end

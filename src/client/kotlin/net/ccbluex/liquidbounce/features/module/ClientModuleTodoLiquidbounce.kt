@@ -1,0 +1,233 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+package net.ccbluex.liquidbounce.features.module
+
+import kotlinx.coroutines.launch
+import net.ccbluex.liquidbounce.config.ConfigSystemTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.autoconfig.AutoConfigTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.gson.stategies.ExcludeTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.types.ValueTodoLiquidbounce
+import net.ccbluex.liquidbounce.config.types.group.ToggleableValueGroupTodoLiquidbounce
+import net.ccbluex.liquidbounce.event.EventListenerTodoLiquidbounce
+import net.ccbluex.liquidbounce.event.eventListenerScope
+import net.ccbluex.liquidbounce.features.addon.AddonApiTodoLiquidbounce
+import net.ccbluex.liquidbounce.lang.LanguageManagerTodoLiquidbounce
+import net.ccbluex.liquidbounce.lang.translation
+import net.ccbluex.liquidbounce.utils.client.clientLogger
+import net.ccbluex.liquidbounce.utils.text.plus
+import net.ccbluex.liquidbounce.utils.text.toLowerCamelCase
+import net.ccbluex.liquidbounce.utils.text.withFormat
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.Style
+import net.minecraft.util.FormattedCharSequence
+
+/**
+ * A module also called 'hack' can be enabled and handle events
+ */
+@Suppress("LongParameterList", "detekt:TooManyFunctions")
+@AddonApiTodoLiquidbounce
+open class ClientModuleTodoLiquidbounce @JvmOverloads constructor(
+    name: String, // name parameter in configurable
+    @ExcludeTodoLiquidbounce val category: ModuleCategoryTodoLiquidbounce, // module category
+    // codex start
+    // bind: Int = InputConstants.UNKNOWN.value, // default bind
+    // codex end
+    // codex start
+    // bindAction: InputBind.BindAction = InputBind.BindAction.TOGGLE, // default action
+    // codex end
+    state: Boolean = false, // default state
+    @ExcludeTodoLiquidbounce val notActivatable: Boolean = false, // disable settings that are not needed if the module can't be enabled
+    @ExcludeTodoLiquidbounce val disableActivation: Boolean = notActivatable, // disable activation
+    @ExcludeTodoLiquidbounce val disableOnQuit: Boolean = false, // disables module when player leaves the world,
+    aliases: List<String> = emptyList(), // additional names under which the module is known
+    hide: Boolean = false // default hide
+) : ToggleableValueGroupTodoLiquidbounce(null, name, state, aliases = aliases), EventListenerTodoLiquidbounce, MinecraftShortcutsTodoLiquidbounce {
+
+    protected val logger = clientLogger("Module/$name")
+
+    init {
+        category.inclusionGroup?.let { group ->
+            this.inclusionGroup(group)
+        }
+    }
+
+    override val debugDisplayName: FormattedCharSequence
+        get() = this.name.withFormat(Style.EMPTY + ChatFormatting.GOLD + ChatFormatting.BOLD)
+
+    override val debugOwnerId: String
+        get() = "Module$name"
+
+    /**
+     * If a module is running or not is separated from the enabled state. A module can be paused even when
+     * it is enabled, or it can be running when it is not enabled.
+     *
+     * Note: This overwrites [ToggleableValueGroup] declaration of [running].
+     */
+    override val running: Boolean
+        get() = super<EventListenerTodoLiquidbounce>.running && inGame && (enabled || notActivatable)
+
+    // codex start
+    // @AddonApi
+    // val bindValue = bind("Bind", InputBind(InputConstants.Type.KEYBOARD, bind, bindAction))
+    //     .doNotIncludeWhen { !AutoConfig.includeConfiguration.includeBinds }
+    //     .independentDescription().apply {
+    //         if (notActivatable) {
+    //             notAnOption()
+    //         }
+    //     }
+    // val bind get() = bindValue.get()
+    //
+    // /**
+    //  * True when something outside LiquidBounce acts on [bind], so the module manager leaves it alone.
+    //  */
+    // @AddonApi
+    // open val externalBind: Boolean
+    //     get() = false
+    // codex end
+
+    var hidden by boolean("Hidden", hide)
+        .doNotIncludeWhen { !AutoConfigTodoLiquidbounce.includeConfiguration.includeHidden }
+        .independentDescription()
+        .onChange {
+            // codex start
+            // EventManager.callEvent(RefreshArrayListEvent)
+            // codex end
+            it
+        }.apply {
+            if (notActivatable) {
+                notAnOption()
+            }
+        }
+
+    override val baseKey: String = "${ConfigSystemTodoLiquidbounce.KEY_PREFIX}.module.${name.toLowerCamelCase()}"
+
+    // Tag to be displayed on the HUD
+    open val tag: String?
+        get() = this.tagValue?.getTagValue()?.toString()
+
+    private var tagValue: ValueTodoLiquidbounce<*>? = null
+
+    /**
+     * Allows the user to access values by typing module.settings.<valuename>
+     */
+    @AddonApiTodoLiquidbounce
+    open val settings by lazy { inner.associateBy { it.name } }
+
+    /**
+     * For delayed enabling.
+     * On client startup, the [onToggled] of enabled modules (in configuration) will be called when the player first
+     * joins a world.
+     */
+    internal var calledSinceStartup = false
+
+    /**
+     * Called when the module is registered in the module manager.
+     */
+    open fun onRegistration() {}
+
+    final override fun onEnabledValueRegistration(value: ValueTodoLiquidbounce<Boolean>) =
+        super.onEnabledValueRegistration(value).also { value ->
+            // Might not include the enabled state of the module depending on the category
+            if (category == ModuleCategoriesTodoLiquidbounce.MISC || category == ModuleCategoriesTodoLiquidbounce.FUN ||
+                category == ModuleCategoriesTodoLiquidbounce.RENDER) {
+                // codex start
+                // if (this is ModuleAntiBot) {
+                //     return@also
+                // }
+                // codex end
+                value.doNotIncludeAlways()
+            }
+        }.notAnOption().onChanged { newState ->
+            if (newState) {
+                eventListenerScope.launch { enabledEffect() }
+            }
+        }
+
+    /**
+     * Launches an async task on [eventListenerScope] when module is turned on.
+     */
+    open suspend fun enabledEffect() {}
+
+    final override fun onToggled(state: Boolean): Boolean {
+        if (!inGame) {
+            return state
+        }
+        calledSinceStartup = true
+
+        val state = super.onToggled(state)
+
+        // codex start
+        // EventManager.callEvent(ModuleActivationEvent(name))
+        // codex end
+
+        // If the module is not activatable, we do not want to change state
+        if (disableActivation) {
+            return false
+        }
+
+        // codex start
+        // if (!loadingNow) {
+        //     val (title, severity) = if (state) {
+        //         translation("liquidbounce.generic.enabled") to NotificationEvent.Severity.ENABLED
+        //     } else {
+        //         translation("liquidbounce.generic.disabled") to NotificationEvent.Severity.DISABLED
+        //     }
+        //     notification(title, this.name, severity)
+        // }
+        // codex end
+
+        // codex start
+        // EventManager.callEvent(ModuleToggleEvent(name, hidden, state))
+        // codex end
+        return state
+    }
+
+    fun tagBy(setting: ValueTodoLiquidbounce<*>) {
+        check(this.tagValue == null) { "Tag already set" }
+
+        this.tagValue = setting
+
+        // Refresh arraylist on tag change
+        setting.onChanged {
+            // codex start
+            // EventManager.callEvent(RefreshArrayListEvent)
+            // codex end
+        }
+    }
+
+    /**
+     * Warns when no module description is set in the main translation file.
+     *
+     * Requires that [ValueGroup.walkKeyPath] has previously been run.
+     */
+    fun verifyFallbackDescription() {
+        if (hasLiteralDescription) {
+            return
+        }
+
+        if (!LanguageManagerTodoLiquidbounce.hasFallbackTranslation(descriptionKey!!)) {
+            logger.warn("$name is missing fallback description key $descriptionKey")
+        }
+    }
+
+    fun message(key: String, vararg args: Any) = translation("$baseKey.messages.$key", args = args)
+
+    override fun toString(): String = "Module$name"
+
+}

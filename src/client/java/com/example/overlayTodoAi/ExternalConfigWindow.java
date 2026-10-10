@@ -126,6 +126,10 @@ public final class ExternalConfigWindow {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         JPanel grid = new JPanel(new GridLayout(0, 4, 8, 8));
+        // codex start
+        addButton(grid, "KillAura", com.example.LiquidBounceSettingsTodoAi::open,
+                "opens LiquidBounce KillAura settings");
+        // codex end
         grid.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         // codex start
         addButton(grid, "Aim assist", AimAssistScreenTodoAi::open,

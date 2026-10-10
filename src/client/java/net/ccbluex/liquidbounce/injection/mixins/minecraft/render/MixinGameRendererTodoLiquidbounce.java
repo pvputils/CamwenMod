@@ -1,0 +1,228 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+package net.ccbluex.liquidbounce.injection.mixins.minecraft.render;
+
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.objectweb.asm.Opcodes;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import net.ccbluex.liquidbounce.event.EventManagerTodoLiquidbounce;
+import net.ccbluex.liquidbounce.event.events.GameRenderEventTodoLiquidbounce;
+import net.ccbluex.liquidbounce.event.events.PerspectiveEventTodoLiquidbounce;
+import net.ccbluex.liquidbounce.event.events.WorldRenderEventTodoLiquidbounce;
+import net.ccbluex.liquidbounce.utils.aiming.RotationManagerTodoLiquidbounce;
+import net.ccbluex.liquidbounce.utils.collection.PoolsTodoLiquidbounce;
+import net.ccbluex.liquidbounce.utils.render.WorldToScreenTodoLiquidbounce;
+import net.minecraft.client.Camera;
+import net.minecraft.client.CameraType;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.Lightmap;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(GameRenderer.class)
+public abstract class MixinGameRendererTodoLiquidbounce {
+
+    @Shadow
+    @Final
+    private Minecraft minecraft;
+
+    @Shadow
+    @Final
+    private Camera mainCamera;
+
+    @Shadow
+    public abstract void tick();
+
+    @Shadow
+    @Final
+    private Lightmap lightmap;
+
+    @Shadow
+    @Final
+    private RenderTarget mainRenderTarget;
+
+    /**
+     * Hook game render event
+     */
+    @Inject(method = "render", at = @At("HEAD"))
+    public void hookGameRender(CallbackInfo callbackInfo) {
+        EventManagerTodoLiquidbounce.INSTANCE.callEvent(GameRenderEventTodoLiquidbounce.INSTANCE);
+    }
+
+    /**
+     * Apply change-look rotations before vanilla updates and extracts the camera state.
+     */
+    @Inject(method = "update", at = @At("HEAD"))
+    private void applyChangeLookRotation(DeltaTracker deltaTracker, CallbackInfo ci) {
+        RotationManagerTodoLiquidbounce.INSTANCE.applyChangeLookRotation(deltaTracker.getGameTimeDeltaPartialTick(false));
+    }
+
+    @Inject(method = "extractCamera", at = @At("TAIL"))
+    private void hookWorldToScreenMatricesInExtract(
+        DeltaTracker deltaTracker,
+        float worldPartialTicks,
+        float cameraEntityPartialTicks,
+        CallbackInfo ci,
+        @Local(name = "cameraState") CameraRenderState cameraState
+    ) {
+        WorldToScreenTodoLiquidbounce.setMatrices(cameraState.projectionMatrix, cameraState.viewRotationMatrix, cameraState.pos);
+    }
+
+    /**
+     * Hook world render event
+     */
+    @Inject(method = "renderLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/state/level/CameraEntityRenderState;isSleeping:Z", opcode = Opcodes.GETFIELD))
+    public void hookWorldRender(
+        DeltaTracker deltaTracker,
+        CallbackInfo ci,
+        @Local(name = "projectionMatrix") Matrix4f projectionMatrix,
+        @Local(name = "modelViewMatrix") Matrix4fc modelViewMatrix
+    ) {
+        var newMatStack = PoolsTodoLiquidbounce.MatStack.borrow();
+        try {
+            newMatStack.mulPose(modelViewMatrix);
+            try (var event = new WorldRenderEventTodoLiquidbounce(
+                newMatStack,
+                this.mainCamera,
+                deltaTracker.getGameTimeDeltaPartialTick(false),
+                this.mainRenderTarget
+            )) {
+                EventManagerTodoLiquidbounce.INSTANCE.callEvent(event);
+            }
+        } finally {
+            PoolsTodoLiquidbounce.MatStack.recycle(newMatStack);
+        }
+    }
+
+    // codex start
+    // @ModifyArg(
+    //     method = "renderLevel",
+    //     at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/fog/FogRenderer;getBuffer(Lnet/minecraft/client/renderer/fog/FogRenderer$FogMode;)Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;")
+    // )
+    // private FogRenderer.FogMode disableFog(FogRenderer.FogMode fogMode) {
+    //     var fogValueGroup = ModuleCustomAmbience.FogValueGroup.INSTANCE;
+    //     if (fogValueGroup.getRunning() && ModuleCustomAmbience.FogValueGroup.INSTANCE.getDisableWorldFog()) {
+    //         return FogRenderer.FogMode.NONE;
+    //     }
+    //     return fogMode;
+    // }
+    //
+    // @WrapOperation(
+    //     method = "renderItemInHand",
+    //     at = @At(
+    //         value = "INVOKE",
+    //         target = "Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher;prepareFrame(Lnet/minecraft/client/renderer/SubmitNodeStorage;)Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;"
+    //     )
+    // )
+    // private FeatureRenderDispatcher.PreparedFrame drawItemCharmsOnHandPrepareFrame(
+    //     FeatureRenderDispatcher instance, SubmitNodeStorage submitNodeStorage,
+    //     Operation<FeatureRenderDispatcher.PreparedFrame> original
+    // ) {
+    //     return ModuleItemChams.Lightmap.doOverride(() -> original.call(instance, submitNodeStorage));
+    // }
+    //
+    // @Inject(
+    //     method = "render",
+    //     at = @At(
+    //         value = "INVOKE",
+    //         target = "Lnet/minecraft/client/renderer/Lightmap;render(Lnet/minecraft/client/renderer/state/LightmapRenderState;)V",
+    //         shift = At.Shift.AFTER
+    //     )
+    // )
+    // private void hookItemChamsLightmapRefresh(CallbackInfo ci) {
+    //     ModuleItemChams.Lightmap.refresh(this.lightmap.getTextureView());
+    // }
+    //
+    // @Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true)
+    // private void injectHurtCam(CameraRenderState cameraState, PoseStack poseStack, CallbackInfo ci) {
+    //     if (ModuleNoHurtCam.INSTANCE.getRunning()) {
+    //         ci.cancel();
+    //     }
+    // }
+    //
+    // /**
+    //  * Keeps the vanilla 26.1 walk interpolation inputs while applying the custom bobbing strength.
+    //  *
+    //  * {@code GameRenderer#bobView(CameraRenderState, PoseStack)} is private, so it cannot be referenced via {@code @see}.
+    //  *
+    //  * @see net.minecraft.client.Camera#extractRenderState(net.minecraft.client.renderer.state.level.CameraRenderState, net.minecraft.client.DeltaTracker)
+    //  * @see net.minecraft.client.renderer.state.level.CameraEntityRenderState#backwardsInterpolatedWalkDistance
+    //  * @see net.minecraft.client.renderer.state.level.CameraEntityRenderState#bob
+    //  */
+    // @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
+    // private void injectBobView(CameraRenderState cameraState, PoseStack poseStack, CallbackInfo ci) {
+    //     if (ModuleNoBob.INSTANCE.getRunning() ||
+    //         ModuleTracers.INSTANCE.getRunning() ||
+    //         (ModuleItemESP.INSTANCE.getRunning() && ModuleItemESP.INSTANCE.getShowTracers()) ||
+    //         ModuleStorageESP.INSTANCE.showTracers()) {
+    //
+    //         ci.cancel();
+    //         return;
+    //     }
+    //
+    //     if (!ModuleDankBobbing.INSTANCE.getRunning()) {
+    //         return;
+    //     }
+    //
+    //     final var entityRenderState = cameraState.entityRenderState;
+    //     if (!entityRenderState.isPlayer) {
+    //         return;
+    //     }
+    //
+    //     float additionalBobbing = ModuleDankBobbing.INSTANCE.getMotion();
+    //     float g = entityRenderState.backwardsInterpolatedWalkDistance;
+    //     float h = entityRenderState.bob;
+    //     poseStack.translate(Mth.sin(g * Mth.PI) * h * 0.5f, -Math.abs(Mth.cos(g * Mth.PI) * h), 0.0f);
+    //     poseStack.rotate(Axis.ZP.rotationDegrees(Mth.sin(h * Mth.PI) * h * (3.0F + additionalBobbing)));
+    //     poseStack.rotate(Axis.XP.rotationDegrees(Math.abs(Mth.cos(h * Mth.PI - (0.2F + additionalBobbing)) * h) * 5.0F));
+    //
+    //     ci.cancel();
+    // }
+    //
+    // @ModifyExpressionValue(method = "renderLevel", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(FF)F", ordinal = 0, remap = false))
+    // private float hookAntiNausea(float original) {
+    //     if (!ModuleAntiBlind.canRender(DoRender.NAUSEA)) {
+    //         return 0f;
+    //     }
+    //
+    //     return original;
+    // }
+    //
+    // codex end
+    @ModifyExpressionValue(method = "extractOptions",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/Options;getCameraType()Lnet/minecraft/client/CameraType;"
+            )
+    )
+    private CameraType hookPerspectiveEventOnCamera(CameraType original) {
+        return PerspectiveEventTodoLiquidbounce.INSTANCE.getPerspective();
+    }
+
+}

@@ -1,0 +1,268 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+@file:Suppress("TooManyFunctions", "NOTHING_TO_INLINE")
+@file:JvmName("ClientChatTodoLiquidbounce")
+
+package net.ccbluex.liquidbounce.utils.client
+
+import net.ccbluex.liquidbounce.features.addon.AddonApiTodoLiquidbounce
+import net.ccbluex.liquidbounce.features.module.ClientModuleTodoLiquidbounce
+import net.ccbluex.liquidbounce.lang.translation
+import net.ccbluex.liquidbounce.render.engine.type.Color4bTodoLiquidbounce
+import net.ccbluex.liquidbounce.utils.text.asPlainText
+import net.ccbluex.liquidbounce.utils.text.asText
+import net.ccbluex.liquidbounce.utils.text.plus
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Style
+import net.minecraft.network.chat.TextColor
+
+// Chat formatting
+private val clientPrefix: Component = "".asText()
+    .withStyle(ChatFormatting.RESET, ChatFormatting.GRAY)
+    .append(gradientText("LiquidBounce", Color4bTodoLiquidbounce.fromHex("#4677ff"), Color4bTodoLiquidbounce.fromHex("#24AA7F")))
+    .append(" ▸ ".asText().withStyle(ChatFormatting.RESET, ChatFormatting.GRAY))
+
+@AddonApiTodoLiquidbounce
+fun regular(text: MutableComponent): MutableComponent = text.withStyle(ChatFormatting.GRAY)
+
+@AddonApiTodoLiquidbounce
+fun regular(text: String): MutableComponent = text.asText().withStyle(ChatFormatting.GRAY)
+
+@AddonApiTodoLiquidbounce
+fun variable(text: MutableComponent): MutableComponent = text.withStyle(ChatFormatting.GOLD)
+
+@AddonApiTodoLiquidbounce
+fun variable(text: String): MutableComponent = text.asText().withStyle(ChatFormatting.GOLD)
+// codex start
+//
+// fun clickablePath(file: File): MutableComponent =
+//     variable(file.absolutePath)
+//         .onClick(ClickEvent.OpenFile(file))
+//         .onHover(HoverEvent.ShowText("Open".asPlainText()))
+// codex end
+
+@AddonApiTodoLiquidbounce
+fun highlight(text: MutableComponent): MutableComponent = text
+    .withStyle(Style.EMPTY + Color4bTodoLiquidbounce.LIQUID_BOUNCE + ChatFormatting.BOLD)
+
+@AddonApiTodoLiquidbounce
+fun highlight(text: String): MutableComponent = text.asText()
+    .withStyle(Style.EMPTY + Color4bTodoLiquidbounce.LIQUID_BOUNCE + ChatFormatting.BOLD)
+
+@AddonApiTodoLiquidbounce
+fun warning(text: MutableComponent): MutableComponent = text.withStyle(ChatFormatting.YELLOW)
+
+@AddonApiTodoLiquidbounce
+fun warning(text: String): MutableComponent = text.asText().withStyle(ChatFormatting.YELLOW)
+
+@AddonApiTodoLiquidbounce
+fun markAsError(text: String): MutableComponent = text.asText().withStyle(ChatFormatting.RED)
+
+@AddonApiTodoLiquidbounce
+fun markAsError(text: MutableComponent): MutableComponent = text.withStyle(ChatFormatting.RED)
+
+inline fun MutableComponent.withColor(value: ChatFormatting?): MutableComponent =
+    setStyle(style.withColor(value))
+
+inline fun MutableComponent.withColor(value: TextColor?): MutableComponent =
+    setStyle(style.withColor(value))
+
+inline fun MutableComponent.bold(value: Boolean?): MutableComponent =
+    setStyle(style.withBold(value))
+
+inline fun MutableComponent.obfuscated(value: Boolean?): MutableComponent =
+    setStyle(style.withObfuscated(value))
+
+inline fun MutableComponent.strikethrough(value: Boolean?): MutableComponent =
+    setStyle(style.withStrikethrough(value))
+// codex start
+//
+// inline fun MutableComponent.underline(value: Boolean?): MutableComponent =
+//     setStyle(style.withUnderlined(value))
+// codex end
+
+inline fun MutableComponent.italic(value: Boolean?): MutableComponent =
+    setStyle(style.withItalic(value))
+
+inline fun MutableComponent.onHover(event: HoverEvent?): MutableComponent =
+    setStyle(style.withHoverEvent(event))
+
+inline fun MutableComponent.onClick(event: ClickEvent?): MutableComponent =
+    setStyle(style.withClickEvent(event))
+// codex start
+//
+// inline fun MutableComponent.onClickRun(callback: Runnable): MutableComponent =
+//     setStyle(style.withClickEvent(RunnableClickEvent(callback)))
+// codex end
+
+inline operator fun MutableComponent.plusAssign(other: String) {
+    this.append(other)
+}
+
+inline operator fun MutableComponent.plusAssign(other: Component) {
+    this.append(other)
+}
+
+/**
+ * Creates text with a color gradient between two colors.
+ *
+ * @param text The string to apply the gradient to
+ * @param startColor The first color in the gradient
+ * @param endColor The second color in the gradient
+ * @return A MutableText with the gradient applied
+ */
+fun gradientText(text: String, startColor: Color4bTodoLiquidbounce, endColor: Color4bTodoLiquidbounce): MutableComponent {
+    return text.foldIndexed("".asText()) { index, newText, char ->
+        val factor = if (text.length > 1) index / (text.length - 1.0) else 0.0
+        val color = startColor.interpolateTo(endColor, factor)
+
+        newText.append(
+            char.toString().asPlainText(Style.EMPTY + color)
+        )
+    }
+}
+
+/**
+ * Creates text with a copy-to-clipboard click event
+ *
+ * @receiver The text to make copyable
+ * @param copyContent The content to copy when clicked (defaults to text's string representation)
+ * @param hover The hover event to apply (defaults to "Click to copy" tooltip)
+ * @return Styled text with copy functionality
+ */
+fun MutableComponent.copyable(
+    copyContent: String = this.string,
+    hover: HoverEvent? = HoverEvent.ShowText(
+        translation("liquidbounce.tooltip.clickToCopy")
+    )
+): MutableComponent = apply {
+    hover?.let(::onHover)
+    onClick(ClickEvent.CopyToClipboard(copyContent))
+}
+// codex start
+//
+// fun MutableComponent.bypassNameProtection(): MutableComponent = withStyle {
+//     val color = it.color ?: TextColor.fromLegacyFormat(ChatFormatting.RESET)
+//
+//     @Suppress("CAST_NEVER_SUCCEEDS")
+//     val newColor = (color as TextColorAddition).`liquid_bounce$withNameProtectionBypass`()
+//
+//     it.withColor(newColor)
+// }
+//
+// /**
+//  * Open a [ChatScreen] with given text,
+//  * or set the text of current [ChatScreen]
+//  */
+// codex end
+// codex start
+// fun Minecraft.openChat(text: String, draft: Boolean = false, closeOnSubmit: Boolean = true) = schedule {
+//     (this.gui.screen() as? MixinChatScreenAccessor)?.input?.setValue(text)
+//         ?: this.gui.setScreen(ChatScreen(text, draft, closeOnSubmit))
+// }
+// codex end
+
+private val defaultMessageMetadata = MessageMetadataTodoLiquidbounce()
+
+/**
+ * Stores some data used to construct messages.
+ * The [id], when the message is sent from a client object,
+ * should follow the pattern `ObjectName#UniqueString`
+ * to avoid duplicates.
+ *
+ * This would mean, for example, that a not-in-game exception should
+ * from a command named `SomeCommand` with should have the
+ * id `SomeCommand#notIngame`.
+ */
+@AddonApiTodoLiquidbounce
+@JvmRecord
+data class MessageMetadataTodoLiquidbounce(
+    val prefix: Boolean = true,
+    val id: String? = null,
+    val remove: Boolean = true,
+    val count: Int = 1
+) {
+    companion object {
+        @JvmStatic
+        fun byModule(module: ClientModuleTodoLiquidbounce) = MessageMetadataTodoLiquidbounce(id = "M${module.name}#info")
+    }
+}
+
+@AddonApiTodoLiquidbounce
+@JvmOverloads
+fun chat(text: Component, metadata: MessageMetadataTodoLiquidbounce = defaultMessageMetadata) {
+    val realText = if (metadata.prefix) clientPrefix.copy().append(text) else text
+
+    if (mc.player == null) {
+        logger.info("(Chat) ${realText.string}")
+        return
+    }
+
+    val chatHud = mc.gui.hud.chat
+
+    if (metadata.remove && !metadata.id.isNullOrEmpty()) {
+        chatHud.removeMessage(metadata.id)
+    }
+
+    chatHud.addMessage(realText, metadata.id, metadata.count)
+}
+
+/**
+ * Adds a new chat message.
+ */
+@AddonApiTodoLiquidbounce
+fun chat(vararg texts: Component, metadata: MessageMetadataTodoLiquidbounce = defaultMessageMetadata) {
+    chat(texts.asText(), metadata)
+}
+
+@AddonApiTodoLiquidbounce
+fun chat(text: Component, module: ClientModuleTodoLiquidbounce) = chat(text, metadata = MessageMetadataTodoLiquidbounce.byModule(module))
+
+@AddonApiTodoLiquidbounce
+fun chat(text: String, module: ClientModuleTodoLiquidbounce) = chat(text.asPlainText(), module)
+
+@AddonApiTodoLiquidbounce
+fun chat(text: String) = chat(text.asPlainText())
+
+// codex start
+// @AddonApi
+// fun notification(title: Component, message: String, severity: NotificationEvent.Severity) =
+//     EventManager.callEvent(NotificationEvent(title.string, message, severity))
+//
+// @AddonApi
+// fun notification(title: String, message: Component, severity: NotificationEvent.Severity) =
+//     EventManager.callEvent(NotificationEvent(title, message.string, severity))
+//
+// @AddonApi
+// fun notification(title: Component, message: Component, severity: NotificationEvent.Severity) =
+//     EventManager.callEvent(NotificationEvent(title.string, message.string, severity))
+//
+// @AddonApi
+// fun notification(title: String, message: String, severity: NotificationEvent.Severity) =
+//     EventManager.callEvent(NotificationEvent(title, message, severity))
+// codex end
+// codex start
+// val TextColor.bypassesNameProtection: Boolean
+//     @Suppress("CAST_NEVER_SUCCEEDS")
+//     get() = (this as TextColorAddition).`liquid_bounce$doesBypassingNameProtect`()
+// codex end

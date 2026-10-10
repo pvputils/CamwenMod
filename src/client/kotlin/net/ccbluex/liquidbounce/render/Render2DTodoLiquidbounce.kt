@@ -1,0 +1,443 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2026 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+@file:Suppress("detekt:TooManyFunctions", "NOTHING_TO_INLINE")
+
+package net.ccbluex.liquidbounce.render
+
+import com.mojang.blaze3d.pipeline.RenderPipeline
+import it.unimi.dsi.fastutil.floats.Float2IntFunction
+import net.ccbluex.liquidbounce.features.addon.AddonApiTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.engine.type.BoundingBox2fTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.engine.type.Color4bTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.gui.GuiCircleLutAtlasTodoLiquidbounce
+import net.ccbluex.liquidbounce.utils.math.ceilToInt
+import net.ccbluex.liquidbounce.utils.math.floorToInt
+import net.ccbluex.liquidbounce.utils.collection.PoolsTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.gui.element.CircleGuiElementRenderStateTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.gui.element.LineGuiElementRenderStateTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.gui.element.QuadGuiElementRenderStateTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.gui.element.TexQuadGuiElementRenderStateTodoLiquidbounce
+import net.ccbluex.liquidbounce.render.gui.element.TriangleGuiElementRenderStateTodoLiquidbounce
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.navigation.ScreenRectangle
+import net.minecraft.client.gui.render.TextureSetup
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.world.phys.Vec2
+import org.joml.Matrix3x2f
+import org.joml.Matrix3x2fStack
+import org.joml.Matrix3x2fc
+import org.joml.Vector2f
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+
+private val LEFT_TOP = Vector2f()
+private val RIGHT_TOP = Vector2f()
+private val LEFT_BOTTOM = Vector2f()
+private val RIGHT_BOTTOM = Vector2f()
+
+/**
+ * Primitive version of [ScreenRectangle.transformMaxBounds]
+ */
+private fun Matrix3x2fc.transformMaxBounds(
+    left: Float,
+    top: Float,
+    right: Float,
+    bottom: Float,
+): ScreenRectangle {
+    val v1 = transformPosition(left, top, LEFT_TOP)
+    val v2 = transformPosition(right, top, RIGHT_TOP)
+    val v3 = transformPosition(left, bottom, LEFT_BOTTOM)
+    val v4 = transformPosition(right, bottom, RIGHT_BOTTOM)
+    val minX = minOf(v1.x, minOf(v3.x, v2.x, v4.x))
+    val maxX = maxOf(v1.x, maxOf(v3.x, v2.x, v4.x))
+    val minY = minOf(v1.y, minOf(v3.y, v2.y, v4.y))
+    val maxY = maxOf(v1.y, maxOf(v3.y, v2.y, v4.y))
+    return ScreenRectangle(
+        minX.floorToInt(),
+        minY.floorToInt(),
+        (maxX - minX).ceilToInt(),
+        (maxY - minY).ceilToInt(),
+    )
+}
+
+val ScreenRectangle.isEmpty: Boolean
+    get() = width == 0 || height == 0
+
+@OptIn(ExperimentalContracts::class)
+inline fun ScreenRectangle.ifEmpty(defaultValue: () -> ScreenRectangle): ScreenRectangle {
+    contract {
+        callsInPlace(defaultValue, InvocationKind.AT_MOST_ONCE)
+    }
+    return if (isEmpty) defaultValue() else this
+}
+
+/**
+ * @see net.minecraft.client.renderer.state.gui.ColoredRectangleRenderState.getBounds
+ */
+fun GuiGraphicsExtractor.getBounds(left: Float, top: Float, right: Float, bottom: Float): ScreenRectangle {
+    val rect = this.pose().transformMaxBounds(left, top, right, bottom)
+    return this.scissorStack.peek()?.intersection(rect) ?: rect
+}
+
+/**
+ * @see net.minecraft.client.renderer.state.gui.ColoredRectangleRenderState.getBounds
+ */
+fun GuiGraphicsExtractor.getBoundsXYWH(x: Float, y: Float, w: Float, h: Float): ScreenRectangle {
+    return getBounds(x, y, x + w, y + h)
+}
+
+fun GuiGraphicsExtractor.getBounds(box: BoundingBox2fTodoLiquidbounce): ScreenRectangle =
+    getBounds(box.xMin, box.yMin, box.xMax, box.yMax)
+
+inline fun GuiGraphicsExtractor.copyPosePooled(): Matrix3x2f = PoolsTodoLiquidbounce.Mat3x2f.borrow().set(this.pose())
+
+// codex start
+// inline fun GuiGraphicsExtractor.copyPose(): Matrix3x2f = Matrix3x2f(this.pose())
+// codex end
+
+inline fun Matrix3x2fStack.withPush(block: Matrix3x2fStack.() -> Unit) {
+    pushMatrix()
+    try {
+        block()
+    } finally {
+        popMatrix()
+    }
+}
+
+inline fun GuiGraphicsExtractor.ScissorStack.withPush(
+    rect: ScreenRectangle,
+    block: GuiGraphicsExtractor.ScissorStack.() -> Unit,
+) {
+    if (rect.width <= 0 || rect.height <= 0) return
+    push(rect)
+    try {
+        block()
+    } finally {
+        pop()
+    }
+}
+// codex start
+//
+// inline fun GuiGraphicsExtractor.drawCustomElement(
+//     pipeline: RenderPipeline = RenderPipelines.GUI, // PosColor + QUADS
+//     textureSetup: TextureSetup = TextureSetup.noTexture(),
+//     scissorArea: ScreenRectangle? = this.scissorStack.peek(),
+//     bounds: ScreenRectangle? = null,
+//     verticesSetupHandler: VerticesSetupHandler,
+// ) = this.guiRenderState.addGuiElement(
+//     LambdaSimpleGuiElementRenderState(
+//         pipeline,
+//         textureSetup,
+//         copyPosePooled(),
+//         scissorArea,
+//         bounds,
+//         verticesSetupHandler
+//     )
+// )
+// codex end
+
+fun GuiGraphicsExtractor.drawLines(
+    points: FloatArray,
+    argb: Int,
+    bounds: ScreenRectangle,
+    cull: Boolean = true,
+) {
+    this.guiRenderState.addGuiElement(
+        LineGuiElementRenderStateTodoLiquidbounce(
+            points,
+            argb,
+            ClientRenderPipelinesTodoLiquidbounce.GUI.lines(cull),
+            copyPosePooled(),
+            this.scissorStack.peek(),
+            bounds,
+        )
+    )
+}
+
+@AddonApiTodoLiquidbounce
+@JvmOverloads
+fun GuiGraphicsExtractor.drawQuad(
+    x1: Float,
+    y1: Float,
+    x2: Float,
+    y2: Float,
+    fillColor: Color4bTodoLiquidbounce? = Color4bTodoLiquidbounce.TRANSPARENT,
+    outlineColor: Color4bTodoLiquidbounce? = Color4bTodoLiquidbounce.TRANSPARENT,
+) {
+    val x11 = minOf(x1, x2)
+    val y11 = minOf(y1, y2)
+    val x21 = maxOf(x1, x2)
+    val y21 = maxOf(y1, y2)
+
+    val bounds = getBounds(x11, y11, x21, y21)
+
+    if (fillColor != null && !fillColor.isTransparent) {
+        this.guiRenderState.addGuiElement(
+            QuadGuiElementRenderStateTodoLiquidbounce(
+                x11,
+                y11,
+                x21,
+                y21,
+                fillColor.argb,
+                copyPosePooled(),
+                this.scissorStack.peek(),
+                bounds,
+            )
+        )
+    }
+    if (outlineColor != null && !outlineColor.isTransparent) {
+        val argb = outlineColor.argb
+
+        drawLines(
+            floatArrayOf(
+                x11, y11,
+                x11, y21,
+                x11, y21,
+                x21, y21,
+                x21, y21,
+                x21, y11,
+                x21, y11,
+                x11, y11,
+            ),
+            argb,
+            bounds,
+        )
+    }
+}
+// codex start
+//
+// fun GuiGraphicsExtractor.drawRoundedRect(
+//     x1: Float,
+//     y1: Float,
+//     x2: Float,
+//     y2: Float,
+//     radius: Float,
+//     fillColor: Color4b? = Color4b.TRANSPARENT,
+//     outlineColor: Color4b? = Color4b.TRANSPARENT,
+//     outlineWidth: Float = 1.0f,
+// ) {
+//     val x11 = minOf(x1, x2)
+//     val y11 = minOf(y1, y2)
+//     val x21 = maxOf(x1, x2)
+//     val y21 = maxOf(y1, y2)
+//
+//     val fill = fillColor ?: Color4b.TRANSPARENT
+//     val outline = outlineColor ?: Color4b.TRANSPARENT
+//     if (fill.isTransparent && (outline.isTransparent || outlineWidth <= 0.0f)) {
+//         return
+//     }
+//
+//     this.guiRenderState.addGuiElement(
+//         RoundedRectGuiElementRenderState(
+//             x11,
+//             y11,
+//             x21,
+//             y21,
+//             radius.coerceAtLeast(0.0f),
+//             fill.argb,
+//             outline.argb,
+//             outlineWidth.coerceAtLeast(0.0f),
+//             copyPosePooled(),
+//             this.scissorStack.peek(),
+//             getBounds(x11, y11, x21, y21),
+//         )
+//     )
+// }
+// codex end
+// codex start
+//
+// inline fun GuiGraphicsExtractor.drawQuadXYWH(
+//     x: Float,
+//     y: Float,
+//     w: Float,
+//     h: Float,
+//     fillColor: Color4b? = Color4b.TRANSPARENT,
+//     outlineColor: Color4b? = Color4b.TRANSPARENT,
+// ) = drawQuad(x, y, x + w, y + h, fillColor, outlineColor)
+//
+// /**
+//  * Float version of [GuiGraphicsExtractor.drawHorizontalLine]
+//  */
+// codex end
+fun GuiGraphicsExtractor.drawHorizontalLine(x1: Float, x2: Float, y: Float, thickness: Float, color: Color4bTodoLiquidbounce) {
+    this.drawQuad(x1, y, x2, y + thickness, color)
+}
+
+/**
+ * Float version of [GuiGraphicsExtractor.drawVerticalLine]
+ */
+// codex start
+// fun GuiGraphicsExtractor.drawVerticalLine(x: Float, y1: Float, y2: Float, thickness: Float, color: Color4b) {
+//     this.drawQuad(x, y1, x + thickness, y2, color)
+// }
+// codex end
+
+@Suppress("LongParameterList")
+fun GuiGraphicsExtractor.drawTriangle(
+    x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float,
+    fillColor: Color4bTodoLiquidbounce? = Color4bTodoLiquidbounce.TRANSPARENT,
+    outlineColor: Color4bTodoLiquidbounce? = Color4bTodoLiquidbounce.TRANSPARENT,
+    cull: Boolean = true,
+) {
+    val minX = minOf(x0, x1, x2)
+    val minY = minOf(y0, y1, y2)
+    val maxX = maxOf(x0, x1, x2)
+    val maxY = maxOf(y0, y1, y2)
+    val bounds = getBounds(minX, minY, maxX, maxY)
+
+    if (fillColor != null && !fillColor.isTransparent) {
+        this.guiRenderState.addGuiElement(
+            TriangleGuiElementRenderStateTodoLiquidbounce(
+                x0, y0, x1, y1, x2, y2,
+                fillColor.argb,
+                ClientRenderPipelinesTodoLiquidbounce.GUI.triangles(cull),
+                copyPosePooled(),
+                this.scissorStack.peek(),
+                bounds,
+            )
+        )
+    }
+
+    if (outlineColor != null && !outlineColor.isTransparent) {
+        drawLines(
+            floatArrayOf(
+                x0, y0,
+                x1, y1,
+                x1, y1,
+                x2, y2,
+                x2, y2,
+                x0, y0,
+            ),
+            outlineColor.argb,
+            bounds,
+        )
+    }
+}
+
+fun GuiGraphicsExtractor.drawTriangle(
+    p1: Vec2, p2: Vec2, p3: Vec2,
+    fillColor: Color4bTodoLiquidbounce? = Color4bTodoLiquidbounce.TRANSPARENT,
+    outlineColor: Color4bTodoLiquidbounce? = Color4bTodoLiquidbounce.TRANSPARENT,
+) = drawTriangle(
+    p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,
+    fillColor, outlineColor,
+)
+
+@Suppress("LongParameterList")
+inline fun GuiGraphicsExtractor.drawTexQuad(
+    textureSetup: TextureSetup,
+    x0: Float,
+    y0: Float,
+    x1: Float,
+    y1: Float,
+    u1: Float = 0f,
+    v1: Float = 0f,
+    u2: Float = 1f,
+    v2: Float = 1f,
+    argb: Int = -1,
+    pipeline: RenderPipeline = RenderPipelines.GUI_TEXTURED,
+) {
+    this.guiRenderState.addGuiElement(
+        TexQuadGuiElementRenderStateTodoLiquidbounce(
+            x0,
+            y0,
+            x1,
+            y1,
+            u1,
+            v1,
+            u2,
+            v2,
+            argb,
+            pipeline,
+            textureSetup,
+            copyPosePooled(),
+            this.scissorStack.peek(),
+            getBounds(x0, y0, x1, y1),
+        )
+    )
+}
+// codex start
+//
+// @Suppress("LongParameterList")
+// inline fun GuiGraphicsExtractor.drawBlitOnCurrentLayer(
+//     textureSetup: TextureSetup,
+//     x0: Int,
+//     y0: Int,
+//     x1: Int,
+//     y1: Int,
+//     u1: Float = 0f,
+//     v1: Float = 0f,
+//     u2: Float = 1f,
+//     v2: Float = 1f,
+//     argb: Int = -1,
+//     pipeline: RenderPipeline = RenderPipelines.GUI_TEXTURED,
+// ) {
+//     this.guiRenderState.addBlitToCurrentLayer(
+//         BlitRenderState(
+//             pipeline,
+//             textureSetup,
+//             copyPose(),
+//             x0,
+//             y0,
+//             x1,
+//             y1,
+//             u1,
+//             v1,
+//             u2,
+//             v2,
+//             argb,
+//             this.scissorStack.peek(),
+//             null,
+//         )
+//     )
+// }
+// codex end
+
+fun GuiGraphicsExtractor.drawCircle(
+    x: Float,
+    y: Float,
+    radius: Float,
+    innerRadius: Float = 0f,
+    colorGetter: Float2IntFunction = Float2IntFunction { Color4bTodoLiquidbounce.WHITE.argb },
+) {
+    if (radius <= 0f) {
+        return
+    }
+
+    val lut = GuiCircleLutAtlasTodoLiquidbounce.allocate(colorGetter)
+    val innerRatio = (innerRadius / radius).coerceIn(0f, 1f)
+    val bounds = getBoundsXYWH(x - radius, y - radius, radius * 2, radius * 2)
+
+    this.guiRenderState.addGuiElement(
+        CircleGuiElementRenderStateTodoLiquidbounce(
+            x,
+            y,
+            radius,
+            innerRatio,
+            lut.row,
+            ClientRenderPipelinesTodoLiquidbounce.GUI.circleLut(),
+            lut.textureSetup,
+            copyPosePooled(),
+            this.scissorStack.peek(),
+            bounds
+        )
+    )
+}
