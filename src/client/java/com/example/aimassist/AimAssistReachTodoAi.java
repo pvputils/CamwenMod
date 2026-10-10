@@ -1,6 +1,6 @@
 package com.example.aimassist;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 /** Scoped client-side reach range used only by aim-assist probes. */
 public final class AimAssistReachTodoAi {
-    private static final Identifier ID = Identifier.fromNamespaceAndPath("pvputils", "aim_assist_reach");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("pvputils", "aim_assist_reach");
     public static double range(double reach) { return Double.isFinite(reach) ? Math.max(0, reach) : 0; }
     public static <T> T withRange(Player player, double reach, Supplier<T> action) {
         double desired = range(reach);

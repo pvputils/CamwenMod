@@ -8,18 +8,16 @@ import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import com.example.overlayTodoAi.PlayerWaypointOverlay;
 import com.example.overlayTodoAi.ExternalConfigWindow;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -142,7 +140,7 @@ public class UntitledClient implements ClientModInitializer {
 //    }
 //    public static RAGE_CHEAT_LEVEL rageCheatLevel = RAGE_CHEAT_LEVEL.ZERO;
 
-    public static CameraRenderState cameraRenderState;
+    public static CameraSnapshotTodoAi cameraRenderState; //codex (old code snippet) public static CameraRenderState cameraRenderState;
 
     record TempWaypoint(String title, Vec3 coordinate) {
     }
@@ -284,11 +282,9 @@ public class UntitledClient implements ClientModInitializer {
 
         // exampleLayer
         {
-            final Identifier EXAMPLE_LAYER = Identifier.fromNamespaceAndPath("pvputils2", "hud-example-layer");
-            HudElementRegistry.attachElementBefore(
-                    VanillaHudElements.CHAT,
-                    EXAMPLE_LAYER,
-                    (context, _) -> {
+            final ResourceLocation EXAMPLE_LAYER = ResourceLocation.fromNamespaceAndPath("pvputils2", "hud-example-layer"); //codex (old code snippet) final Identifier EXAMPLE_LAYER = Identifier.fromNamespaceAndPath("pvputils2", "hud-example-layer");
+            HudRenderCallback.EVENT.register( //codex (old code snippet) HudElementRegistry.attachElementBefore(
+                    (context, unusedTodoAi2) -> { //codex (old code snippet) VanillaHudElements.CHAT, EXAMPLE_LAYER, (context, _) -> {
                         if (config.isChatCoordinateWaypointingEnabled) {
                             for (var each : tempWaypoints) {
                                 Vector2i screenCoords = calculateScreenCoords(each.coordinate);
@@ -330,11 +326,11 @@ public class UntitledClient implements ClientModInitializer {
         // messageCoordsListener
         ClientReceiveMessageEvents.CHAT.register((
                 message,
-                _,
-                _,
-                _,
-                _) -> onIncomingMessage(message.getString()));
-        ClientReceiveMessageEvents.GAME.register((message, _) -> onIncomingMessage(message.getString()));
+                unusedTodoAi3, //codex (old code snippet) _,
+                unusedTodoAi4, //codex (old code snippet) _,
+                unusedTodoAi5, //codex (old code snippet) _,
+                unusedTodoAi6) -> onIncomingMessage(message.getString())); //codex (old code snippet) _) -> onIncomingMessage(message.getString()));
+        ClientReceiveMessageEvents.GAME.register((message, unusedTodoAi7) -> onIncomingMessage(message.getString())); //codex (old code snippet) ClientReceiveMessageEvents.GAME.register((message, _) -> onIncomingMessage(message.getString()));
 
         ClientTickEvents.START_CLIENT_TICK.register((client) -> {
             if (client.player instanceof LocalPlayer player) {
@@ -522,12 +518,12 @@ public class UntitledClient implements ClientModInitializer {
             int screenX,
             String text,
             int screenY,
-            GuiGraphicsExtractor drawContext) {
+            GuiGraphics drawContext) { //codex (old code snippet) GuiGraphicsExtractor drawContext) {
         int textX = screenX - TEXT_RENDERER.width(text) / 2;
 //        int textY = screenY + size / 2 + 2;
         int textY = screenY - TEXT_RENDERER.lineHeight / 2;
 
-        drawContext.text(
+        drawContext.drawString( //codex (old code snippet) drawContext.text(
                 TEXT_RENDERER,
                 text,
                 textX,

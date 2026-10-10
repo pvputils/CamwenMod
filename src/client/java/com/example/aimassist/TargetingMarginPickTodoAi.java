@@ -16,7 +16,7 @@ public final class TargetingMarginPickTodoAi {
     }
     private static HitResult pickWithCurrentReach(Minecraft mc, Float bypass, double range) {
         return AimAssistMarginScopeTodoAi.withMargin(bypass, () ->
-            ClientPlayerEntityInvoker.aimAssistPickTodoAi(mc.getCameraEntity(),
+            ((ClientPlayerEntityInvoker) mc.gameRenderer).invokePick(mc.getCameraEntity(),
                 range > 0 ? Math.min(range, mc.player.blockInteractionRange()) : mc.player.blockInteractionRange(),
                 range > 0 ? Math.min(range, mc.player.entityInteractionRange()) : mc.player.entityInteractionRange(),
                 mc.getDeltaTracker().getGameTimeDeltaTicks()));

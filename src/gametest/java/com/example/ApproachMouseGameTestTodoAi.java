@@ -19,7 +19,7 @@ public final class ApproachMouseGameTestTodoAi implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
         try (var world = context.worldBuilder().create()) {
-            context.waitFor(mc -> mc.player != null && mc.level != null && mc.gui.screen() == null);
+            context.waitFor(mc -> mc.player != null && mc.level != null && mc.screen == null);
             context.waitTicks(3);
             // codex start
             context.getInput().holdMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);

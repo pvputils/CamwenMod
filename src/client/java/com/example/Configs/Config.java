@@ -16,8 +16,8 @@ public class Config {
     //codex end
     public enum NameplateTeam {
         // Ally behavior uses isFriendly. //codex (old code snippet) // targeting margin relies on this being only allies
-        FRIENDLY(TextColor.GREEN, true), //codex (old code snippet) FRIENDLY(TextColor.GREEN),
-        ALLY(TextColor.AQUA, true), //codex (old code snippet) ALLY(TextColor.AQUA);
+        FRIENDLY(TextColor.fromRgb(0x55FF55), true), //codex (old code snippet) FRIENDLY(TextColor.GREEN),
+        ALLY(TextColor.fromRgb(0x55FFFF), true), //codex (old code snippet) ALLY(TextColor.AQUA);
         // codex start
         FOCUS(TextColor.fromRgb(0xFF55FF), false);
         //codex end

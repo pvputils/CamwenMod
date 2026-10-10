@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.example.aimassist.AimAssistControllerTodoAi;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.CameraType;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,7 +45,7 @@ public class GameRendererMixin {
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
     private void onBobView(
-            CameraRenderState cameraState, PoseStack poseStack, CallbackInfo ci) {
+            PoseStack poseStack, float partialTick, CallbackInfo ci) { //codex (old code snippet) CameraRenderState cameraState, PoseStack poseStack, CallbackInfo ci) {
         if (config.isViewBobbingCameraShakeDisabled &&
                 !isRenderingHandBobbing &&
                 MINECRAFT_CLIENT_INSTANCE.options.getCameraType() == CameraType.FIRST_PERSON) {

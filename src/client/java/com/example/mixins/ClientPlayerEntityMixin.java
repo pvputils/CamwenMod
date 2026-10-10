@@ -30,7 +30,7 @@ public abstract class ClientPlayerEntityMixin {
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick(CallbackInfo ci) {
         // TODO -> if (false) return; test this for starting sprint w/ s
-        Screen currentScreen = MINECRAFT_CLIENT_INSTANCE.gui.screen();
+        Screen currentScreen = MINECRAFT_CLIENT_INSTANCE.screen; //codex (old code snippet) Screen currentScreen = MINECRAFT_CLIENT_INSTANCE.gui.screen();
         // TODO -> wtf?
         boolean isCurrentHandledScreen = currentScreen instanceof AbstractContainerScreen<?>;
         boolean isMovementValid = currentScreen == null || isCurrentHandledScreen;
@@ -91,7 +91,7 @@ public abstract class ClientPlayerEntityMixin {
 //        }
     }
 
-    @Inject(method = "handlePortalTransitionEffect", at = @At("RETURN"))
+    @Inject(method = "handleConfusionTransitionEffect", at = @At("RETURN")) //codex (old code snippet) @Inject(method = "handlePortalTransitionEffect", at = @At("RETURN"))
     void onTickNausea(CallbackInfo ci) {
 //        if (config.isDarknessDisabled) {
 //            this.oPortalEffectIntensity = 0.f;

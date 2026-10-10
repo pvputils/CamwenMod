@@ -3,7 +3,7 @@ package com.example.mixins;
 import com.example.Configs.CheatConfig;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;

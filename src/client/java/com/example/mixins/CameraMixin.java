@@ -5,7 +5,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,10 +27,10 @@ public abstract class CameraMixin {
 
     // codex start TODO -> ?
     @Shadow
-    public abstract float yRot();
+    public abstract float getYRot(); //codex (old code snippet) public abstract float yRot();
 
     @Shadow
-    public abstract float xRot();
+    public abstract float getXRot(); //codex (old code snippet) public abstract float xRot();
 
     @Shadow
     private Vec3 position;
@@ -39,7 +39,7 @@ public abstract class CameraMixin {
     @Shadow
     protected abstract void setPosition(Vec3 position);
 
-    @Inject(method = "alignWithEntity", at = @At(value = "RETURN"))
+    @Inject(method = "setup", at = @At(value = "RETURN")) //codex (old code snippet) @Inject(method = "alignWithEntity", at = @At(value = "RETURN"))
     void onAlignWithEntity(CallbackInfo ci) {
         if (!(this.entity instanceof LocalPlayer player)) {
             return;
@@ -60,8 +60,8 @@ public abstract class CameraMixin {
     }
 
     // codex start
-    @Inject(method = "alignWithEntity", at = @At("TAIL"))
-    private void offsetThirdPersonOrbit(float partialTick, CallbackInfo ci) {
+    @Inject(method = "setup", at = @At("TAIL")) //codex (old code snippet) @Inject(method = "alignWithEntity", at = @At("TAIL"))
+    private void offsetThirdPersonOrbit(net.minecraft.world.level.BlockGetter level, Entity entity, boolean detached, boolean mirrored, float partialTick, CallbackInfo ci) { //codex (old code snippet) private void offsetThirdPersonOrbit(float partialTick, CallbackInfo ci) {
         if (!(this.entity instanceof LocalPlayer)
                 || headRunCameraOffset == UntitledClient.HEAD_RUN_OFFSET_TYPE.NONE
                 || MINECRAFT_CLIENT_INSTANCE.options.getCameraType().isFirstPerson()) {
@@ -70,7 +70,7 @@ public abstract class CameraMixin {
 
         float yawOffset = getHeadRunYawOffset();
         // Vanilla has completed either orbit here, including the mirrored front-camera transform.
-        this.setRotation(this.yRot() + yawOffset, this.xRot());
+        this.setRotation(this.getYRot() + yawOffset, this.getXRot()); //codex (old code snippet) this.setRotation(this.yRot() + yawOffset, this.xRot());
         Vec3 eyePosition = ((LocalPlayer) this.entity).getEyePosition(partialTick);
         Vec3 rotatedOrbit = this.position.subtract(eyePosition)
                 .yRot((float) Math.toRadians(-yawOffset));

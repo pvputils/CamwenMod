@@ -1,9 +1,7 @@
 package com.example.mixins;
 
 import com.example.Configs.Config;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -29,8 +27,7 @@ public abstract class EntityMixin {
     @Shadow
     public abstract double getZ();
 
-    @Shadow
-    public abstract @Nullable Component belowNameDisplay();
+    //codex (old code snippet) @Shadow public abstract @Nullable Component belowNameDisplay();
 
     @Unique
     double lastX = 0;

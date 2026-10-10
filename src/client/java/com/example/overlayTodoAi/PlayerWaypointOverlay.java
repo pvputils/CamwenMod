@@ -5,7 +5,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.sun.jna.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -30,7 +30,7 @@ public final class PlayerWaypointOverlay {
     private WindowsWaypointWindow window;
     private boolean failed;
     private long lastFrame;
-    private final Map<Identifier, BufferedImage> faces = new HashMap<>();
+    private final Map<ResourceLocation, BufferedImage> faces = new HashMap<>(); //codex (old code snippet) private final Map<Identifier, BufferedImage> faces = new HashMap<>();
     // codex start
     private static final long DEBUG_MESSAGE_DURATION_NANOS = 5_000_000_000L;
     private static final ConcurrentLinkedDeque<DebugMessage> debugMessages = new ConcurrentLinkedDeque<>();
@@ -38,7 +38,7 @@ public final class PlayerWaypointOverlay {
 
     private boolean visible(Minecraft client) {
         return client.level != null && client.player != null && cameraRenderState != null
-                && client.gui.screen() == null && client.gui.overlay() == null && !client.gui.hud.isHidden() && client.isWindowActive();
+                && client.screen == null && client.getOverlay() == null && !client.options.hideGui && client.isWindowActive(); //codex (old code snippet) && client.gui.screen() == null && client.gui.overlay() == null && !client.gui.hud.isHidden() && client.isWindowActive();
 //                && config.playerWaypointCategory != Config.PlayerWaypointCategory.NONE;
     }
 
@@ -64,11 +64,11 @@ public final class PlayerWaypointOverlay {
             if (!Platform.isWindows())
                 throw new UnsupportedOperationException("Player waypoint overlay requires Windows");
             if (window == null)
-                window = new WindowsWaypointWindow(GLFWNativeWin32.glfwGetWin32Window(client.getWindow().handle()));
+                window = new WindowsWaypointWindow(GLFWNativeWin32.glfwGetWin32Window(client.getWindow().getWindow())); //codex (old code snippet) window = new WindowsWaypointWindow(GLFWNativeWin32.glfwGetWin32Window(client.getWindow().handle()));
             BufferedImage frame = window.beginFrame();
             if (frame == null) return;
             Graphics2D graphics = frame.createGraphics();
-            HashSet<Identifier> usedSkins = new HashSet<>();
+            HashSet<ResourceLocation> usedSkins = new HashSet<>(); //codex (old code snippet) HashSet<Identifier> usedSkins = new HashSet<>();
             // codex start
             boolean hasOverlayContent = false;
             // codex end
@@ -128,7 +128,7 @@ public final class PlayerWaypointOverlay {
                         // codex end
                         graphics.setColor(new Color(team == null ? 0xAFFF0000 : 0xFF000000 | team.color.getValue(), true));
                         graphics.fillRect(x - 8, y - 8, 16, 16);
-                        Identifier skin = player.getSkin().body().texturePath();
+                        ResourceLocation skin = player.getSkin().texture(); //codex (old code snippet) Identifier skin = player.getSkin().body().texturePath();
                         usedSkins.add(skin);
                         BufferedImage face = faces.computeIfAbsent(skin, id -> loadFace(client, id));
                         if (face != null) graphics.drawImage(face, x - 6, y - 6, 12, 12, null);
@@ -167,9 +167,9 @@ public final class PlayerWaypointOverlay {
         }
     }
 
-    private static BufferedImage loadFace(Minecraft client, Identifier id) {
+    private static BufferedImage loadFace(Minecraft client, ResourceLocation id) { //codex (old code snippet) private static BufferedImage loadFace(Minecraft client, Identifier id) {
         var texture = client.getTextureManager().getTexture(id);
-        if (texture instanceof DynamicTexture dynamic && dynamic.getPixels() != null && !dynamic.getPixels().isClosed()) {
+        if (texture instanceof DynamicTexture dynamic && dynamic.getPixels() != null) { //codex (old code snippet) if (texture instanceof DynamicTexture dynamic && dynamic.getPixels() != null && !dynamic.getPixels().isClosed()) {
             return face(dynamic.getPixels());
         }
         // Built-in/default skins come from resources rather than downloaded DynamicTextures.

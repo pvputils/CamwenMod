@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static com.example.Constants.MINECRAFT_CLIENT_INSTANCE;
 import static com.example.UntitledClient.config;
 import static com.example.Utils.onPvpDamage;
-import static net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT;
+import static net.minecraft.world.entity.EntityType.LIGHTNING_BOLT;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -39,7 +39,7 @@ public class ClientPlayNetworkHandlerMixin {
         }
 
         if (config.isDamageTakenValueNotificationEnabled && previous > health) {
-            player.sendSystemMessage(Component.literal(String.valueOf(previous - health)));
+            player.displayClientMessage(Component.literal(String.valueOf(previous - health)), false); //codex (old code snippet) player.sendSystemMessage(Component.literal(String.valueOf(previous - health)));
         }
     }
 
@@ -78,7 +78,7 @@ public class ClientPlayNetworkHandlerMixin {
         // TODO -> waypoint this?
         if (packet.getType() == LIGHTNING_BOLT &&
                 MINECRAFT_CLIENT_INSTANCE.player instanceof LocalPlayer player) {
-            player.sendSystemMessage(Component.literal(packet.getX() + ", " + packet.getY() + ", " + packet.getZ()));
+            player.displayClientMessage(Component.literal(packet.getX() + ", " + packet.getY() + ", " + packet.getZ()), false); //codex (old code snippet) player.sendSystemMessage(Component.literal(packet.getX() + ", " + packet.getY() + ", " + packet.getZ()));
         }
     }
 }

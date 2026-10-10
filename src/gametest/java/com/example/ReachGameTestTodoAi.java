@@ -18,7 +18,7 @@ public final class ReachGameTestTodoAi implements FabricClientGameTest {
     }
     @Override public void runTest(ClientGameTestContext context) {
         try (var world = context.worldBuilder().create()) {
-            context.waitFor(mc -> mc.player != null && mc.level != null && mc.gui.screen() == null);
+            context.waitFor(mc -> mc.player != null && mc.level != null && mc.screen == null);
             context.waitTicks(3);
             context.runOnClient(mc -> {
                 var player = mc.player;

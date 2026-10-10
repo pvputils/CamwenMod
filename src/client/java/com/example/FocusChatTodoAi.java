@@ -46,8 +46,8 @@ public final class FocusChatTodoAi {
         String message = input.strip();
         if (connection == null || client.player == null || message.isEmpty() || message.equals("/")) return;
         if (message.length() > 256 || message.indexOf('\n') >= 0 || message.indexOf('\r') >= 0) {
-            client.player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
-                    team.name() + " message must be one line of at most 256 characters."));
+            client.player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    team.name() + " message must be one line of at most 256 characters."), false);
             return;
         }
         if (team == Config.NameplateTeam.FOCUS) UntitledClient.config.focusChatMessage = message;
@@ -69,7 +69,7 @@ public final class FocusChatTodoAi {
         }
         Map<String, UUID> online = new HashMap<>();
         for (var player : connection.getOnlinePlayers()) {
-            online.put(player.getProfile().name().toLowerCase(Locale.ROOT), player.getProfile().id());
+            online.put(player.getProfile().getName().toLowerCase(Locale.ROOT), player.getProfile().getId());
         }
         boolean changed = false;
         for (UUID uuid : matchingPlayers(message, online)) {

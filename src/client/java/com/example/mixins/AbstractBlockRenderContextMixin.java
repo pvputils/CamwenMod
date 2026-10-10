@@ -1,6 +1,6 @@
 package com.example.mixins;
 
-import net.caffeinemc.mods.sodium.client.render.model.AbstractBlockRenderContext;
+import net.caffeinemc.mods.sodium.client.render.frapi.render.AbstractBlockRenderContext;
 import net.minecraft.core.Direction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,12 +18,5 @@ public class AbstractBlockRenderContextMixin {
             cir.cancel();
         }
     }
-    @Inject(method = "shouldDrawSide", at = @At("HEAD"), cancellable = true)
-    private void shouldDrawSide(
-            Direction facing, CallbackInfoReturnable<Boolean> cir) {
-        if (isPlayerXrayEnabled) {
-            cir.setReturnValue(false);
-            cir.cancel();
-        }
-    }
+    //codex (old code snippet) @Inject(method = "shouldDrawSide", at = @At("HEAD"), cancellable = true) private void shouldDrawSide( Direction facing, CallbackInfoReturnable<Boolean> cir) { if (isPlayerXrayEnabled) { cir.setReturnValue(false); cir.cancel(); } }
 }

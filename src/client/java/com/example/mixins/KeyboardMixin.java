@@ -3,7 +3,7 @@ package com.example.mixins;
 import com.example.Configs.Config;
 import com.example.overlayTodoAi.ExternalConfigWindow;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.input.KeyEvent;
+
 import net.minecraft.world.entity.player.Input;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -41,10 +41,10 @@ public class KeyboardMixin {
     // codex start
     @Inject(at = @At(value = "HEAD"), method = "keyPress", cancellable = true)
     private void suppressInventoryKeyRepeats(
-            long handle, int action, KeyEvent event, CallbackInfo ci) {
+            long handle, int key, int scanCode, int action, int modifiers, CallbackInfo ci) { //codex (old code snippet) long handle, int action, KeyEvent event, CallbackInfo ci) {
         if (config.isInventoryKeyHoldEnabled
                 && action == GLFW.GLFW_REPEAT
-                && MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(event)) {
+                && MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(key, scanCode)) { //codex (old code snippet) && MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(event)) {
             ci.cancel();
         }
     }
@@ -52,9 +52,9 @@ public class KeyboardMixin {
 
     @Inject(at = @At(value = "RETURN"), method = "keyPress")
     private void onKeyPress(
-            long handle, int action, KeyEvent event, CallbackInfo ci) {
+            long handle, int key, int scanCode, int action, int modifiers, CallbackInfo ci) { //codex (old code snippet) long handle, int action, KeyEvent event, CallbackInfo ci) {
         // codex start
-        if (MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(event)) {
+        if (MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(key, scanCode)) { //codex (old code snippet) if (MINECRAFT_CLIENT_INSTANCE.options.keyInventory.matches(event)) {
 //            if (action == GLFW.GLFW_PRESS && MINECRAFT_CLIENT_INSTANCE.player instanceof LocalPlayer) {
 //                if (config.isInventoryKeyHoldEnabled) {
 //                    // Vanilla has opened the player inventory by this RETURN injection point.
@@ -64,8 +64,8 @@ public class KeyboardMixin {
 //                MINECRAFT_CLIENT_INSTANCE.setScreenAndShow(null);
 //                shouldCloseInventoryOnKeyRelease = false;
 //            }
-            if (config.isInventoryKeyHoldEnabled && action == GLFW.GLFW_RELEASE && MINECRAFT_CLIENT_INSTANCE.gui.screen() instanceof InventoryScreen) {
-                MINECRAFT_CLIENT_INSTANCE.setScreenAndShow(null);
+            if (config.isInventoryKeyHoldEnabled && action == GLFW.GLFW_RELEASE && MINECRAFT_CLIENT_INSTANCE.screen instanceof InventoryScreen) { //codex (old code snippet) if (config.isInventoryKeyHoldEnabled && action == GLFW.GLFW_RELEASE && MINECRAFT_CLIENT_INSTANCE.gui.screen() instanceof InventoryScreen) {
+                MINECRAFT_CLIENT_INSTANCE.setScreen(null); //codex (old code snippet) MINECRAFT_CLIENT_INSTANCE.setScreenAndShow(null);
             }
         }
         // codex end
